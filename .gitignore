@@ -1,0 +1,41 @@
+# Variables de entorno
+.env
+.env.local
+.env.development
+.env.production
+*.env
+
+# Pero permitir el archivo de ejemplo
+!.env.example
+
+# Entorno virtual
+env/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Django
+media/
+staticfiles/
+static/collected/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
