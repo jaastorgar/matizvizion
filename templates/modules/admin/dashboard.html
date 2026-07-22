@@ -1,0 +1,10 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Panel de operaciones — Óptica Matiz Visión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/admin/dashboard.css' %}" />{% endblock %}
+{% block content %}
+<div id="dash-root">
+  <div class="mv-empty">Cargando panel…</div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/admin/dashboard.js' %}"></script>{% endblock %}

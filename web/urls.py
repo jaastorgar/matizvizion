@@ -1,10 +1,7 @@
 from django.urls import path
-
 from . import views
 
-
 app_name = 'web'
-
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -14,4 +11,7 @@ urlpatterns = [
     path('carrito/', views.carrito, name='carrito'),
     path('checkout/', views.checkout, name='checkout'),
     path('pago/retorno/', views.pago_retorno, name='pago_retorno'),
+    path('citas/', views.reserva, name='reserva'),
+    path('panel/', views.dashboard, name='dashboard'),
+    path('perfil/', views.perfil, name='perfil'),
 ]

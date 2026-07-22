@@ -1,0 +1,36 @@
+/* Óptica Matiz Visión — perfil.css */
+.mv-id-card { display: flex; }
+.mv-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--green-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 800; font-size: 1.4rem; flex-shrink: 0; }
+.mv-rut-chip { display: inline-flex; align-items: center; gap: .35rem; background: var(--lead-light); border: 1px solid var(--border-color); color: var(--lead-dark); border-radius: 999px; padding: .2rem .7rem; font-size: .82rem; font-weight: 600; }
+.mv-tabs { border-bottom: 1px solid var(--border-color); margin-bottom: 1.25rem; flex-wrap: wrap; }
+.mv-tabs .nav-link { color: var(--lead-dark); font-weight: 600; border: none; border-bottom: 3px solid transparent; padding: .6rem .9rem; }
+.mv-tabs .nav-link.active { color: var(--green-dark); border-bottom-color: var(--green-primary); background: transparent; }
+.mv-tabs .nav-link:hover { color: var(--green-dark); }
+.mv-tab-count { background: var(--lead-light); color: var(--lead-dark); border-radius: 999px; font-size: .72rem; padding: .05rem .5rem; margin-left: .35rem; }
+.mv-tabs .nav-link.active .mv-tab-count { background: rgba(16,185,129,.15); color: var(--green-dark); }
+.mv-tab-content { min-height: 120px; }
+.mv-order-card { border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); margin-bottom: 1rem; overflow: hidden; }
+.mv-order-head { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .85rem 1rem; background: var(--lead-light); flex-wrap: wrap; }
+.mv-order-head .oid { font-family: var(--font-head); font-weight: 700; color: var(--lead-dark); }
+.mv-order-head .odate { color: var(--lead-muted, #6B7280); font-size: .85rem; }
+.mv-order-body { padding: .5rem 1rem 1rem; }
+.mv-order-line { display: flex; justify-content: space-between; gap: .75rem; padding: .4rem 0; border-bottom: 1px dashed var(--border-color); font-size: .92rem; }
+.mv-order-line:last-of-type { border-bottom: none; }
+.mv-order-total { display: flex; justify-content: space-between; padding-top: .6rem; margin-top: .3rem; border-top: 2px solid var(--lead-dark); font-family: var(--font-head); font-weight: 800; }
+.mv-cita-row { display: flex; justify-content: space-between; gap: .75rem; padding: .85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); margin-bottom: .75rem; flex-wrap: wrap; align-items: center; }
+.mv-cita-when { font-family: var(--font-head); font-weight: 700; color: var(--lead-dark); }
+.mv-cita-meta { color: var(--lead-muted, #6B7280); font-size: .88rem; }
+.mv-badge { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.mv-badge.PENDIENTE { background: rgba(245,158,11,.18); color: #92400e; }
+.mv-badge.PAGADA { background: rgba(16,185,129,.15); color: var(--green-dark); }
+.mv-badge.EN_PREPARACION { background: rgba(245,158,11,.18); color: #92400e; }
+.mv-badge.ENVIADA { background: rgba(59,130,246,.15); color: #1e40af; }
+.mv-badge.ENTREGADA { background: rgba(6,95,70,.15); color: var(--green-dark); }
+.mv-badge.CANCELADA { background: var(--lead-light); color: var(--lead-muted, #6B7280); }
+.mv-badge.FALLIDA { background: rgba(220,38,38,.12); color: var(--danger); }
+.mv-badge.AGENDADA, .mv-badge.CONFIRMADA { background: rgba(59,130,246,.15); color: #1e40af; }
+.mv-badge.COMPLETADA { background: rgba(16,185,129,.15); color: var(--green-dark); }
+.mv-badge.NO_ASISTIO { background: rgba(220,38,38,.12); color: var(--danger); }
+.mv-empty { text-align: center; color: var(--lead-muted, #6B7280); padding: 2.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius); }
+.mv-empty .ico { font-size: 2rem; display: block; margin-bottom: .5rem; }
+.mv-note { font-size: .82rem; color: var(--lead-muted, #6B7280); }

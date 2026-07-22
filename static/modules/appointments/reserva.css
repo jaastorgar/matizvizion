@@ -1,0 +1,9 @@
+/* Óptica Matiz Visión — reserva.css (Fase 11) */
+.mv-reserva-card { border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); padding: 1.5rem; }
+.mv-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.mv-chip { border: 1px solid var(--green-primary); color: var(--green-dark); background: var(--white); border-radius: 999px; padding: .4rem 1rem; font-weight: 600; cursor: pointer; transition: all .12s ease; }
+.mv-chip:hover { background: rgba(16,185,129,.12); }
+.mv-chip.active { background: var(--green-primary); color: #fff; border-color: var(--green-primary); }
+.mv-selected-box { background: rgba(16,185,129,.10); border: 1px solid var(--green-primary); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+.mv-selected-box.empty { background: var(--lead-light); border-color: var(--border-color); color: var(--lead-muted, #6B7280); }
+.mv-empty { color: var(--lead-muted, #6B7280); padding: 1rem 0; }

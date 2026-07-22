@@ -1,101 +1,28 @@
-from datetime import date
-
 from rest_framework import serializers
-
-from .models import BloqueHorario, CitaMedica, Tecnologo
-
+from .models import Tecnologo, BloqueHorario, CitaMedica
 
 class TecnologoSerializer(serializers.ModelSerializer):
-    sucursal_nombre = serializers.CharField(
-        source='sucursal.nombre',
-        read_only=True
-    )
-
+    sucursal_nombre = serializers.ReadOnlyField(source='sucursal.nombre')
     class Meta:
         model = Tecnologo
-        fields = [
-            'id',
-            'nombre',
-            'especialidad',
-            'sucursal',
-            'sucursal_nombre',
-        ]
-        read_only_fields = fields
-
+        fields = ['id', 'nombre', 'especialidad', 'sucursal', 'sucursal_nombre']
 
 class BloqueHorarioSerializer(serializers.ModelSerializer):
-    tecnologo_nombre = serializers.CharField(
-        source='tecnologo.nombre',
-        read_only=True
-    )
-
+    tecnologo_nombre = serializers.ReadOnlyField(source='tecnologo.nombre')
     class Meta:
         model = BloqueHorario
-        fields = [
-            'id',
-            'tecnologo',
-            'tecnologo_nombre',
-            'fecha',
-            'hora_inicio',
-            'hora_fin',
-            'disponible',
-        ]
-        read_only_fields = fields
-
+        fields = ['id', 'tecnologo', 'tecnologo_nombre', 'fecha', 'hora_inicio', 'hora_fin', 'disponible']
 
 class CitaMedicaSerializer(serializers.ModelSerializer):
-    # Datos del bloque anidados (solo lectura) para el frontend
-    bloque_fecha = serializers.DateField(source='bloque.fecha', read_only=True)
-    bloque_hora_inicio = serializers.TimeField(source='bloque.hora_inicio', read_only=True)
-    bloque_hora_fin = serializers.TimeField(source='bloque.hora_fin', read_only=True)
-    tecnologo_nombre = serializers.CharField(
-        source='bloque.tecnologo.nombre',
-        read_only=True
-    )
-    sucursal_nombre = serializers.CharField(
-        source='bloque.tecnologo.sucursal.nombre',
-        read_only=True
-    )
-    cliente_email = serializers.EmailField(source='cliente.email', read_only=True)
-
+    cliente_email = serializers.ReadOnlyField(source='cliente.email')
+    bloque_fecha = serializers.ReadOnlyField(source='bloque.fecha')
+    bloque_hora_inicio = serializers.ReadOnlyField(source='bloque.hora_inicio')
+    bloque_hora_fin = serializers.ReadOnlyField(source='bloque.hora_fin')
+    tecnologo_nombre = serializers.ReadOnlyField(source='bloque.tecnologo.nombre')
+    sucursal_nombre = serializers.ReadOnlyField(source='bloque.tecnologo.sucursal.nombre')
     class Meta:
         model = CitaMedica
-        fields = [
-            'id',
-            'cliente',
-            'cliente_email',
-            'bloque',
-            'bloque_fecha',
-            'bloque_hora_inicio',
-            'bloque_hora_fin',
-            'tecnologo_nombre',
-            'sucursal_nombre',
-            'estado',
-            'fecha_reserva',
-        ]
-        read_only_fields = [
-            'id',
-            'cliente',
-            'cliente_email',
-            'estado',
-            'fecha_reserva',
-            'bloque_fecha',
-            'bloque_hora_inicio',
-            'bloque_hora_fin',
-            'tecnologo_nombre',
-            'sucursal_nombre',
-        ]
-
-    def validate_bloque(self, bloque):
-        """
-        Chequeo preliminar: el bloque debe existir, estar disponible
-        y ser de una fecha no pasada. La reserva definitiva con bloqueo
-        de fila se hace en la vista con select_for_update().
-        """
-        if not bloque.disponible:
-            raise serializers.ValidationError('El bloque seleccionado ya no está disponible.')
-
-        if bloque.fecha < date.today():
-            raise serializers.ValidationError('No se puede agendar en una fecha pasada.')
-
-        return bloque
+        fields = ['id', 'cliente', 'cliente_email', 'bloque', 'bloque_fecha', 'bloque_hora_inicio',
+                  'bloque_hora_fin', 'tecnologo_nombre', 'sucursal_nombre', 'estado', 'fecha_reserva']
+        read_only_fields = ['id', 'cliente', 'cliente_email', 'bloque_fecha', 'bloque_hora_inicio',
+                            'bloque_hora_fin', 'tecnologo_nombre', 'sucursal_nombre', 'estado', 'fecha_reserva']

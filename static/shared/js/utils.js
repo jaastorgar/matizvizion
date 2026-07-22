@@ -6,8 +6,8 @@
   var auth = {
     getAccess:  function () { return localStorage.getItem(TOKEN_KEY); },
     getRefresh: function () { return localStorage.getItem(REFRESH_KEY); },
-    setTokens: function (access, refresh) { localStorage.setItem(TOKEN_KEY, access); if (refresh) localStorage.setItem(REFRESH_KEY, refresh); },
-    clearTokens: function () { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REFRESH_KEY); },
+    setTokens: function (access, refresh) { localStorage.setItem(TOKEN_KEY, access); if (refresh) localStorage.setItem(REFRESH_KEY, refresh); mePromise = null; },
+    clearTokens: function () { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REFRESH_KEY); mePromise = null; },
     isAuthenticated: function () { return !!this.getAccess(); },
     logout: function (redirectToLogin) { this.clearTokens(); if (redirectToLogin !== false) window.location.href = '/login/'; }
   };
@@ -59,6 +59,34 @@
     if (str === null || str === undefined) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  /* Formatea un RUT a 11.111.111-1 (acepta cualquier formato de entrada). */
+  function formatRut(rut) {
+    if (rut === null || rut === undefined) return '';
+    var clean = String(rut).toUpperCase().replace(/[^0-9K]/g, '');
+    if (clean.length < 2) return clean;
+    var dv = clean.slice(-1);
+    var body = clean.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return body + '-' + dv;
+  }
+  var mePromise = null;
+  function me() {
+    if (!auth.isAuthenticated()) return Promise.resolve(null);
+    if (!mePromise) {
+      mePromise = api.get('/accounts/me/').then(function (r) { return (r.ok && r.data) ? r.data : null; }).catch(function () { return null; });
+    }
+    return mePromise;
+  }
+  function refreshCartBadge() {
+    var badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    if (!auth.isAuthenticated()) { badge.hidden = true; badge.textContent = '0'; return; }
+    api.get('/orders/carrito/').then(function (r) {
+      if (!r.ok || !Array.isArray(r.data)) { badge.hidden = true; badge.textContent = '0'; return; }
+      var total = r.data.reduce(function (a, it) { return a + (Number(it.cantidad) || 0); }, 0);
+      badge.textContent = String(total); badge.hidden = total <= 0;
+    });
+  }
   window.MV = window.MV || {};
-  window.MV.api = api; window.MV.auth = auth; window.MV.toast = toast; window.MV.escape = escapeHtml; window.MV.API_BASE = API_BASE;
+  window.MV.api = api; window.MV.auth = auth; window.MV.toast = toast; window.MV.escape = escapeHtml;
+  window.MV.formatRut = formatRut; window.MV.me = me; window.MV.refreshCartBadge = refreshCartBadge; window.MV.API_BASE = API_BASE;
 })();

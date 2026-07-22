@@ -11,8 +11,8 @@
       más agendamiento de examen visual con tecnólogo médico.
     </p>
     <div class="d-flex gap-2 justify-content-center flex-wrap">
-      <a href="{% url 'web:login' %}" class="btn btn-cta btn-lg px-4">Iniciar sesión</a>
-      <a href="{% url 'web:register' %}" class="btn btn-outline-mv btn-lg px-4">Crear cuenta</a>
+      <a id="home-cta-1" href="{% url 'web:login' %}" class="btn btn-cta btn-lg px-4">Iniciar sesión</a>
+      <a id="home-cta-2" href="{% url 'web:register' %}" class="btn btn-outline-mv btn-lg px-4">Crear cuenta</a>
     </div>
   </div>
 </section>
@@ -22,4 +22,20 @@
     <div class="col-md-6"><div class="mv-card p-4 h-100"><h3 class="h5">🩺 Examen visual</h3><p class="text-secondary mb-0">Agenda tu cita con un tecnólogo médico eligiendo sucursal, profesional y bloque horario disponible.</p></div></div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var MV = window.MV; if (!MV || !MV.me) return;
+    MV.me().then(function (u) {
+      if (!u) return;
+      var isStaff = (u.role === 'VENDEDOR' || u.role === 'ADMIN');
+      if (isStaff) { location.replace('/panel/'); return; }
+      var a1 = document.getElementById('home-cta-1'), a2 = document.getElementById('home-cta-2');
+      if (a1) { a1.href = '/catalogo/'; a1.textContent = 'Ir al catálogo'; }
+      if (a2) { a2.href = '/citas/'; a2.textContent = 'Agendar cita'; }
+    });
+  });
+</script>
 {% endblock %}

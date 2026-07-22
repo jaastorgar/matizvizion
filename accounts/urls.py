@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import RegistroClienteView, MiPerfilView
-
+from .views import RegistroClienteView, MiPerfilView, MeView
 urlpatterns = [
     path('register/', RegistroClienteView.as_view(), name='registro_cliente'),
     path('profile/', MiPerfilView.as_view(), name='mi_perfil'),
+    path('me/', MeView.as_view(), name='me'),
 ]

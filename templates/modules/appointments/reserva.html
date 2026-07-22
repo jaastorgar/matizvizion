@@ -1,0 +1,36 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Agendar cita — Óptica Matiz Visión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/appointments/reserva.css' %}" />{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-1">🩺 Agendar examen visual</h1>
+    <p class="text-secondary mb-4">Elige sucursal, tecnólogo, fecha y bloque horario disponible.</p>
+    <div class="mv-reserva-card">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="r-sucursal">Sucursal</label>
+          <select class="form-select" id="r-sucursal"><option value="">Selecciona…</option></select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="r-tecnologo">Tecnólogo médico</label>
+          <select class="form-select" id="r-tecnologo" disabled><option value="">Selecciona…</option></select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="r-fecha">Fecha</label>
+          <input type="date" class="form-control" id="r-fecha" disabled />
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="form-label">Bloques horarios disponibles</label>
+        <div id="r-chips" class="mv-chips"><span class="mv-empty">Selecciona sucursal, tecnólogo y fecha.</span></div>
+      </div>
+      <div id="r-selected" class="mv-selected-box empty">Bloque seleccionado: ninguno</div>
+      <button id="r-confirm" class="btn btn-cta w-100 mt-3" disabled>Confirmar Reserva</button>
+      <p id="r-msg" class="text-center mt-2 mb-0"></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/appointments/reserva.js' %}"></script>{% endblock %}
