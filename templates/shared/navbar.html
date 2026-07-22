@@ -1,0 +1,31 @@
+<nav class="navbar navbar-expand-lg mv-navbar sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">Óptica Matiz Visión</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mvNav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="mvNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/catalogo/">Catálogo</a></li>
+        <li class="nav-item"><a class="nav-link" href="/citas/">Agendar cita</a></li>
+      </ul>
+      <ul class="navbar-nav align-items-lg-center">
+        <li class="nav-item"><a class="nav-link position-relative" href="/carrito/">🛒 Carrito <span id="cart-badge" hidden>0</span></a></li>
+        <li class="nav-item nav-guest"><a class="nav-link" href="/login/">Ingresar</a></li>
+        <li class="nav-item nav-guest"><a class="btn btn-cta btn-sm ms-lg-2" href="/register/">Registrarme</a></li>
+        <li class="nav-item nav-user d-none"><span class="nav-link">👤 <span id="nav-user-email">Cuenta</span></span></li>
+        <li class="nav-item nav-user d-none"><button class="btn btn-outline-mv btn-sm" id="nav-logout" type="button">Salir</button></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<script>
+  (function () {
+    var MV = window.MV; if (!MV || !MV.auth) return;
+    var g = document.querySelectorAll('.nav-guest'), u = document.querySelectorAll('.nav-user');
+    var emailEl = document.getElementById('nav-user-email'), out = document.getElementById('nav-logout');
+    function sg(){ g.forEach(function(e){e.classList.remove('d-none');}); u.forEach(function(e){e.classList.add('d-none');}); }
+    function su(){ g.forEach(function(e){e.classList.add('d-none');}); u.forEach(function(e){e.classList.remove('d-none');}); }
+    if (MV.auth.isAuthenticated()) { su(); MV.api.get('/accounts/profile/').then(function(r){ if (r.ok && r.data && r.data.email){ emailEl.textContent = r.data.email; } }); }
+    else { sg(); }
+    if (out){ out.addEventListener('click', function(){ MV.auth.logout(true); }); }
+  })();
+</script>

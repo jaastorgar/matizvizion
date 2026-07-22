@@ -1,0 +1,25 @@
+{% extends 'shared/base.html' %}
+
+{% block title %}Óptica Matiz Visión — Inicio{% endblock %}
+
+{% block content %}
+<section class="bg-lead-light rounded-4 py-5 mb-4">
+  <div class="container text-center">
+    <h1 class="display-5 fw-bold mb-3">Salud visual y tienda en línea</h1>
+    <p class="lead text-secondary mb-4 mx-auto" style="max-width: 640px;">
+      Armazones, lentes de sol y contacto con despacho a todo Chile,
+      más agendamiento de examen visual con tecnólogo médico.
+    </p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a href="{% url 'web:login' %}" class="btn btn-cta btn-lg px-4">Iniciar sesión</a>
+      <a href="{% url 'web:register' %}" class="btn btn-outline-mv btn-lg px-4">Crear cuenta</a>
+    </div>
+  </div>
+</section>
+<section class="container py-3">
+  <div class="row g-4">
+    <div class="col-md-6"><div class="mv-card p-4 h-100"><h3 class="h5">👓 Tienda óptica</h3><p class="text-secondary mb-0">Catálogo con filtros por categoría y precio, carrito en tiempo real y pago seguro con Webpay Plus.</p></div></div>
+    <div class="col-md-6"><div class="mv-card p-4 h-100"><h3 class="h5">🩺 Examen visual</h3><p class="text-secondary mb-0">Agenda tu cita con un tecnólogo médico eligiendo sucursal, profesional y bloque horario disponible.</p></div></div>
+  </div>
+</section>
+{% endblock %}

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_filters',
 
     # Apps del Proyecto Matiz Visión
     'accounts',
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     'orders',
     'payments',
     'appointments',
+    'web',
 ]
 
 # ==========================================

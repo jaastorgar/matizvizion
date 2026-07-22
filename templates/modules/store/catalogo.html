@@ -1,0 +1,59 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+
+{% block title %}Catálogo — Óptica Matiz Visión{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/store/catalogo.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+  <div>
+    <h1 class="h3 mb-1">Catálogo de productos</h1>
+    <p class="text-secondary mb-0" id="count-info">Cargando productos…</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  {# ---------- Sidebar de filtros ---------- #}
+  <aside class="col-lg-3">
+    <div class="mv-card p-3 mv-catalog-filters">
+      <h2 class="h6 text-uppercase text-muted mb-3">Filtros</h2>
+
+      <div class="mb-3">
+        <label for="search-input" class="form-label">Buscar</label>
+        <input type="search" class="form-control" id="search-input" placeholder="Nombre del producto" />
+      </div>
+
+      <div class="mb-3">
+        <label for="cat-filter" class="form-label">Categoría</label>
+        <select class="form-select" id="cat-filter">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label for="price-range" class="form-label d-flex justify-content-between">
+          <span>Precio máximo</span>
+          <span class="text-cta fw-bold" id="price-value">$0</span>
+        </label>
+        <input type="range" class="form-range" id="price-range" min="0" max="150000" step="1000" value="150000" />
+      </div>
+
+      <button class="btn btn-outline-mv btn-sm w-100 mt-2" id="reset-filters" type="button">Limpiar filtros</button>
+    </div>
+  </aside>
+
+  {# ---------- Grilla de productos ---------- #}
+  <section class="col-lg-9">
+    <div id="catalogo-grid" class="row g-3">
+      <div class="col-12 text-center text-secondary py-5">Cargando catálogo…</div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'modules/store/catalogo.js' %}"></script>
+{% endblock %}

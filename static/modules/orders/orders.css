@@ -1,0 +1,20 @@
+/* Óptica Matiz Visión — orders.css (Fase 10: carrito / checkout / retorno) */
+.mv-summary-card { border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); }
+.mv-summary-item { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border-color); }
+.mv-summary-item:last-child { border-bottom: none; }
+.mv-summary-item .name { font-weight: 600; color: var(--lead-dark); }
+.mv-summary-item .meta { color: var(--lead-muted, #6B7280); font-size: .85rem; }
+.mv-summary-item .price { font-family: var(--font-head); font-weight: 700; color: var(--green-dark); white-space: nowrap; }
+.mv-summary-total { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0 0; margin-top: .5rem; border-top: 2px solid var(--lead-dark); font-family: var(--font-head); font-size: 1.25rem; font-weight: 800; color: var(--lead-dark); }
+.mv-qty { display: inline-flex; align-items: center; gap: .35rem; }
+.mv-qty button { width: 28px; height: 28px; border: 1px solid var(--border-color); background: var(--lead-light); border-radius: 8px; font-weight: 700; cursor: pointer; }
+.mv-qty button:hover { background: var(--green-primary); color: #fff; border-color: var(--green-primary); }
+.mv-qty span { min-width: 24px; text-align: center; font-weight: 600; }
+.mv-link-danger { color: var(--danger); background: none; border: none; font-size: .85rem; cursor: pointer; text-decoration: underline; }
+.mv-secure-note { background: rgba(16,185,129,.10); border: 1px solid rgba(16,185,129,.3); color: var(--green-dark); border-radius: 10px; padding: .75rem 1rem; font-size: .9rem; }
+.mv-result { max-width: 520px; margin: 3rem auto; text-align: center; padding: 2.5rem 2rem; border-radius: var(--radius); box-shadow: var(--shadow); }
+.mv-result .icon { font-size: 3.5rem; }
+.mv-result.success { background: rgba(16,185,129,.10); border: 1px solid var(--green-primary); }
+.mv-result.error { background: rgba(220,38,38,.08); border: 1px solid var(--danger); }
+.mv-result h1 { font-size: 1.6rem; margin: .5rem 0; }
+.mv-empty { text-align: center; color: var(--lead-muted, #6B7280); padding: 3rem 1rem; }

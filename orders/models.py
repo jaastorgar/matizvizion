@@ -7,7 +7,7 @@ from django.db import models
 class EstadoOrden(models.TextChoices):
     PENDIENTE = 'PENDIENTE', 'Pendiente'
     PAGADA = 'PAGADA', 'Pagada'
-    EN_PREPARACION = 'EN_PREPARACION', 'En preparación'
+    EN_PREPARACION = 'EN_PREPARACION', 'En preparacion'
     ENVIADA = 'ENVIADA', 'Enviada'
     ENTREGADA = 'ENTREGADA', 'Entregada'
     CANCELADA = 'CANCELADA', 'Cancelada'
@@ -66,31 +66,18 @@ class ItemCarrito(models.Model):
 
     @property
     def subtotal(self):
-        return self.producto.precio * self.cantidad
+        return (self.producto.precio or 0) * (self.cantidad or 0)
 
 
 class Orden(models.Model):
     Estado = EstadoOrden
-
     ESTADOS = Estado.choices
 
     TRANSICIONES_PERMITIDAS = {
-        Estado.PENDIENTE: [
-            Estado.PAGADA,
-            Estado.CANCELADA,
-            Estado.FALLIDA,
-        ],
-        Estado.PAGADA: [
-            Estado.EN_PREPARACION,
-            Estado.CANCELADA,
-        ],
-        Estado.EN_PREPARACION: [
-            Estado.ENVIADA,
-            Estado.CANCELADA,
-        ],
-        Estado.ENVIADA: [
-            Estado.ENTREGADA,
-        ],
+        Estado.PENDIENTE: [Estado.PAGADA, Estado.CANCELADA, Estado.FALLIDA],
+        Estado.PAGADA: [Estado.EN_PREPARACION, Estado.CANCELADA],
+        Estado.EN_PREPARACION: [Estado.ENVIADA, Estado.CANCELADA],
+        Estado.ENVIADA: [Estado.ENTREGADA],
         Estado.ENTREGADA: [],
         Estado.CANCELADA: [],
         Estado.FALLIDA: [],
@@ -101,11 +88,7 @@ class Orden(models.Model):
         on_delete=models.CASCADE,
         related_name='ordenes'
     )
-    total = models.DecimalField(
-        'Total',
-        max_digits=10,
-        decimal_places=2
-    )
+    total = models.DecimalField('Total', max_digits=10, decimal_places=2)
     estado = models.CharField(
         'Estado',
         max_length=20,
@@ -117,7 +100,7 @@ class Orden(models.Model):
 
     class Meta:
         verbose_name = 'Orden'
-        verbose_name_plural = 'Órdenes'
+        verbose_name_plural = 'Ordenes'
         ordering = ['-creado_en']
         constraints = [
             models.CheckConstraint(
@@ -141,11 +124,9 @@ class Orden(models.Model):
             raise ValueError(
                 f"No se puede cambiar la orden de {self.estado} a {nuevo_estado}."
             )
-
         estado_anterior = self.estado
         self.estado = nuevo_estado
         self.save(update_fields=['estado', 'actualizado_en'])
-
         HistorialEstado.objects.create(
             orden=self,
             estado_anterior=estado_anterior,
@@ -190,7 +171,7 @@ class ItemOrden(models.Model):
 
     @property
     def subtotal(self):
-        return self.precio_unitario * self.cantidad
+        return (self.precio_unitario or 0) * (self.cantidad or 0)
 
 
 class HistorialEstado(models.Model):
@@ -199,10 +180,7 @@ class HistorialEstado(models.Model):
         on_delete=models.CASCADE,
         related_name='historial'
     )
-    estado_anterior = models.CharField(
-        max_length=20,
-        blank=True
-    )
+    estado_anterior = models.CharField(max_length=20, blank=True)
     estado_nuevo = models.CharField(
         max_length=20,
         choices=EstadoOrden.choices

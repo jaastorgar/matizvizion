@@ -1,0 +1,32 @@
+/* Óptica Matiz Visión — catalogo.css (Fase 09) */
+.mv-catalog-filters { position: sticky; top: 84px; }
+
+.mv-product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--white);
+  overflow: hidden;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.mv-product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(31,41,55,.12); }
+
+.mv-product-emoji {
+  font-size: 3rem;
+  text-align: center;
+  padding: 1.75rem 1rem;
+  background: var(--lead-light);
+}
+.mv-product-body { padding: 1rem; display: flex; flex-direction: column; flex: 1; }
+.mv-product-cat  { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--lead-muted, #6B7280); }
+.mv-product-name { font-family: var(--font-head); font-weight: 600; color: var(--lead-dark); margin: .15rem 0 .35rem; }
+.mv-product-desc { color: var(--lead-muted, #6B7280); font-size: .88rem; flex: 1; margin-bottom: .75rem; }
+.mv-product-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; }
+.mv-product-price { color: var(--green-dark); font-weight: 700; font-size: 1.25rem; font-family: var(--font-head); }
+.mv-product-card .btn-add { margin-top: auto; }
+.mv-product-card .btn-add:disabled { opacity: .55; }
+
+.mv-empty { text-align: center; color: var(--lead-muted, #6B7280); padding: 3rem 1rem; }

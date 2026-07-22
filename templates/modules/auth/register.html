@@ -1,0 +1,88 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+
+{% block title %}Crear cuenta — Óptica Matiz Visión{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="mv-auth-wrap">
+  <div class="mv-auth-card" style="max-width: 520px;">
+    <h1>Crear cuenta</h1>
+    <p class="text-secondary mb-3">Regístrate como cliente en segundos.</p>
+
+    <div id="register-error" class="mv-form-error" role="alert"></div>
+
+    <form id="register-form" novalidate>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label for="reg-first-name" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="reg-first-name" name="first_name" />
+          <div class="mv-field-error" data-error-for="first_name"></div>
+        </div>
+        <div class="col-sm-6">
+          <label for="reg-last-name" class="form-label">Apellido</label>
+          <input type="text" class="form-control" id="reg-last-name" name="last_name" />
+          <div class="mv-field-error" data-error-for="last_name"></div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label for="reg-email" class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="reg-email" name="email"
+               autocomplete="email" required />
+        <div class="mv-field-error" data-error-for="email"></div>
+      </div>
+
+      <div class="mt-3">
+        <label for="reg-rut" class="form-label">RUT</label>
+        <input type="text" class="form-control" id="reg-rut" name="rut"
+               placeholder="12.345.678-9" required />
+        <div class="mv-field-error" data-error-for="rut"></div>
+      </div>
+
+      <div class="row g-3 mt-0">
+        <div class="col-sm-6">
+          <label for="reg-phone" class="form-label">Teléfono <span class="text-muted fw-normal">(opcional)</span></label>
+          <input type="tel" class="form-control" id="reg-phone" name="telefono"
+               placeholder="+56912345678" />
+          <div class="mv-field-error" data-error-for="telefono"></div>
+        </div>
+        <div class="col-sm-6">
+          <label for="reg-address" class="form-label">Dirección <span class="text-muted fw-normal">(opcional)</span></label>
+          <input type="text" class="form-control" id="reg-address" name="direccion" />
+          <div class="mv-field-error" data-error-for="direccion"></div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-0">
+        <div class="col-sm-6">
+          <label for="reg-password" class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="reg-password" name="password"
+                 autocomplete="new-password" required />
+          <div class="mv-field-error" data-error-for="password"></div>
+        </div>
+        <div class="col-sm-6">
+          <label for="reg-password2" class="form-label">Repetir contraseña</label>
+          <input type="password" class="form-control" id="reg-password2" name="password2"
+                 autocomplete="new-password" required />
+          <div class="mv-field-error" data-error-for="password2"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-cta w-100 mt-3" id="register-submit">Registrarme</button>
+    </form>
+
+    <p class="mv-auth-switch">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'web:login' %}">Inicia sesión</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'modules/auth/auth.js' %}"></script>
+{% endblock %}

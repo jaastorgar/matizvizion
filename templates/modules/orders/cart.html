@@ -1,0 +1,11 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Carrito — Óptica Matiz Visión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/orders/orders.css' %}" />{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">🛒 Tu carrito</h1>
+<div id="cart-container">
+  <div class="mv-empty">Cargando carrito…</div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/orders/cart.js' %}"></script>{% endblock %}

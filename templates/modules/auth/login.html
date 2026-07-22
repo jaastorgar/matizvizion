@@ -1,0 +1,46 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+
+{% block title %}Iniciar sesión — Óptica Matiz Visión{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="mv-auth-wrap">
+  <div class="mv-auth-card">
+    <h1>Iniciar sesión</h1>
+    <p class="text-secondary mb-3">Accede a tu cuenta de Matiz Visión.</p>
+
+    <div id="login-error" class="mv-form-error" role="alert"></div>
+
+    <form id="login-form" novalidate>
+      <div class="mb-3">
+        <label for="login-email" class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="login-email" name="email"
+               autocomplete="email" required />
+        <div class="mv-field-error" data-error-for="email"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="login-password" class="form-label">Contraseña</label>
+        <input type="password" class="form-control" id="login-password" name="password"
+               autocomplete="current-password" required />
+        <div class="mv-field-error" data-error-for="password"></div>
+      </div>
+
+      <button type="submit" class="btn btn-cta w-100" id="login-submit">Ingresar</button>
+    </form>
+
+    <p class="mv-auth-switch">
+      ¿No tienes cuenta?
+      <a href="{% url 'web:register' %}">Regístrate aquí</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'modules/auth/auth.js' %}"></script>
+{% endblock %}

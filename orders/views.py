@@ -12,19 +12,15 @@ from rest_framework.response import Response
 from accounts.permissions import IsVendedorUser
 from store.models import Producto
 
-from .models import (
-    Carrito,
-    HistorialEstado,
-    ItemCarrito,
-    ItemOrden,
-    Orden,
-)
+from .models import Carrito, HistorialEstado, ItemCarrito, ItemOrden, Orden
 from .serializers import ItemCarritoSerializer, OrdenSerializer
 
 
 class CarritoViewSet(viewsets.ModelViewSet):
     """
-    Permite al cliente autenticado gestionar los items de su carrito.
+    Permite al cliente autenticado gestionar los ítems de su carrito.
+    - Valida stock con bloqueo de fila (select_for_update) antes de agregar/editar.
+    - DELETE elimina un ítem del carrito.
     """
     serializer_class = ItemCarritoSerializer
     permission_classes = [IsAuthenticated]
@@ -48,23 +44,19 @@ class CarritoViewSet(viewsets.ModelViewSet):
         cantidad = serializer.validated_data.get('cantidad', 1)
 
         with transaction.atomic():
+            # Bloqueamos la fila del producto para leer stock real y evitar carrera
             producto = Producto.objects.select_for_update().get(pk=producto.pk)
 
             if producto.stock < cantidad:
                 raise ValidationError(
-                    {
-                        'cantidad': f'Stock insuficiente para {producto.nombre}.'
-                    }
+                    {'cantidad': f'Stock insuficiente para {producto.nombre}.'}
                 )
 
-            item = serializer.save(
-                carrito=carrito,
-                producto=producto
-            )
+            item = serializer.save(carrito=carrito, producto=producto)
 
         return Response(
             self.get_serializer(item).data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
     def update(self, request, *args, **kwargs):
@@ -72,29 +64,19 @@ class CarritoViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
 
         serializer = self.get_serializer(
-            instance,
-            data=request.data,
-            partial=partial
+            instance, data=request.data, partial=partial
         )
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            producto = serializer.validated_data.get(
-                'producto',
-                instance.producto
-            )
+            producto = serializer.validated_data.get('producto', instance.producto)
             producto = Producto.objects.select_for_update().get(pk=producto.pk)
 
-            cantidad = serializer.validated_data.get(
-                'cantidad',
-                instance.cantidad
-            )
+            cantidad = serializer.validated_data.get('cantidad', instance.cantidad)
 
             if producto.stock < cantidad:
                 raise ValidationError(
-                    {
-                        'cantidad': f'Stock insuficiente para {producto.nombre}.'
-                    }
+                    {'cantidad': f'Stock insuficiente para {producto.nombre}.'}
                 )
 
             item = serializer.save(producto=producto)
@@ -106,10 +88,12 @@ class OrdenViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     """
-    Permite al cliente crear órdenes desde su carrito y consultar sus propias órdenes.
+    - El cliente crea órdenes desde su carrito (POST) y consulta las suyas (GET).
+    - NO expone PUT/PATCH/DELETE: una orden no se edita a mano, cambia de estado
+      por el flujo de pago (payments) o por el panel del vendedor (operaciones).
     """
     serializer_class = OrdenSerializer
     permission_classes = [IsAuthenticated]
@@ -119,7 +103,7 @@ class OrdenViewSet(
             cliente=self.request.user
         ).select_related('cliente').prefetch_related(
             'items__producto',
-            'historial'
+            'historial',
         ).order_by('-creado_en')
 
     @transaction.atomic
@@ -129,73 +113,61 @@ class OrdenViewSet(
         ).prefetch_related('items__producto').first()
 
         if not carrito or not carrito.items.exists():
-            raise ValidationError(
-                {
-                    'carrito': 'El carrito está vacío.'
-                }
-            )
+            raise ValidationError({'carrito': 'El carrito está vacío.'})
 
         items = list(carrito.items.select_related('producto').all())
 
+        # Agrupamos cantidades por producto (por si hubiera duplicados en el carrito)
         cantidades_por_producto = defaultdict(int)
-
         for item in items:
             cantidades_por_producto[item.producto_id] += item.cantidad
 
+        # Bloqueamos todas las filas de producto involucradas de una vez
         productos = {
-            producto.pk: producto
-            for producto in Producto.objects.select_for_update().filter(
+            p.pk: p
+            for p in Producto.objects.select_for_update().filter(
                 pk__in=cantidades_por_producto.keys()
             )
         }
 
-        # Validar existencia y stock
+        # Validamos existencia y stock
         for producto_id, cantidad_total in cantidades_por_producto.items():
             producto = productos.get(producto_id)
-
             if not producto:
                 raise ValidationError(
-                    {
-                        'producto': 'Uno de los productos del carrito ya no existe.'
-                    }
+                    {'producto': 'Uno de los productos del carrito ya no existe.'}
                 )
-
             if cantidad_total <= 0:
-                raise ValidationError(
-                    {
-                        'cantidad': 'La cantidad debe ser mayor que cero.'
-                    }
-                )
-
+                raise ValidationError({'cantidad': 'La cantidad debe ser mayor que cero.'})
             if producto.stock < cantidad_total:
                 raise ValidationError(
-                    {
-                        'stock': f'Stock insuficiente para {producto.nombre}.'
-                    }
+                    {'stock': f'Stock insuficiente para {producto.nombre}.'}
                 )
 
+        # Total con precio congelado del momento
         total_orden = sum(
             (
-                productos[producto_id].precio * cantidad_total
-                for producto_id, cantidad_total in cantidades_por_producto.items()
+                productos[pid].precio * cant
+                for pid, cant in cantidades_por_producto.items()
             ),
-            Decimal('0')
+            Decimal('0'),
         )
 
         orden = Orden.objects.create(
             cliente=request.user,
             total=total_orden,
-            estado=Orden.Estado.PENDIENTE
+            estado=Orden.Estado.PENDIENTE,
         )
 
+        # Registro del estado inicial en el historial
         HistorialEstado.objects.create(
             orden=orden,
             estado_anterior='',
             estado_nuevo=Orden.Estado.PENDIENTE,
-            usuario=request.user
+            usuario=request.user,
         )
 
-        # Crear items de orden y descontar stock
+        # Creamos los ítems de la orden (precio inmutable) y descontamos stock
         for producto_id, cantidad_total in cantidades_por_producto.items():
             producto = productos[producto_id]
 
@@ -203,31 +175,28 @@ class OrdenViewSet(
                 orden=orden,
                 producto=producto,
                 precio_unitario=producto.precio,
-                cantidad=cantidad_total
+                cantidad=cantidad_total,
             )
 
             producto.stock = F('stock') - cantidad_total
             producto.save(update_fields=['stock'])
 
-        # Vaciar carrito
+        # Vaciamos el carrito una vez creada la orden
         carrito.items.all().delete()
 
         serializer = self.get_serializer(orden)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class OperacionOrdenViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     """
-    Panel para vendedores.
-    Permite ver órdenes operativas y actualizar su estado de entrega.
+    Panel del vendedor/admin:
+    - Lista órdenes operativas (PAGADA / EN_PREPARACION / ENVIADA).
+    - Permite avanzar el estado de entrega con transiciones válidas.
     """
     serializer_class = OrdenSerializer
     permission_classes = [IsVendedorUser]
@@ -241,36 +210,30 @@ class OperacionOrdenViewSet(
             ]
         ).select_related('cliente').prefetch_related(
             'items__producto',
-            'historial'
+            'historial',
         ).order_by('creado_en')
 
     @action(detail=True, methods=['patch'], url_path='actualizar-entrega')
     def actualizar_entrega(self, request, pk=None):
         nuevo_estado = request.data.get('estado')
-
         if not nuevo_estado:
             return Response(
-                {
-                    'error': 'Debes enviar el campo "estado".'
-                },
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': 'Debes enviar el campo "estado".'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         orden = self.get_object()
 
         try:
             with transaction.atomic():
+                # Re-bloqueamos la fila dentro de la transacción
                 orden = Orden.objects.select_for_update().get(pk=orden.pk)
+                # cambiar_estado valida la transición y escribe el HistorialEstado
                 orden.cambiar_estado(
                     nuevo_estado=nuevo_estado,
-                    usuario=request.user
+                    usuario=request.user,
                 )
         except ValueError as error:
-            return Response(
-                {
-                    'error': str(error)
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(self.get_serializer(orden).data)

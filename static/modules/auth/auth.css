@@ -1,0 +1,72 @@
+/* =========================================================
+   Óptica Matiz Visión — auth.css (login / registro)
+   Usa los tokens oficiales de ui_ux_matiz_vision.html
+   ========================================================= */
+
+.mv-auth-wrap {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lead-light);
+  border-radius: var(--radius);
+  padding: 2rem 1rem;
+}
+
+.mv-auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.mv-auth-card h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.mv-auth-card .form-label {
+  font-weight: 600;
+  color: var(--lead-dark);
+  font-size: 0.9rem;
+}
+
+.mv-auth-card .form-control {
+  border-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.mv-auth-card .form-control:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.18);
+}
+
+/* Contenedor de errores (por campo y general) */
+.mv-field-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  min-height: 1rem;
+}
+
+.mv-form-error {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: var(--danger);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+.mv-form-error:empty { display: none; }
+
+.mv-auth-switch {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--lead-muted, #6B7280);
+}
