@@ -14,4 +14,6 @@ urlpatterns = [
     path('citas/', views.reserva, name='reserva'),
     path('panel/', views.dashboard, name='dashboard'),
     path('perfil/', views.perfil, name='perfil'),
+    path('seguimiento/', views.seguimiento, name='seguimiento'),
+    path('seguir/', views.seguir, name='seguir'),
 ]

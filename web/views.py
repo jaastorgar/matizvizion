@@ -32,3 +32,9 @@ def dashboard(request):
 
 def perfil(request):
     return render(request, 'modules/auth/perfil.html')
+
+def seguimiento(request):
+    return render(request, 'modules/orders/seguimiento.html')
+
+def seguir(request):
+    return render(request, 'modules/orders/seguir.html')
