@@ -5,6 +5,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'modules/web/home.css' %}" />
+<style>
+  .mv-trackbox { background: var(--lead-light); border-radius: var(--radius); padding: 2.25rem 1.25rem; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -68,33 +71,26 @@
         <button type="button" data-bs-target="#testiCarousel" data-bs-slide-to="2" aria-label="Comentario 3"></button>
       </div>
       <div class="carousel-inner">
-        <div class="carousel-item active">
-          <div class="mv-testi-card">
-            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="mv-testi-quote">Me atendieron increíble, el examen visual fue súper completo y mis lentes llegaron en dos días. Cien por ciento recomendado.</p>
-            <div class="mv-testi-author mt-3">Camila R.</div>
-            <div class="mv-testi-loc">Providencia</div>
-          </div>
-        </div>
-        <div class="carousel-item">
-          <div class="mv-testi-card">
-            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="mv-testi-quote">Compré mis lentes de sol polarizados y la diferencia se nota al instante. El pago con Webpay fue rapidísimo y seguro.</p>
-            <div class="mv-testi-author mt-3">Diego M.</div>
-            <div class="mv-testi-loc">Santiago Centro</div>
-          </div>
-        </div>
-        <div class="carousel-item">
-          <div class="mv-testi-card">
-            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-            <p class="mv-testi-quote">Agendé mi cita online en un minuto y el tecnólogo fue muy profesional. Por fin una óptica que se entiende con la tecnología.</p>
-            <div class="mv-testi-author mt-3">Francisca L.</div>
-            <div class="mv-testi-loc">Ñuñoa</div>
-          </div>
-        </div>
+        <div class="carousel-item active"><div class="mv-testi-card"><div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div><p class="mv-testi-quote">Me atendieron increíble, el examen visual fue súper completo y mis lentes llegaron en dos días. Cien por ciento recomendado.</p><div class="mv-testi-author mt-3">Camila R.</div><div class="mv-testi-loc">Providencia</div></div></div>
+        <div class="carousel-item"><div class="mv-testi-card"><div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div><p class="mv-testi-quote">Compré mis lentes de sol polarizados y la diferencia se nota al instante. El pago con Webpay fue rapidísimo y seguro.</p><div class="mv-testi-author mt-3">Diego M.</div><div class="mv-testi-loc">Santiago Centro</div></div></div>
+        <div class="carousel-item"><div class="mv-testi-card"><div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div><p class="mv-testi-quote">Agendé mi cita online en un minuto y el tecnólogo fue muy profesional. Por fin una óptica que se entiende con la tecnología.</p><div class="mv-testi-author mt-3">Francisca L.</div><div class="mv-testi-loc">Ñuñoa</div></div></div>
       </div>
       <button class="carousel-control-prev" type="button" data-bs-target="#testiCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span></button>
       <button class="carousel-control-next" type="button" data-bs-target="#testiCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Siguiente</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="reveal container mb-5">
+  <div class="mv-trackbox text-center">
+    <h2 class="mv-section-title h3"><i class="bi bi-geo-alt"></i> ¿Ya compraste? Rastrea tu pedido</h2>
+    <p class="mv-section-sub mx-auto mb-3">Ingresa el código de tu pedido (ej. MV-2026-48271) y te llevamos a su seguimiento. No necesitas iniciar sesión.</p>
+    <form action="/seguir/" method="get" class="d-flex gap-2 justify-content-center flex-wrap mx-auto" style="max-width:520px;">
+      <input type="text" name="codigo" class="form-control" placeholder="MV-2026-XXXXX" autocomplete="off" required />
+      <button type="submit" class="btn btn-cta"><i class="bi bi-search"></i> Rastrear</button>
+    </form>
+    <div id="track-mine" class="mt-3" style="display:none;">
+      <a href="/mis-compras/" class="btn btn-outline-mv btn-sm"><i class="bi bi-bag-check"></i> Ver mis compras</a>
     </div>
   </div>
 </section>
@@ -113,4 +109,13 @@
 
 {% block extra_js %}
 <script src="{% static 'modules/web/home.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var MV = window.MV;
+    if (MV && MV.auth && MV.auth.isAuthenticated()) {
+      var m = document.getElementById('track-mine');
+      if (m) m.style.display = '';
+    }
+  });
+</script>
 {% endblock %}

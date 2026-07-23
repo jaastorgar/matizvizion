@@ -1,0 +1,16 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Mis citas — Matizvisión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/auth/perfil.css' %}" />{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h1 class="h3 mb-0"><i class="bi bi-heart-pulse"></i> Mis citas</h1>
+      <a href="/citas/" class="btn btn-cta btn-sm"><i class="bi bi-calendar-plus"></i> Agendar cita</a>
+    </div>
+    <div id="mcit-list"><div class="mv-empty">Cargando tus citas…</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/appointments/mis_citas.js' %}"></script>{% endblock %}

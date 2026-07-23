@@ -26,3 +26,5 @@
 .mv-cita-actions .no:hover { background: var(--danger); color: #fff; }
 .mv-cita-actions .cancel { color: var(--lead-muted, #6B7280); }
 .mv-empty { color: var(--lead-muted, #6B7280); padding: 1.5rem 0; text-align: center; }
+.mv-badge.LISTO_PARA_RETIRO { background: rgba(16,185,129,.22); color: var(--green-dark); }
+.mv-badge.ENTREGADA { background: rgba(6,95,70,.15); color: var(--green-dark); }

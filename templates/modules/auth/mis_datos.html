@@ -1,0 +1,40 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Mis datos — Matizvisión{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />
+<link rel="stylesheet" href="{% static 'modules/auth/perfil.css' %}" />
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3"><i class="bi bi-pencil-square"></i> Mis datos</h1>
+    <div class="mv-card mv-id-card p-4 mb-4">
+      <div class="d-flex align-items-center gap-3">
+        <div class="mv-avatar" id="pf-avatar">?</div>
+        <div>
+          <h2 class="h4 mb-1" id="pf-name">…</h2>
+          <div class="text-secondary" id="pf-email">…</div>
+          <div class="mt-2"><span class="mv-rut-chip"><i class="bi bi-lock-fill"></i> RUT: <span id="pf-rut-ro">—</span></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mv-card p-4">
+      <h2 class="h6 text-uppercase text-muted mb-3">Datos de contacto</h2>
+      <form id="pf-form" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="pf-tel">Teléfono</label>
+          <input type="tel" class="form-control" id="pf-tel" placeholder="+56912345678" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="pf-dir">Dirección</label>
+          <input type="text" class="form-control" id="pf-dir" />
+        </div>
+        <button type="submit" class="btn btn-cta w-100" id="pf-save">Guardar cambios</button>
+        <p class="mv-note mt-2 mb-0">El RUT no se puede modificar por seguridad. Si necesitas corregirlo, contacta a soporte.</p>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/mis_datos.js' %}"></script>{% endblock %}

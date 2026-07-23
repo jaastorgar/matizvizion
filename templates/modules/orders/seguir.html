@@ -1,0 +1,56 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Seguir mi pedido — Matizvisión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/orders/seguimiento.css' %}" />{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="mv-track-card p-4">
+      <h1 class="h4 mb-1"><i class="bi bi-search"></i> Seguir mi pedido</h1>
+      <p class="text-secondary mb-3">Ingresa el código de tu pedido (ej. MV-2026-48271) para ver su estado. No necesitas iniciar sesión.</p>
+      <form id="seg-form" class="d-flex gap-2" novalidate>
+        <input type="text" id="seg-code" class="form-control" placeholder="MV-2026-XXXXX" autocomplete="off" />
+        <button type="submit" class="btn btn-cta" id="seg-btn">Buscar</button>
+      </form>
+      <div id="seg-result" class="mt-3"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  var MV = window.MV; if (!MV || !MV.api) return;
+  var api = MV.api, esc = MV.escape;
+  var money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format;
+  function fecha(iso){ try { return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return iso || '—'; } }
+  var LABEL = { PENDIENTE:'Pedido creado', PAGADA:'Pagado', EN_PREPARACION:'En preparación', LISTO_PARA_RETIRO:'Listo para retiro', ENVIADA:'Enviado', ENTREGADA:'Entregado' };
+  var TXT = { PENDIENTE:'Pendiente', PAGADA:'Pagada', EN_PREPARACION:'En preparación', LISTO_PARA_RETIRO:'Listo para retiro', ENVIADA:'Enviada', ENTREGADA:'Entregada', CANCELADA:'Cancelada', FALLIDA:'Fallida' };
+  var RETIRO = ['PENDIENTE','PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO','ENTREGADA'];
+  var DESPACHO = ['PENDIENTE','PAGADA','EN_PREPARACION','ENVIADA','ENTREGADA'];
+  function seq(o){ return o.estado === 'ENVIADA' ? DESPACHO : RETIRO; }
+  function tl(o){ var s = seq(o), cur = s.indexOf(o.estado); if (cur < 0) return ''; return '<ol class="mv-timeline">' + s.map(function (st, i){ var c = i < cur ? 'done' : (i === cur ? 'done current' : ''); var n = i < cur ? '<i class="bi bi-check-lg"></i>' : (i + 1); return '<li class="mv-tl-step ' + c + '"><span class="mv-tl-dot">' + n + '</span><span class="mv-tl-label">' + esc(LABEL[st] || st) + '</span></li>'; }).join('') + '</ol>'; }
+  function render(o){
+    var st = o.estado;
+    var banner = st === 'CANCELADA' ? '<div class="mv-track-banner cancel">Pedido cancelado.</div>' : (st === 'FALLIDA' ? '<div class="mv-track-banner fail">El pago no pudo completarse.</div>' : '');
+    var lines = (o.items || []).map(function (it){ return '<div class="mv-track-line"><span>' + esc(it.nombre) + ' <span class="mv-track-sku">' + esc(it.sku || '') + '</span> × ' + it.cantidad + '</span></div>'; }).join('');
+    return '<div class="mv-track-head" style="border-radius:10px;margin-bottom:1rem;"><div><span class="mv-track-code">' + esc(o.codigo) + '</span> <span class="mv-track-date">· ' + fecha(o.creado_en) + '</span></div><span class="mv-badge ' + st + '">' + esc(TXT[st] || st) + '</span></div>' + banner + tl(o) + '<div style="margin-top:1rem;">' + lines + '<div class="mv-track-total"><span>Total</span><span>' + money(o.total) + '</span></div></div>';
+  }
+  var form = document.getElementById('seg-form'), res = document.getElementById('seg-result'), inp = document.getElementById('seg-code'), btn = document.getElementById('seg-btn');
+  function buscar(){
+    var code = (inp.value || '').trim();
+    if (!code) { res.innerHTML = '<div class="mv-track-banner fail">Escribe un código de pedido.</div>'; return; }
+    btn.disabled = true; btn.textContent = 'Buscando…'; res.innerHTML = '';
+    api.get('/orders/track/?codigo=' + encodeURIComponent(code)).then(function (r){
+      btn.disabled = false; btn.textContent = 'Buscar';
+      if (r.ok && r.data) { res.innerHTML = render(r.data); }
+      else { res.innerHTML = '<div class="mv-track-banner fail">' + esc((r.data && r.data.error) || 'No encontramos ese pedido.') + '</div>'; }
+    });
+  }
+  form.addEventListener('submit', function (e){ e.preventDefault(); buscar(); });
+  // Si llegamos desde el home con ?codigo=..., buscamos automaticamente
+  var pre = (new URLSearchParams(location.search).get('codigo') || '').trim();
+  if (pre) { inp.value = pre; buscar(); }
+})();
+</script>
+{% endblock %}

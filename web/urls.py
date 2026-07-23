@@ -16,4 +16,7 @@ urlpatterns = [
     path('perfil/', views.perfil, name='perfil'),
     path('seguimiento/', views.seguimiento, name='seguimiento'),
     path('seguir/', views.seguir, name='seguir'),
+    path('mis-compras/', views.mis_compras, name='mis_compras'),
+    path('mis-citas/', views.mis_citas, name='mis_citas'),
+    path('mis-datos/', views.mis_datos, name='mis_datos'),
 ]

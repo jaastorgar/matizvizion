@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
 def home(request):
@@ -31,10 +31,20 @@ def dashboard(request):
     return render(request, 'modules/admin/dashboard.html')
 
 def perfil(request):
-    return render(request, 'modules/auth/perfil.html')
+    # Compatibilidad: /perfil/ ahora redirige a la pagina propia de datos
+    return redirect('web:mis_datos')
 
 def seguimiento(request):
     return render(request, 'modules/orders/seguimiento.html')
 
 def seguir(request):
     return render(request, 'modules/orders/seguir.html')
+
+def mis_compras(request):
+    return render(request, 'modules/orders/mis_compras.html')
+
+def mis_citas(request):
+    return render(request, 'modules/appointments/mis_citas.html')
+
+def mis_datos(request):
+    return render(request, 'modules/auth/mis_datos.html')

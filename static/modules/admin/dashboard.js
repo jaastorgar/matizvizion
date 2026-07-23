@@ -6,19 +6,19 @@
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
   function todayStr(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function norm(s){ return (s || '').toUpperCase().replace(/[.\-\s]/g, ''); }
-  var NEXT = { 'PAGADA': 'EN_PREPARACION', 'EN_PREPARACION': 'ENVIADA', 'ENVIADA': 'ENTREGADA' };
-  var LABEL = { 'PAGADA': 'Marcar en preparación', 'EN_PREPARACION': 'Marcar enviada', 'ENVIADA': 'Marcar entregada' };
-  var STATE_TXT = { 'PAGADA': 'Pagada', 'EN_PREPARACION': 'En preparación', 'ENVIADA': 'Enviada' };
+  var NEXT = { 'PAGADA': 'EN_PREPARACION', 'EN_PREPARACION': 'LISTO_PARA_RETIRO', 'LISTO_PARA_RETIRO': 'ENTREGADA', 'ENVIADA': 'ENTREGADA' };
+  var LABEL = { 'PAGADA': 'Marcar en preparación', 'EN_PREPARACION': 'Listo para retiro', 'LISTO_PARA_RETIRO': 'Marcar entregada', 'ENVIADA': 'Marcar entregada' };
+  var STATE_TXT = { 'PAGADA': 'Pagada', 'EN_PREPARACION': 'En preparación', 'LISTO_PARA_RETIRO': 'Listo para retiro', 'ENVIADA': 'Enviada', 'ENTREGADA': 'Entregada' };
   var ORD = [], allCitas = [];
 
   function layout(){
     root.innerHTML =
-      '<h1 class="h3 mb-3"><i class="bi bi-clipboard-data"></i> Panel de operaciones</h1>' +
+      '<h1 class="h3 mb-3">📋 Panel de operaciones</h1>' +
       '<div class="mv-dash-wrap">' +
         '<aside class="mv-dash-side">' +
-          '<button class="mv-side-item active" data-pane="pedidos"><i class="bi bi-box-seam"></i> Pedidos por Entregar</button>' +
-          '<button class="mv-side-item" data-pane="citas"><i class="bi bi-heart-pulse"></i> Citas del Día</button>' +
-          '<button class="mv-side-item" data-pane="rut"><i class="bi bi-search"></i> Buscar por RUT</button>' +
+          '<button class="mv-side-item active" data-pane="pedidos">📦 Pedidos por Entregar</button>' +
+          '<button class="mv-side-item" data-pane="citas">🩺 Citas del Día</button>' +
+          '<button class="mv-side-item" data-pane="rut">🔍 Buscar por RUT</button>' +
         '</aside>' +
         '<section>' +
           '<div class="mv-dash-panel" id="pane-pedidos"><h2 class="h5 mb-3">Gestión de entregas</h2><div id="pedidos-body"></div></div>' +
@@ -44,9 +44,9 @@
     var rows = list.map(function (o){
       var st = o.estado;
       var acc = NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '">' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>';
-      return '<tr><td>#' + o.id + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
+      return '<tr><td>' + esc(o.codigo || ('#' + o.id)) + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
     }).join('');
-    body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Orden</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Código</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   function renderRut(v){ renderPedidos(v); }
   function renderCitas(){
@@ -59,8 +59,8 @@
       var acc = '';
       if (st === 'AGENDADA' || st === 'CONFIRMADA') {
         acc = '<div class="mv-cita-actions">' +
-          '<button class="ok" data-cita="' + c.id + '" data-cstate="COMPLETADA"><i class="bi bi-check-lg"></i> Asistió</button>' +
-          '<button class="no" data-cita="' + c.id + '" data-cstate="NO_ASISTIO"><i class="bi bi-x-lg"></i> No asistió</button>' +
+          '<button class="ok" data-cita="' + c.id + '" data-cstate="COMPLETADA">✓ Asistió</button>' +
+          '<button class="no" data-cita="' + c.id + '" data-cstate="NO_ASISTIO">✗ No asistió</button>' +
           '<button class="cancel" data-cita="' + c.id + '" data-cstate="CANCELADA">Cancelar</button>' +
         '</div>';
       }

@@ -59,7 +59,6 @@
     if (str === null || str === undefined) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  /* Formatea un RUT a 11.111.111-1 (acepta cualquier formato de entrada). */
   function formatRut(rut) {
     if (rut === null || rut === undefined) return '';
     var clean = String(rut).toUpperCase().replace(/[^0-9K]/g, '');
