@@ -13,12 +13,12 @@
 
   function layout(){
     root.innerHTML =
-      '<h1 class="h3 mb-3">📋 Panel de operaciones</h1>' +
+      '<h1 class="h3 mb-3"><i class="bi bi-clipboard-data"></i> Panel de operaciones</h1>' +
       '<div class="mv-dash-wrap">' +
         '<aside class="mv-dash-side">' +
-          '<button class="mv-side-item active" data-pane="pedidos">📦 Pedidos por Entregar</button>' +
-          '<button class="mv-side-item" data-pane="citas">🩺 Citas del Día</button>' +
-          '<button class="mv-side-item" data-pane="rut">🔍 Buscar por RUT</button>' +
+          '<button class="mv-side-item active" data-pane="pedidos"><i class="bi bi-box-seam"></i> Pedidos por Entregar</button>' +
+          '<button class="mv-side-item" data-pane="citas"><i class="bi bi-heart-pulse"></i> Citas del Día</button>' +
+          '<button class="mv-side-item" data-pane="rut"><i class="bi bi-search"></i> Buscar por RUT</button>' +
         '</aside>' +
         '<section>' +
           '<div class="mv-dash-panel" id="pane-pedidos"><h2 class="h5 mb-3">Gestión de entregas</h2><div id="pedidos-body"></div></div>' +
@@ -59,8 +59,8 @@
       var acc = '';
       if (st === 'AGENDADA' || st === 'CONFIRMADA') {
         acc = '<div class="mv-cita-actions">' +
-          '<button class="ok" data-cita="' + c.id + '" data-cstate="COMPLETADA">✓ Asistió</button>' +
-          '<button class="no" data-cita="' + c.id + '" data-cstate="NO_ASISTIO">✗ No asistió</button>' +
+          '<button class="ok" data-cita="' + c.id + '" data-cstate="COMPLETADA"><i class="bi bi-check-lg"></i> Asistió</button>' +
+          '<button class="no" data-cita="' + c.id + '" data-cstate="NO_ASISTIO"><i class="bi bi-x-lg"></i> No asistió</button>' +
           '<button class="cancel" data-cita="' + c.id + '" data-cstate="CANCELADA">Cancelar</button>' +
         '</div>';
       }

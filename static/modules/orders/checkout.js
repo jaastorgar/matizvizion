@@ -36,9 +36,9 @@
       '<div class="mv-summary-card p-4">' + rows +
         '<div class="mv-summary-total"><span>Total a pagar</span><span>' + money(total) + '</span></div>' +
       '</div>' +
-      '<div class="mv-secure-note my-3">🔒 Serás redirigido de forma segura a la pasarela Webpay Plus de Transbank para completar la transacción.</div>' +
+      '<div class="mv-secure-note my-3"><i class="bi bi-lock-fill"></i> Serás redirigido de forma segura a la pasarela Webpay Plus de Transbank para completar la transacción.</div>' +
       '<div id="checkout-error" class="mv-result error" style="display:none;margin:0 0 1rem;padding:1rem;"></div>' +
-      '<button id="pay-btn" class="btn btn-cta w-100 btn-lg">Pagar con Webpay Plus 💳</button>' +
+      '<button id="pay-btn" class="btn btn-cta w-100 btn-lg">Pagar con Webpay Plus <i class="bi bi-credit-card-2-front-fill"></i></button>' +
       '<div class="text-center mt-2"><a href="/carrito/" class="text-secondary">← Volver al carrito</a></div>';
 
     document.getElementById('pay-btn').addEventListener('click', pay);
@@ -58,7 +58,7 @@
     api.post('/orders/ordenes/', { body: {} }).then(function (rOrden) {
       if (!rOrden.ok) {
         var m = (rOrden.data && (rOrden.data.error || rOrden.data.detail)) || 'No se pudo crear la orden.';
-        showError(m); btn.disabled = false; btn.textContent = 'Pagar con Webpay Plus 💳';
+        showError(m); btn.disabled = false; btn.textContent = 'Pagar con Webpay Plus';
         return;
       }
       var ordenId = rOrden.data.id;
@@ -68,7 +68,7 @@
       return api.post('/payments/webpay/create/', { body: { orden_id: ordenId } }).then(function (rPago) {
         if (!rPago.ok || !rPago.data || !rPago.data.url || !rPago.data.token) {
           var m = (rPago.data && (rPago.data.error || rPago.data.detail)) || 'No se pudo iniciar el pago en Transbank.';
-          showError(m); btn.disabled = false; btn.textContent = 'Pagar con Webpay Plus 💳';
+          showError(m); btn.disabled = false; btn.textContent = 'Pagar con Webpay Plus';
           return;
         }
         // 3) POST automático a la pasarela (formulario oculto)

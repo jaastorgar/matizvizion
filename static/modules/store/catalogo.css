@@ -30,3 +30,10 @@
 .mv-product-card .btn-add:disabled { opacity: .55; }
 
 .mv-empty { text-align: center; color: var(--lead-muted, #6B7280); padding: 3rem 1rem; }
+/* Control de cantidad [− N +] en tarjeta de catalogo */
+.mv-add-slot { margin-top: auto; }
+.mv-qty-card { display: flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid var(--green-primary); border-radius: var(--radius); padding: .35rem; background: #fff; }
+.mv-qty-card button { width: 34px; height: 34px; border: none; background: var(--green-primary); color: #fff; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.mv-qty-card button:hover:not(:disabled) { background: var(--green-dark); }
+.mv-qty-card button:disabled { opacity: .45; cursor: not-allowed; }
+.mv-qty-card .mv-q-num { min-width: 28px; text-align: center; font-weight: 700; font-family: var(--font-head); color: var(--lead-dark); }

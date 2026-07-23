@@ -8,7 +8,7 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-9">
-    <h1 class="h3 mb-3">⚙️ Mi perfil</h1>
+    <h1 class="h3 mb-3"><i class="bi bi-gear-fill"></i> Mi perfil</h1>
 
     <div class="mv-card mv-id-card p-4 mb-4">
       <div class="d-flex align-items-center gap-3">
@@ -16,26 +16,26 @@
         <div>
           <h2 class="h4 mb-1" id="pf-name">…</h2>
           <div class="text-secondary" id="pf-email">…</div>
-          <div class="mt-2"><span class="mv-rut-chip">🔒 RUT: <span id="pf-rut-ro">—</span></span></div>
+          <div class="mt-2"><span class="mv-rut-chip"><i class="bi bi-lock-fill"></i> RUT: <span id="pf-rut-ro">—</span></span></div>
         </div>
       </div>
     </div>
 
     <ul class="nav nav-tabs mv-tabs" id="pf-tabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="t-pedidos" data-bs-toggle="tab" data-bs-target="#tab-pedidos" type="button" role="tab">📦 Mis pedidos <span class="mv-tab-count" id="cnt-pedidos">0</span></button>
+        <button class="nav-link active" id="t-pedidos" data-bs-toggle="tab" data-bs-target="#tab-pedidos" type="button" role="tab"><i class="bi bi-box-seam"></i> Mis pedidos <span class="mv-tab-count" id="cnt-pedidos">0</span></button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="t-citas" data-bs-toggle="tab" data-bs-target="#tab-citas" type="button" role="tab">🩺 Mis citas <span class="mv-tab-count" id="cnt-citas">0</span></button>
+        <button class="nav-link" id="t-citas" data-bs-toggle="tab" data-bs-target="#tab-citas" type="button" role="tab"><i class="bi bi-heart-pulse"></i> Mis citas <span class="mv-tab-count" id="cnt-citas">0</span></button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="t-contacto" data-bs-toggle="tab" data-bs-target="#tab-contacto" type="button" role="tab">✏️ Datos de contacto</button>
+        <button class="nav-link" id="t-contacto" data-bs-toggle="tab" data-bs-target="#tab-contacto" type="button" role="tab"><i class="bi bi-pencil-square"></i> Datos de contacto</button>
       </li>
     </ul>
 
     <div class="tab-content mv-tab-content" id="pf-tabcontent">
-      <div class="tab-pane fade show active" id="tab-pedidos" role="tabpanel"><div class="mv-empty"><span class="ico">⏳</span>Cargando pedidos…</div></div>
-      <div class="tab-pane fade" id="tab-citas" role="tabpanel"><div class="mv-empty"><span class="ico">⏳</span>Cargando citas…</div></div>
+      <div class="tab-pane fade show active" id="tab-pedidos" role="tabpanel"><div class="mv-empty"><span class="ico"><i class="bi bi-hourglass-split"></i></span>Cargando pedidos…</div></div>
+      <div class="tab-pane fade" id="tab-citas" role="tabpanel"><div class="mv-empty"><span class="ico"><i class="bi bi-hourglass-split"></i></span>Cargando citas…</div></div>
       <div class="tab-pane fade" id="tab-contacto" role="tabpanel">
         <div class="mv-card p-4">
           <form id="pf-form" novalidate>

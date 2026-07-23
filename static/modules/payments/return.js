@@ -9,7 +9,7 @@
   var token = dataEl ? (dataEl.getAttribute('data-token') || '') : '';
 
   function paint(kind, title, msg, links) {
-    var icon = kind === 'success' ? '✅' : (kind === 'error' ? '❌' : '⚠️');
+    var icon = kind === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : (kind === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : '<i class="bi bi-exclamation-triangle-fill"></i>');
     var cls = kind === 'success' ? 'success' : 'error';
     var btns = (links || []).map(function (l) { return '<a class="btn ' + (l.primary ? 'btn-cta' : 'btn-outline-mv') + ' mx-1" href="' + l.href + '">' + esc(l.text) + '</a>'; }).join('');
     container.innerHTML = '<div class="mv-result ' + cls + '"><div class="icon">' + icon + '</div><h1>' + esc(title) + '</h1><p class="text-secondary">' + esc(msg) + '</p><div class="mt-3">' + btns + '</div></div>';

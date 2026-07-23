@@ -5,7 +5,7 @@
 {% block content %}
 <div id="return-data" data-token="{{ token_ws }}"></div>
 <div id="return-container">
-  <div class="mv-result"><div class="icon">⏳</div><h1>Procesando tu pago…</h1><p class="text-secondary">Confirmando la transacción con Transbank.</p></div>
+  <div class="mv-result"><div class="icon"><i class="bi bi-hourglass-split"></i></div><h1>Procesando tu pago…</h1><p class="text-secondary">Confirmando la transacción con Transbank.</p></div>
 </div>
 {% endblock %}
 {% block extra_js %}<script src="{% static 'modules/payments/return.js' %}"></script>{% endblock %}

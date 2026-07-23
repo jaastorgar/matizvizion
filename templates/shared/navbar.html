@@ -1,6 +1,10 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg mv-navbar sticky-top">
   <div class="container">
-    <a class="navbar-brand" href="/">Óptica Matiz Visión</a>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <img src="{% static 'shared/img/logo.png' %}" alt="Matizvisión" style="height:42px;width:auto;" />
+      <span>Matizvisión</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mvNav"><span class="navbar-toggler-icon"></span></button>
     <div class="collapse navbar-collapse" id="mvNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -8,13 +12,23 @@
         <li class="nav-item nav-public d-none"><a class="nav-link" href="/citas/">Agendar cita</a></li>
       </ul>
       <ul class="navbar-nav align-items-lg-center">
-        <li class="nav-item nav-public d-none"><a class="nav-link position-relative" href="/carrito/">🛒 Carrito <span id="cart-badge" hidden>0</span></a></li>
+        <li class="nav-item nav-public d-none"><a class="nav-link position-relative" href="/carrito/"><i class="bi bi-cart3"></i> Carrito <span id="cart-badge" hidden>0</span></a></li>
         <li class="nav-item nav-guest d-none"><a class="nav-link" href="/login/">Ingresar</a></li>
         <li class="nav-item nav-guest d-none"><a class="btn btn-cta btn-sm ms-lg-2" href="/register/">Registrarme</a></li>
-        <li class="nav-item nav-auth d-none"><span class="nav-link">👤 <span id="nav-user-email">Cuenta</span></span></li>
-        <li class="nav-item nav-client d-none"><a class="nav-link" href="/perfil/">⚙️ Mi perfil</a></li>
-        <li class="nav-item nav-staff d-none"><a class="nav-link" href="/panel/">📋 Panel</a></li>
-        <li class="nav-item nav-auth d-none"><button class="btn btn-outline-mv btn-sm" id="nav-logout" type="button">Salir</button></li>
+        <li class="nav-item dropdown nav-auth d-none">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" id="navUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle"></i> <span id="nav-user-name">Cuenta</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUserMenu">
+            <li class="nav-client d-none"><a class="dropdown-item" href="/perfil/#pedidos"><i class="bi bi-box-seam me-2"></i>Mis Compras</a></li>
+            <li class="nav-client d-none"><a class="dropdown-item" href="/perfil/#citas"><i class="bi bi-heart-pulse me-2"></i>Mis Citas</a></li>
+            <li class="nav-client d-none"><a class="dropdown-item" href="/perfil/#contacto"><i class="bi bi-pencil-square me-2"></i>Mis Datos</a></li>
+            <li class="nav-client d-none"><hr class="dropdown-divider" /></li>
+            <li class="nav-staff d-none"><a class="dropdown-item" href="/panel/"><i class="bi bi-clipboard-data me-2"></i>Panel de operaciones</a></li>
+            <li class="nav-staff d-none"><hr class="dropdown-divider" /></li>
+            <li><button class="dropdown-item" id="nav-logout" type="button"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</button></li>
+          </ul>
+        </li>
       </ul>
     </div>
   </div>
@@ -24,7 +38,7 @@
     var MV = window.MV; if (!MV || !MV.me) return;
     function qsa(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
     function toggle(sel, show){ qsa(sel).forEach(function(e){ e.classList.toggle('d-none', !show); }); }
-    var emailEl = document.getElementById('nav-user-email');
+    var nameEl = document.getElementById('nav-user-name');
     var out = document.getElementById('nav-logout');
     MV.me().then(function (u) {
       var isAuth = !!u;
@@ -35,7 +49,10 @@
       toggle('.nav-auth', isAuth);
       toggle('.nav-client', isClient);
       toggle('.nav-staff', isStaff);
-      if (isAuth && emailEl) emailEl.textContent = u.email || 'Cuenta';
+      if (isAuth && nameEl) {
+        var dn = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
+        nameEl.textContent = dn || u.email || 'Cuenta';
+      }
     });
     if (out) out.addEventListener('click', function () { MV.auth.logout(true); });
   });

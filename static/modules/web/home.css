@@ -1,0 +1,36 @@
+/* Óptica Matiz Visión — home.css (landing) */
+@keyframes mvFadeUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+.mv-hero { animation: mvFadeUp .7s ease both; }
+body.js-reveal .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+body.js-reveal .reveal.in { opacity: 1; transform: none; }
+.mv-section-title { font-family: var(--font-head); font-weight: 800; color: var(--lead-dark); }
+.mv-section-sub { color: var(--lead-muted, #6B7280); max-width: 620px; }
+.mv-feat-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); overflow: hidden; transition: transform .14s ease, box-shadow .14s ease; }
+.mv-feat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 26px rgba(31,41,55,.13); }
+.mv-feat-emoji { font-size: 2.6rem; text-align: center; padding: 1.6rem 1rem; background: var(--lead-light); }
+.mv-feat-emoji i { font-size: 2.6rem; color: var(--green-dark); }
+.mv-feat-body { padding: 1rem; display: flex; flex-direction: column; flex: 1; }
+.mv-feat-cat { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--lead-muted, #6B7280); }
+.mv-feat-name { font-family: var(--font-head); font-weight: 600; color: var(--lead-dark); margin: .15rem 0 .5rem; min-height: 2.6rem; }
+.mv-feat-foot { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+.mv-feat-price { color: var(--green-dark); font-weight: 800; font-size: 1.2rem; font-family: var(--font-head); }
+.mv-feat-stock { color: var(--lead-muted, #6B7280); font-size: .8rem; }
+.mv-feat-card .btn { margin-top: auto; }
+.mv-mv-card { border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); padding: 2rem; height: 100%; transition: transform .14s ease; }
+.mv-mv-card:hover { transform: translateY(-4px); }
+.mv-mv-ico { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; background: var(--green-primary); margin-bottom: 1rem; }
+.mv-mv-card.vision .mv-mv-ico { background: var(--green-dark); }
+.mv-mv-card h3 { font-family: var(--font-head); font-weight: 700; }
+.mv-testi-wrap { background: var(--lead-light); border-radius: var(--radius); padding: 2.5rem 1rem; }
+.mv-testi-card { max-width: 720px; margin: 0 auto; text-align: center; padding: 0 1rem; }
+.mv-testi-quote { font-size: 1.2rem; line-height: 1.6; color: var(--lead-dark); font-style: italic; position: relative; }
+.mv-testi-quote::before { content: '\201C'; font-size: 3rem; color: var(--green-primary); line-height: 0; vertical-align: -0.4em; margin-right: .1em; }
+.mv-stars i { color: #f59e0b; }
+.mv-testi-author { font-weight: 700; color: var(--lead-dark); }
+.mv-testi-loc { color: var(--lead-muted, #6B7280); font-size: .88rem; }
+.mv-testi-wrap .carousel-control-prev-icon, .mv-testi-wrap .carousel-control-next-icon { filter: invert(28%) sepia(95%) saturate(500%) hue-rotate(120deg); }
+.mv-testi-wrap .carousel-indicators [data-bs-target] { background-color: var(--green-primary); }
+.mv-cta-band { background: linear-gradient(135deg, var(--green-primary), var(--green-dark)); border-radius: var(--radius); color: #fff; padding: 3rem 1.5rem; text-align: center; }
+.mv-cta-band h2 { color: #fff; font-family: var(--font-head); font-weight: 800; }
+.mv-cta-band .btn-light { font-family: var(--font-head); font-weight: 600; border-radius: var(--radius); color: var(--green-dark); }
+.mv-cta-band .btn-outline-light { border-radius: var(--radius); font-weight: 600; }

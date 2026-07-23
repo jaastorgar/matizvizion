@@ -1,9 +1,14 @@
 {% extends 'shared/base.html' %}
+{% load static %}
 
-{% block title %}Óptica Matiz Visión — Inicio{% endblock %}
+{% block title %}Matizvisión — Salud visual y tienda en línea{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/web/home.css' %}" />
+{% endblock %}
 
 {% block content %}
-<section class="bg-lead-light rounded-4 py-5 mb-4">
+<section class="mv-hero bg-lead-light rounded-4 py-5 mb-5">
   <div class="container text-center">
     <h1 class="display-5 fw-bold mb-3">Salud visual y tienda en línea</h1>
     <p class="lead text-secondary mb-4 mx-auto" style="max-width: 640px;">
@@ -16,26 +21,96 @@
     </div>
   </div>
 </section>
-<section class="container py-3">
+
+<section class="reveal container mb-5">
+  <div class="text-center mb-4">
+    <h2 class="mv-section-title h3">Productos destacados</h2>
+    <p class="mv-section-sub mx-auto mb-0">Lo más elegido por nuestros clientes esta temporada.</p>
+  </div>
+  <div id="feat-grid" class="row g-3">
+    <div class="col-12 text-center text-secondary py-4">Cargando destacados…</div>
+  </div>
+</section>
+
+<section class="reveal container mb-5">
+  <div class="text-center mb-4">
+    <h2 class="mv-section-title h3">Quiénes somos</h2>
+    <p class="mv-section-sub mx-auto mb-0">Más que una óptica: cuidamos cómo ves el mundo.</p>
+  </div>
   <div class="row g-4">
-    <div class="col-md-6"><div class="mv-card p-4 h-100"><h3 class="h5">👓 Tienda óptica</h3><p class="text-secondary mb-0">Catálogo con filtros por categoría y precio, carrito en tiempo real y pago seguro con Webpay Plus.</p></div></div>
-    <div class="col-md-6"><div class="mv-card p-4 h-100"><h3 class="h5">🩺 Examen visual</h3><p class="text-secondary mb-0">Agenda tu cita con un tecnólogo médico eligiendo sucursal, profesional y bloque horario disponible.</p></div></div>
+    <div class="col-md-6">
+      <div class="mv-mv-card mision">
+        <div class="mv-mv-ico"><i class="bi bi-bullseye"></i></div>
+        <h3>Nuestra Misión</h3>
+        <p class="text-secondary mb-0">Cuidar la salud visual de cada chileno con atención clínica de calidad y productos ópticos accesibles, combinando tecnología, transparencia y calidez humana en cada consulta y cada compra.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mv-mv-card vision">
+        <div class="mv-mv-ico"><i class="bi bi-eye"></i></div>
+        <h3>Nuestra Visión</h3>
+        <p class="text-secondary mb-0">Ser la óptica de referencia en Chile, donde <em>recuperar tus matices</em> significa recuperar calidad de vida, ofreciendo una experiencia digital y presencial impecable, cercana y confiable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="reveal container mb-5">
+  <div class="text-center mb-4">
+    <h2 class="mv-section-title h3">Lo que dicen nuestros clientes</h2>
+    <p class="mv-section-sub mx-auto mb-0">Historias reales de quienes ya recuperaron sus matices.</p>
+  </div>
+  <div class="mv-testi-wrap">
+    <div id="testiCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#testiCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Comentario 1"></button>
+        <button type="button" data-bs-target="#testiCarousel" data-bs-slide-to="1" aria-label="Comentario 2"></button>
+        <button type="button" data-bs-target="#testiCarousel" data-bs-slide-to="2" aria-label="Comentario 3"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <div class="mv-testi-card">
+            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="mv-testi-quote">Me atendieron increíble, el examen visual fue súper completo y mis lentes llegaron en dos días. Cien por ciento recomendado.</p>
+            <div class="mv-testi-author mt-3">Camila R.</div>
+            <div class="mv-testi-loc">Providencia</div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="mv-testi-card">
+            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="mv-testi-quote">Compré mis lentes de sol polarizados y la diferencia se nota al instante. El pago con Webpay fue rapidísimo y seguro.</p>
+            <div class="mv-testi-author mt-3">Diego M.</div>
+            <div class="mv-testi-loc">Santiago Centro</div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="mv-testi-card">
+            <div class="mv-stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+            <p class="mv-testi-quote">Agendé mi cita online en un minuto y el tecnólogo fue muy profesional. Por fin una óptica que se entiende con la tecnología.</p>
+            <div class="mv-testi-author mt-3">Francisca L.</div>
+            <div class="mv-testi-loc">Ñuñoa</div>
+          </div>
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#testiCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span></button>
+      <button class="carousel-control-next" type="button" data-bs-target="#testiCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Siguiente</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="reveal container mb-4">
+  <div class="mv-cta-band">
+    <h2 class="mb-2">¿Listo para recuperar tus matices?</h2>
+    <p class="mb-4 opacity-75">Explora el catálogo o agenda tu examen visual hoy mismo.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a href="/catalogo/" class="btn btn-light btn-lg px-4">Ver catálogo</a>
+      <a href="/citas/" class="btn btn-outline-light btn-lg px-4">Agendar cita</a>
+    </div>
   </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var MV = window.MV; if (!MV || !MV.me) return;
-    MV.me().then(function (u) {
-      if (!u) return;
-      var isStaff = (u.role === 'VENDEDOR' || u.role === 'ADMIN');
-      if (isStaff) { location.replace('/panel/'); return; }
-      var a1 = document.getElementById('home-cta-1'), a2 = document.getElementById('home-cta-2');
-      if (a1) { a1.href = '/catalogo/'; a1.textContent = 'Ir al catálogo'; }
-      if (a2) { a2.href = '/citas/'; a2.textContent = 'Agendar cita'; }
-    });
-  });
-</script>
+<script src="{% static 'modules/web/home.js' %}"></script>
 {% endblock %}

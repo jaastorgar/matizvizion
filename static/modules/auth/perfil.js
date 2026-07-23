@@ -15,6 +15,14 @@
   function val(id){ var e = document.getElementById(id); return e ? e.value : ''; }
   var TXT = { PENDIENTE:'Pendiente', PAGADA:'Pagada', EN_PREPARACION:'En preparación', ENVIADA:'Enviada', ENTREGADA:'Entregada', CANCELADA:'Cancelada', FALLIDA:'Fallida', AGENDADA:'Agendada', CONFIRMADA:'Confirmada', COMPLETADA:'Completada', NO_ASISTIO:'No asistió' };
 
+  /* Activa la pestaña del perfil segun el #hash de la URL (Mis Compras/Citas/Datos) */
+  function activateTabFromHash(){
+    var map = { '#pedidos': 't-pedidos', '#citas': 't-citas', '#contacto': 't-contacto' };
+    var id = map[location.hash] || 't-pedidos';
+    var btn = document.getElementById(id);
+    if (btn && window.bootstrap && bootstrap.Tab) { new bootstrap.Tab(btn).show(); }
+  }
+
   function loadIdentidad(){
     return Promise.all([api.get('/accounts/me/'), api.get('/accounts/profile/')]).then(function (res) {
       var me = (res[0].ok && res[0].data) ? res[0].data : {};
@@ -85,5 +93,7 @@
     if (!u) { window.location.replace('/login/?next=/perfil/'); return; }
     if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { window.location.replace('/panel/'); return; }
     loadIdentidad(); loadPedidos(); loadCitas();
+    activateTabFromHash();
+    window.addEventListener('hashchange', activateTabFromHash);
   });
 })();
