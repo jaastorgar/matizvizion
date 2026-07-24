@@ -52,6 +52,11 @@ def _money(n):
 
 
 def notify_password_reset(user, reset_url):
+    # Linea LIMPIA del link en la terminal (texto plano, copiable sin =3D).
+    try:
+        print(f"[password-reset] {user.email} -> {reset_url}")
+    except Exception:
+        pass
     nombre = ((user.first_name or '') + ' ' + (user.last_name or '')).strip() or 'Hola'
     _send(
         'Recupera tu contrasena - Matizvision',

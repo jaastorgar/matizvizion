@@ -162,7 +162,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # Modificar en producción con CORS_ALLOWED_ORIGI
 # ---- Correos transaccionales (Matizvision) ----
 # En desarrollo: console (el mail se imprime en la terminal del runserver).
 # En produccion: pon el backend SMTP real en .env (ver bloque de ejemplo).
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='core.email_backends.PlainConsoleBackend')
 EMAIL_HOST = config('EMAIL_HOST', default='localhost')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
@@ -171,3 +171,18 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Matizvision <no-reply@matizvision.cl>')
 SITE_URL = config('SITE_URL', default='http://localhost:8000')
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 1 dia
+
+# === CONFIGURACION DE PRODUCCION (Matizvision) ===
+# En desarrollo los DEFAULTS mantienen el sitio funcionando (DEBUG=True, etc.).
+# Para produccion, configura estas variables en .env (ver .env.produccion).
+import os as _os
+def _env_bool(_k, _d=False):
+    return _os.getenv(_k, str(_d)).strip().lower() in ('1', 'true', 'yes', 'on')
+DEBUG = _env_bool('DEBUG', True)
+ALLOWED_HOSTS = [h.strip() for h in _os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+STATIC_ROOT = _os.getenv('STATIC_ROOT', str(BASE_DIR / 'staticfiles'))
+SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', False)
+SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', False)
+CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', False)
+SECURE_HSTS_SECONDS = int(_os.getenv('SECURE_HSTS_SECONDS', '0'))
+# === FIN CONFIGURACION DE PRODUCCION ===

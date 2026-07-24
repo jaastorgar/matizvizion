@@ -1,3 +1,4 @@
+{% autoescape off %}
 Hola,
 
 Tu cita con Matizvision fue {{ evento }}.
@@ -9,3 +10,4 @@ Sucursal: {{ sucursal }}
 
 {% if evento == 'cancelada' %}Tu bloque horario quedo liberado para otros pacientes.{% endif %}{% if evento == 'reagendada' %}Tu cita anterior fue liberada y esta es tu nueva hora.{% endif %}
 Matizvision - recupera tus matices
+{% endautoescape %}

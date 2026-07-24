@@ -1,3 +1,4 @@
+{% autoescape off %}
 {{ nombre }},
 
 Tus datos de contacto en Matizvision fueron actualizados correctamente.
@@ -5,3 +6,4 @@ Tus datos de contacto en Matizvision fueron actualizados correctamente.
 Si no fuiste tu, inicia sesion y revisa tu informacion.
 
 Matizvision - recupera tus matices
+{% endautoescape %}

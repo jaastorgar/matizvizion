@@ -1,3 +1,4 @@
+{% autoescape off %}
 Hola,
 
 Tu pedido {{ codigo }} ahora esta: {{ estado_label }}.
@@ -11,3 +12,4 @@ Total: {{ total }}
 Puedes ver el seguimiento en: http://localhost:8000/seguir/?codigo={{ codigo }}
 
 Matizvision - recupera tus matices
+{% endautoescape %}

@@ -1,59 +1,59 @@
+"""
+Cancela ordenes PENDIENTE expiradas (reservas sin pago) y devuelve su stock.
+Uso:
+    python manage.py expire_pending_orders              # cancela las de > 30 min
+    python manage.py expire_pending_orders --minutes 15
+    python manage.py expire_pending_orders --dry-run    # solo lista, no toca nada
+Programar cada 10-15 min en produccion (cron / Task Scheduler).
+"""
 from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models import F
 from django.utils import timezone
-from orders.models import HistorialEstado, Orden
-from store.models import Producto
+
+from orders.models import Orden
+
 
 class Command(BaseCommand):
-    help = 'Cancela ordenes PENDIENTE expiradas (reservas no pagadas) y libera el stock reservado.'
+    help = 'Cancela ordenes PENDIENTE expiradas (sin pago) y repone su stock.'
 
     def add_arguments(self, parser):
         parser.add_argument('--minutes', type=int, default=30,
-                            help='Minutos de antiguedad para considerar la reserva expirada (0 = todas las PENDIENTE).')
+                            help='Minutos sin pago para considerar expirada (default 30).')
+        parser.add_argument('--dry-run', action='store_true',
+                            help='Solo lista las ordenes expiradas, no cancela.')
 
     def handle(self, *args, **options):
         minutes = options['minutes']
+        dry = options['dry_run']
         corte = timezone.now() - timedelta(minutes=minutes)
-        pendientes = list(
-            Orden.objects.filter(estado='PENDIENTE', creado_en__lte=corte)
-            .select_related('cliente')
-            .order_by('creado_en')
-        )
-        if not pendientes:
-            self.stdout.write(self.style.WARNING('No hay ordenes PENDIENTE expiradas para limpiar.'))
+        pendientes = Orden.objects.filter(estado=Orden.Estado.PENDIENTE, creado_en__lte=corte)
+        total = pendientes.count()
+        if total == 0:
+            self.stdout.write(self.style.SUCCESS('No hay ordenes PENDIENTE expiradas.'))
             return
-
+        self.stdout.write(f'Ordenes PENDIENTE expiradas (>{minutes} min): {total}')
         canceladas = 0
         for orden in pendientes:
+            if dry:
+                self.stdout.write(f'  [dry-run] {orden.codigo} (creada {orden.creado_en:%Y-%m-%d %H:%M})')
+                continue
             try:
                 with transaction.atomic():
                     o = Orden.objects.select_for_update().get(pk=orden.pk)
-                    if o.estado != 'PENDIENTE':
+                    if o.estado != Orden.Estado.PENDIENTE:
                         continue  # otra proceso ya la resolvio
-                    # 1) Liberar el stock reservado (bloqueo de fila por producto)
-                    liberado = 0
-                    for it in o.items.select_related('producto').all():
-                        p = Producto.objects.select_for_update().get(pk=it.producto_id)
-                        p.stock = F('stock') + it.cantidad
-                        p.save(update_fields=['stock'])
-                        liberado += it.cantidad
-                    # 2) Cancelar la orden y dejar trazabilidad (inmune a la version del modelo)
-                    o.estado = 'CANCELADA'
-                    o.save(update_fields=['estado'])
-                    HistorialEstado.objects.create(
-                        orden=o, estado_anterior='PENDIENTE', estado_nuevo='CANCELADA'
-                    )
+                    o.revertir_stock()                       # el stock vuelve al inventario
+                    o.cambiar_estado(Orden.Estado.CANCELADA, usuario=None)
+                    try:
+                        from core.notifications import notify_orden
+                        notify_orden(o, Orden.Estado.CANCELADA)
+                    except Exception:
+                        pass
                     canceladas += 1
-                    self.stdout.write(f'  - Orden #{o.id} cancelada (stock liberado: {liberado} u.)')
+                    self.stdout.write(self.style.WARNING(f'  Cancelada {o.codigo} y stock repuesto.'))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f'  ! Error en orden #{orden.id}: {e}'))
-
-        self.stdout.write(self.style.SUCCESS(
-            f'Expiracion completada: {canceladas} orden(es) PENDIENTE canceladas y su stock liberado.'
-        ))
-        self.stdout.write(self.style.WARNING(
-            'Nota (solo desarrollo): si antes corriste seed_demo (que fija el stock a valores oficiales), '
-            'vuelve a correrlo una vez para dejar el stock canonicamente en sus valores de catalogo.'
-        ))
+                self.stdout.write(self.style.ERROR(f'  Error en {orden.codigo}: {e}'))
+        if not dry:
+            self.stdout.write(self.style.SUCCESS(f'Limpieza completada: {canceladas} orden(es) canceladas.'))
