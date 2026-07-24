@@ -85,7 +85,57 @@
       badge.textContent = String(total); badge.hidden = total <= 0;
     });
   }
+  function ensureGuest() {
+    if (auth.isAuthenticated()) return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:12px;max-width:420px;width:100%;padding:1.75rem;box-shadow:0 10px 30px rgba(0,0,0,.2);';
+      box.innerHTML =
+        '<h3 style="margin:0 0 .5rem;font-weight:800;">Continuar como invitado</h3>' +
+        '<p style="margin:0 0 1rem;color:#6B7280;font-size:.92rem;">Solo necesitamos tu email para guardar tu carrito y que puedas rastrear tu pedido. <strong>No creamos contraseña.</strong></p>' +
+        '<input id="gv-email" type="email" placeholder="tu@correo.cl" style="width:100%;padding:.6rem .75rem;border:1px solid #E5E7EB;border-radius:8px;margin-bottom:.5rem;box-sizing:border-box;" />' +
+        '<div id="gv-msg" style="min-height:1.2rem;font-size:.85rem;margin-bottom:.75rem;"></div>' +
+        '<div style="display:flex;gap:.5rem;">' +
+          '<button id="gv-go" type="button" style="flex:1;padding:.6rem;border:none;border-radius:8px;background:#10B981;color:#fff;font-weight:700;cursor:pointer;">Continuar</button>' +
+          '<button id="gv-login" type="button" style="padding:.6rem .9rem;border:1px solid #10B981;border-radius:8px;background:#fff;color:#065F46;font-weight:600;cursor:pointer;">Iniciar sesión</button>' +
+        '</div>';
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      var email = box.querySelector('#gv-email');
+      var msg = box.querySelector('#gv-msg');
+      var go = box.querySelector('#gv-go');
+      var login = box.querySelector('#gv-login');
+      function close(val) { if (ov.parentNode) document.body.removeChild(ov); resolve(val); }
+      email.focus();
+      login.addEventListener('click', function () { close(false); window.location.href = '/login/?next=' + encodeURIComponent(location.pathname); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) close(false); });
+      function submit() {
+        var em = (email.value || '').trim();
+        msg.style.color = '#DC2626';
+        if (!em) { msg.textContent = 'Escribe tu email.'; return; }
+        go.disabled = true; go.textContent = 'Continuando…'; msg.textContent = '';
+        api.post('/accounts/guest/', { body: { email: em } }).then(function (r) {
+          if (r.ok && r.data && r.data.access) {
+            auth.setTokens(r.data.access, r.data.refresh);
+            msg.style.color = '#065F46'; msg.textContent = 'Listo. Agregando…';
+            setTimeout(function () { close(true); }, 250);
+          } else if (r.status === 409) {
+            go.disabled = false; go.textContent = 'Continuar';
+            msg.textContent = 'Ese correo ya tiene una cuenta. Inicia sesión.';
+          } else {
+            go.disabled = false; go.textContent = 'Continuar';
+            msg.textContent = (r.data && (r.data.email || r.data.error)) || 'No se pudo continuar.';
+          }
+        });
+      }
+      go.addEventListener('click', submit);
+      email.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    });
+  }
   window.MV = window.MV || {};
   window.MV.api = api; window.MV.auth = auth; window.MV.toast = toast; window.MV.escape = escapeHtml;
-  window.MV.formatRut = formatRut; window.MV.me = me; window.MV.refreshCartBadge = refreshCartBadge; window.MV.API_BASE = API_BASE;
+  window.MV.formatRut = formatRut; window.MV.me = me; window.MV.refreshCartBadge = refreshCartBadge;
+  window.MV.ensureGuest = ensureGuest; window.MV.API_BASE = API_BASE;
 })();

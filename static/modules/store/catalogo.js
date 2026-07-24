@@ -77,6 +77,7 @@
   }
 
   function doAdd(btn) {
+    if (!MV.auth.isAuthenticated()) { MV.ensureGuest().then(function (ok) { if (ok) { doAdd(btn); } }); return; }
     var id = btn.getAttribute('data-id');
     btn.disabled = true; btn.textContent = '…';
     api.post('/orders/carrito/', { body: { producto: Number(id), cantidad: 1 } }).then(function (r) {
