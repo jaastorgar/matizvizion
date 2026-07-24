@@ -3,7 +3,7 @@
   var MV = window.MV; if (!MV || !MV.me) return;
   var api = MV.api, esc = MV.escape;
   var money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format;
-  function fecha(iso){ try { return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return iso || '—'; } }
+  function fecha(iso){ if(!iso) return '—'; var s=String(iso); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m){ return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); } try{ return new Date(s).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return s; } }
   var LABEL = { PENDIENTE:'Pedido creado', PAGADA:'Pagado', EN_PREPARACION:'En preparación', LISTO_PARA_RETIRO:'Listo para retiro', ENVIADA:'Enviado', ENTREGADA:'Entregado' };
   var TXT = { PENDIENTE:'Pendiente', PAGADA:'Pagada', EN_PREPARACION:'En preparación', LISTO_PARA_RETIRO:'Listo para retiro', ENVIADA:'Enviada', ENTREGADA:'Entregada', CANCELADA:'Cancelada', FALLIDA:'Fallida' };
   var RETIRO = ['PENDIENTE','PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO','ENTREGADA'];

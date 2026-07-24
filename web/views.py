@@ -48,3 +48,9 @@ def mis_citas(request):
 
 def mis_datos(request):
     return render(request, 'modules/auth/mis_datos.html')
+
+def recuperar(request):
+    return render(request, 'modules/auth/recuperar.html')
+
+def reset_password(request):
+    return render(request, 'modules/auth/reset_password.html')

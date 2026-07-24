@@ -158,3 +158,16 @@ SIMPLE_JWT = {
 # CORS (Integración de peticiones)
 # ==========================================
 CORS_ALLOW_ALL_ORIGINS = True  # Modificar en producción con CORS_ALLOWED_ORIGINS
+
+# ---- Correos transaccionales (Matizvision) ----
+# En desarrollo: console (el mail se imprime en la terminal del runserver).
+# En produccion: pon el backend SMTP real en .env (ver bloque de ejemplo).
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Matizvision <no-reply@matizvision.cl>')
+SITE_URL = config('SITE_URL', default='http://localhost:8000')
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 1 dia

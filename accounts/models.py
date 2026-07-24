@@ -180,3 +180,15 @@ class PerfilVendedor(models.Model):
             f"Perfil Vendedor: {self.user.email} "
             f"[{self.codigo_vendedor}] - {sucursal_nombre}"
         )
+
+
+# ---- Signal: mail cuando el cliente actualiza sus datos (no en el alta) ----
+from django.db.models.signals import post_save as _post_save
+from django.dispatch import receiver as _receiver
+
+@_receiver(_post_save, sender=PerfilCliente)
+def _perfil_mail(sender, instance, created, **kwargs):
+    if not created:
+        from django.db import transaction
+        from core.notifications import notify_datos_actualizados
+        transaction.on_commit(lambda: notify_datos_actualizados(instance.user))

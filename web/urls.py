@@ -19,4 +19,6 @@ urlpatterns = [
     path('mis-compras/', views.mis_compras, name='mis_compras'),
     path('mis-citas/', views.mis_citas, name='mis_citas'),
     path('mis-datos/', views.mis_datos, name='mis_datos'),
+    path('recuperar/', views.recuperar, name='recuperar'),
+    path('reset-password/', views.reset_password, name='reset_password'),
 ]

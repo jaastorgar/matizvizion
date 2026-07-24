@@ -9,7 +9,7 @@
   var NEXT = { 'PAGADA': 'EN_PREPARACION', 'EN_PREPARACION': 'LISTO_PARA_RETIRO', 'LISTO_PARA_RETIRO': 'ENTREGADA', 'ENVIADA': 'ENTREGADA' };
   var LABEL = { 'PAGADA': 'Marcar en preparación', 'EN_PREPARACION': 'Listo para retiro', 'LISTO_PARA_RETIRO': 'Marcar entregada', 'ENVIADA': 'Marcar entregada' };
   var STATE_TXT = { 'PAGADA': 'Pagada', 'EN_PREPARACION': 'En preparación', 'LISTO_PARA_RETIRO': 'Listo para retiro', 'ENVIADA': 'Enviada', 'ENTREGADA': 'Entregada' };
-  var ORD = [], allCitas = [];
+  var ORD = [], allCitas = [], DEV = [];
 
   function layout(){
     root.innerHTML =
@@ -17,11 +17,13 @@
       '<div class="mv-dash-wrap">' +
         '<aside class="mv-dash-side">' +
           '<button class="mv-side-item active" data-pane="pedidos">📦 Pedidos por Entregar</button>' +
+          '<button class="mv-side-item" data-pane="devoluciones">↩️ Devoluciones</button>' +
           '<button class="mv-side-item" data-pane="citas">🩺 Citas del Día</button>' +
           '<button class="mv-side-item" data-pane="rut">🔍 Buscar por RUT</button>' +
         '</aside>' +
         '<section>' +
           '<div class="mv-dash-panel" id="pane-pedidos"><h2 class="h5 mb-3">Gestión de entregas</h2><div id="pedidos-body"></div></div>' +
+          '<div class="mv-dash-panel d-none" id="pane-devoluciones"><h2 class="h5 mb-3">Devoluciones por garantía</h2><p class="text-secondary small mb-3">Aprueba cuando el cliente entregue el producto en tienda (el stock vuelve al inventario y la orden pasa a Devuelta).</p><div id="dev-body"></div></div>' +
           '<div class="mv-dash-panel d-none" id="pane-citas"><h2 class="h5 mb-3">Citas del día</h2><div id="citas-body"></div></div>' +
           '<div class="mv-dash-panel d-none" id="pane-rut"><h2 class="h5 mb-3">Buscar cliente por RUT</h2><input type="text" class="form-control mb-3" id="rut-input" placeholder="Ej: 11.111.111-1" /><div id="rut-body"></div></div>' +
         '</section>' +
@@ -30,7 +32,7 @@
       b.addEventListener('click', function (){
         root.querySelectorAll('.mv-side-item').forEach(function (x){ x.classList.remove('active'); });
         b.classList.add('active');
-        ['pedidos','citas','rut'].forEach(function (p){ document.getElementById('pane-' + p).classList.toggle('d-none', p !== b.getAttribute('data-pane')); });
+        ['pedidos','devoluciones','citas','rut'].forEach(function (p){ document.getElementById('pane-' + p).classList.toggle('d-none', p !== b.getAttribute('data-pane')); });
         if (b.getAttribute('data-pane') === 'rut') { var ri = document.getElementById('rut-input'); if (ri) ri.focus(); renderRut(''); }
       });
     });
@@ -49,6 +51,17 @@
     body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Código</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   function renderRut(v){ renderPedidos(v); }
+  function renderDevoluciones(){
+    var body = document.getElementById('dev-body');
+    var pend = DEV.filter(function (d){ return d.estado === 'PENDIENTE'; });
+    if (!pend.length) { body.innerHTML = '<div class="mv-empty">No hay devoluciones pendientes.</div>'; return; }
+    body.innerHTML = pend.map(function (d){
+      return '<div class="mv-cita-row"><div><strong>' + esc(d.orden_codigo || ('#' + d.orden)) + '</strong> · ' + esc(d.cliente_email || '') +
+        '<br><small class="text-muted">' + esc(d.motivo || '') + '</small></div>' +
+        '<div class="d-flex gap-2"><button class="btn btn-cta btn-sm" data-dev-apr="' + d.id + '">Aprobar</button>' +
+        '<button class="btn btn-outline-mv btn-sm" data-dev-rech="' + d.id + '">Rechazar</button></div></div>';
+    }).join('');
+  }
   function renderCitas(){
     var body = document.getElementById('citas-body');
     var hoy = todayStr();
@@ -86,13 +99,34 @@
         if (r.ok) { toast('Cita actualizada.', 'success'); loadAll(); }
         else { toast((r.data && r.data.error) || 'No se pudo actualizar la cita.', 'error'); c.disabled = false; }
       });
+      return;
+    }
+    var da = e.target.closest('button[data-dev-apr]');
+    if (da) {
+      if (!confirm('¿Aprobar devolución? El cliente debe entregar el producto: el stock volverá al inventario y la orden pasará a Devuelta.')) return;
+      da.disabled = true;
+      api.post('/orders/devoluciones/' + da.getAttribute('data-dev-apr') + '/aprobar/').then(function (r){
+        if (r.ok) { toast('Devolución aprobada y stock repuesto.', 'success'); loadAll(); }
+        else { toast((r.data && r.data.error) || 'No se pudo aprobar.', 'error'); da.disabled = false; }
+      });
+      return;
+    }
+    var dr = e.target.closest('button[data-dev-rech]');
+    if (dr) {
+      var motivo = (prompt('Motivo del rechazo (opcional):') || '').trim();
+      dr.disabled = true;
+      api.post('/orders/devoluciones/' + dr.getAttribute('data-dev-rech') + '/rechazar/', { body: { motivo_rechazo: motivo } }).then(function (r){
+        if (r.ok) { toast('Devolución rechazada.', 'success'); loadAll(); }
+        else { toast((r.data && r.data.error) || 'No se pudo rechazar.', 'error'); dr.disabled = false; }
+      });
     }
   });
   function loadAll(){
-    Promise.all([api.get('/orders/operaciones/'), api.get('/appointments/citas/')]).then(function (res){
+    Promise.all([api.get('/orders/operaciones/'), api.get('/appointments/citas/'), api.get('/orders/devoluciones/')]).then(function (res){
       ORD = (res[0].ok && Array.isArray(res[0].data)) ? res[0].data : [];
       allCitas = (res[1].ok && Array.isArray(res[1].data)) ? res[1].data : [];
-      renderPedidos(''); renderCitas();
+      DEV = (res[2].ok && Array.isArray(res[2].data)) ? res[2].data : [];
+      renderPedidos(''); renderCitas(); renderDevoluciones();
     });
   }
   if (!auth.isAuthenticated()) { window.location.href = '/login/?next=/panel/'; return; }

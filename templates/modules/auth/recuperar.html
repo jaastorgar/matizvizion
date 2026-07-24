@@ -1,0 +1,24 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Recuperar contraseña — Matizvisión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="mv-auth-card p-4">
+      <h1 class="h4 mb-1"><i class="bi bi-key"></i> Recuperar contraseña</h1>
+      <p class="text-secondary mb-3">Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.</p>
+      <form id="rec-form" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="rec-email">Correo electrónico</label>
+          <input type="email" class="form-control" id="rec-email" placeholder="tu@correo.cl" required />
+        </div>
+        <button type="submit" class="btn btn-cta w-100" id="rec-btn">Enviar enlace</button>
+        <p id="rec-msg" class="text-center mt-3 mb-0"></p>
+      </form>
+      <p class="text-center mt-3 mb-0 small"><a href="/login/">Volver a iniciar sesión</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/recuperar.js' %}"></script>{% endblock %}

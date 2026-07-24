@@ -1,0 +1,13 @@
+Hola,
+
+Tu pedido {{ codigo }} ahora esta: {{ estado_label }}.
+
+Detalle:
+{% for it in items %}- {{ it.nombre }}{% if it.sku %} ({{ it.sku }}){% endif %} x{{ it.cantidad }}  {{ it.subtotal }}
+{% endfor %}
+Total: {{ total }}
+
+{% if estado_clave == 'lista_retiro' %}Ya puedes pasar a retirarlo por la sucursal con tu codigo de pedido.{% endif %}{% if estado_clave == 'entregada' %}Gracias por tu compra. Recuerda que cuentas con garantia de satisfaccion.{% endif %}{% if estado_clave == 'devuelta' %}Tu devolucion por garantia fue procesada y el producto volvio a inventario.{% endif %}
+Puedes ver el seguimiento en: http://localhost:8000/seguir/?codigo={{ codigo }}
+
+Matizvision - recupera tus matices
