@@ -1,0 +1,12 @@
+{% autoescape off %}
+Equipo Matizvision,
+
+Los siguientes productos estan en stock bajo o agotados (umbral: {{ umbral }}).
+Conviene reponerlos para no perder ventas:
+
+{% for p in productos %}- {{ p.nombre }}{% if p.sku %} ({{ p.sku }}){% endif %} -> stock: {{ p.stock }}
+{% empty %}(sin productos bajo umbral en este momento){% endfor %}
+Este reporte se genera automaticamente. Puedes ver el detalle en el panel.
+
+Matizvision - recupera tus matices
+{% endautoescape %}

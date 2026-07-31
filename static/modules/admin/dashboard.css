@@ -16,6 +16,9 @@
 .mv-badge.COMPLETADA { background: rgba(16,185,129,.15); color: var(--green-dark); }
 .mv-badge.NO_ASISTIO { background: rgba(220,38,38,.12); color: var(--danger); }
 .mv-badge.CANCELADA { background: var(--lead-light); color: var(--lead-muted, #6B7280); }
+.mv-badge.LISTO_PARA_RETIRO { background: rgba(16,185,129,.22); color: var(--green-dark); }
+.mv-badge.ENTREGADA { background: rgba(6,95,70,.15); color: var(--green-dark); }
+.mv-badge.DEVUELTA { background: rgba(139,92,246,.15); color: #6D28D9; }
 .mv-cita-row { display: flex; justify-content: space-between; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; }
 .mv-cita-row:last-child { border-bottom: none; }
 .mv-cita-actions { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .35rem; }
@@ -26,5 +29,3 @@
 .mv-cita-actions .no:hover { background: var(--danger); color: #fff; }
 .mv-cita-actions .cancel { color: var(--lead-muted, #6B7280); }
 .mv-empty { color: var(--lead-muted, #6B7280); padding: 1.5rem 0; text-align: center; }
-.mv-badge.LISTO_PARA_RETIRO { background: rgba(16,185,129,.22); color: var(--green-dark); }
-.mv-badge.ENTREGADA { background: rgba(6,95,70,.15); color: var(--green-dark); }

@@ -20,11 +20,12 @@
             <i class="bi bi-person-circle"></i> <span id="nav-user-name">Cuenta</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUserMenu">
-            <li class="nav-client d-none"><a class="dropdown-item" href="/mis-compras/"><i class="bi bi-box-seam me-2"></i>Mis Compras</a></li>
+            <li class="nav-client d-none"><a class="dropdown-item" href="/mis-compras/"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
             <li class="nav-client d-none"><a class="dropdown-item" href="/mis-citas/"><i class="bi bi-heart-pulse me-2"></i>Mis Citas</a></li>
             <li class="nav-client d-none"><a class="dropdown-item" href="/mis-datos/"><i class="bi bi-pencil-square me-2"></i>Mis Datos</a></li>
             <li class="nav-client d-none"><hr class="dropdown-divider" /></li>
             <li class="nav-staff d-none"><a class="dropdown-item" href="/panel/"><i class="bi bi-clipboard-data me-2"></i>Panel de operaciones</a></li>
+            <li class="nav-admin d-none"><a class="dropdown-item" href="/administracion/"><i class="bi bi-graph-up-arrow me-2"></i>Administración</a></li>
             <li class="nav-staff d-none"><hr class="dropdown-divider" /></li>
             <li><button class="dropdown-item" id="nav-logout" type="button"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</button></li>
           </ul>
@@ -44,11 +45,13 @@
       var isAuth = !!u;
       var isStaff = isAuth && (u.role === 'VENDEDOR' || u.role === 'ADMIN');
       var isClient = isAuth && !isStaff;
+      var isAdmin = isAuth && (u.role === 'ADMIN' || u.is_superuser);
       toggle('.nav-guest', !isAuth);
       toggle('.nav-public', !isStaff);
       toggle('.nav-auth', isAuth);
       toggle('.nav-client', isClient);
       toggle('.nav-staff', isStaff);
+      toggle('.nav-admin', isAdmin);
       if (isAuth && nameEl) {
         var dn = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
         nameEl.textContent = dn || u.email || 'Cuenta';

@@ -30,6 +30,7 @@ class MeView(APIView):
             'last_name': u.last_name,
             'role': u.role,
             'is_guest': getattr(u, 'is_guest', False),
+            'is_superuser': getattr(u, 'is_superuser', False),
         })
 
 

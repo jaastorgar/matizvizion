@@ -1,5 +1,5 @@
 import re
-
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
@@ -43,6 +43,10 @@ class Producto(models.Model):
     )
     precio = models.DecimalField('Precio publico', max_digits=10, decimal_places=2)
     stock = models.IntegerField('Stock disponible', default=0)
+    stock_minimo = models.IntegerField(
+        'Stock minimo (alerta)', default=5,
+        help_text='Cuando el stock cae a este valor o menos, se dispara una alerta.'
+    )
     imagen = models.ImageField('Imagen del producto', upload_to='productos/', blank=True, null=True)
     activo = models.BooleanField('Visible en catalogo', default=True, db_index=True)
     destacado = models.BooleanField('Destacado en home', default=False, db_index=True)
@@ -62,18 +66,56 @@ class Producto(models.Model):
     def en_stock(self):
         return self.stock > 0
 
+    @property
+    def stock_bajo(self):
+        umbral = self.stock_minimo if self.stock_minimo is not None else getattr(settings, 'STOCK_ALERT_THRESHOLD', 5)
+        return self.stock <= umbral
+
     def _generar_sku(self):
         base = self.categoria.nombre if self.categoria_id else 'PRD'
         pref = re.sub(r'[^A-Z0-9]', '', base.upper())[:4] or 'PRD'
         return f"{pref}-{self.pk:04d}"
 
     def save(self, *args, **kwargs):
+        # Captura el stock previo para detectar cruce de umbral hacia abajo
+        prev_stock = None
+        if self.pk:
+            prev_stock = Producto.objects.filter(pk=self.pk).values_list('stock', flat=True).first()
         if self.nombre:
             self.nombre = self.nombre.strip()
         super().save(*args, **kwargs)
         if not self.sku:
             self.sku = self._generar_sku()
             super().save(update_fields=['sku'])
+        # Signal de alerta: solo si el stock CRUZO el umbral hacia abajo
+        if prev_stock is not None:
+            umbral = self.stock_minimo if self.stock_minimo is not None else getattr(settings, 'STOCK_ALERT_THRESHOLD', 5)
+            if prev_stock > umbral and self.stock <= umbral:
+                self._notificar_stock_bajo(umbral)
+
+    def _notificar_stock_bajo(self, umbral):
+        """Manda mail a ADMIN/VENDEDOR cuando un producto cruza el umbral hacia abajo."""
+        try:
+            from django.core.mail import send_mail
+            from accounts.models import CustomUser
+            destinatarios = list(
+                CustomUser.objects.filter(role__in=['ADMIN', 'VENDEDOR'], is_active=True)
+                .values_list('email', flat=True)
+            )
+            if not destinatarios:
+                return
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Matizvision <no-reply@matizvision.cl>')
+            tag = 'AGOTADO' if self.stock <= 0 else 'STOCK BAJO'
+            asunto = f'[Matizvision] {tag}: {self.nombre} (stock {self.stock})'
+            cuerpo = (
+                f'El producto "{self.nombre}" (SKU {self.sku or "-"}) cruzó el umbral de stock.\n'
+                f'Stock actual: {self.stock}\n'
+                f'Umbral: {umbral}\n\n'
+                f'Reponer para no perder ventas.'
+            )
+            send_mail(asunto, cuerpo, from_email, destinatarios, fail_silently=True)
+        except Exception:
+            pass
 
     def __str__(self):
         return f"{self.nombre} (${self.precio})"

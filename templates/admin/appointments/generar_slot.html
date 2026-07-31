@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block title %}Generar agenda por slot{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Inicio</a> &rsaquo;
+  <a href="{% url 'admin:app_list' 'appointments' %}">Appointments</a> &rsaquo;
+  <a href="{% url 'admin:appointments_bloquehorario_changelist' %}">Bloques horarios</a> &rsaquo;
+  Generar agenda por slot
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .mv-gen-card { max-width: 720px; background:#fff; border:1px solid #e5e7eb; border-radius:14px;
+    box-shadow:0 10px 30px rgba(31,41,55,.08); padding:1.75rem 2rem; }
+  .mv-gen-card h2 { margin:0 0 .25rem; font-size:1.5rem; color:#065F46; }
+  .mv-gen-lead { color:#6B7280; margin:0 0 1.25rem; }
+  .mv-gen-grid { display:grid; grid-template-columns:1fr 1fr; gap:.9rem 1.25rem; }
+  .mv-gen-grid .full { grid-column:1 / -1; }
+  .mv-gen-card label { font-weight:700; color:#1f2937; display:block; margin-bottom:.25rem; }
+  .mv-gen-card input, .mv-gen-card select {
+    width:100%; padding:.55rem .7rem; border:1px solid #d1d5db; border-radius:9px; font-size:.95rem; box-sizing:border-box; }
+  .mv-gen-card input:focus, .mv-gen-card select:focus { outline:none; border-color:#10B981; box-shadow:0 0 0 3px rgba(16,185,129,.18); }
+  .mv-gen-help { font-size:.8rem; color:#6B7280; margin-top:.2rem; }
+  .mv-gen-note { background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.3); border-radius:10px;
+    padding:.85rem 1rem; margin:1.25rem 0; font-size:.88rem; color:#065F46; line-height:1.5; }
+  .mv-gen-actions { display:flex; gap:.6rem; align-items:center; margin-top:.5rem; }
+  .mv-gen-actions .btn-gen { background:#10B981; color:#fff; border:none; padding:.6rem 1.3rem; border-radius:9px; font-weight:700; cursor:pointer; font-size:.95rem; }
+  .mv-gen-actions .btn-gen:hover { background:#065F46; }
+  .mv-gen-actions a { color:#6B7280; text-decoration:none; font-weight:600; }
+  .errorlist { color:#dc2626; font-size:.85rem; margin:.2rem 0 0; padding-left:1rem; }
+</style>
+
+<div class="mv-gen-card">
+  <h2>Generar agenda por slot</h2>
+  <p class="mv-gen-lead">Crea bloques horarios contiguos para un tecnólogo en un rango de fechas. Es <strong>idempotente</strong>: no duplica slots existentes y no toca los que ya tienen una cita reservada.</p>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="mv-gen-grid">
+      <div class="full">
+        {{ form.tecnologo.label_tag }} {{ form.tecnologo }}
+        {% if form.tecnologo.errors %}<ul class="errorlist">{% for e in form.tecnologo.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div>
+        {{ form.fecha_desde.label_tag }} {{ form.fecha_desde }}
+        {% if form.fecha_desde.errors %}<ul class="errorlist">{% for e in form.fecha_desde.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div>
+        {{ form.fecha_hasta.label_tag }} {{ form.fecha_hasta }}
+        {% if form.fecha_hasta.errors %}<ul class="errorlist">{% for e in form.fecha_hasta.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div>
+        {{ form.hora_inicio.label_tag }} {{ form.hora_inicio }}
+        {% if form.hora_inicio.errors %}<ul class="errorlist">{% for e in form.hora_inicio.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div>
+        {{ form.hora_fin.label_tag }} {{ form.hora_fin }}
+        {% if form.hora_fin.errors %}<ul class="errorlist">{% for e in form.hora_fin.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="full">
+        {{ form.slot_minutes.label_tag }} {{ form.slot_minutes }}
+        <div class="mv-gen-help">{{ form.slot_minutes.help_text }}</div>
+        {% if form.slot_minutes.errors %}<ul class="errorlist">{% for e in form.slot_minutes.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      {% if form.non_field_errors %}<div class="full"><ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+    </div>
+
+    <div class="mv-gen-note">
+      <strong>Cómo funciona:</strong> se generan slots de <em>N</em> minutos desde la hora de inicio hasta la de fin, por cada día del rango.
+      Si ya existe un bloque a esa hora se <strong>redimensiona</strong> al slot (p. ej. un bloque de 3&nbsp;h pasa a 1&nbsp;h),
+      <strong>salvo</strong> que tenga una cita reservada o colisione con otro bloque: en ese caso se omite y se informa al final.
+      El sobrante del turno que no complete un slot queda sin bloque.
+    </div>
+
+    <div class="mv-gen-actions">
+      <button type="submit" class="btn-gen">Generar bloques</button>
+      <a href="{% url 'admin:appointments_bloquehorario_changelist' %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

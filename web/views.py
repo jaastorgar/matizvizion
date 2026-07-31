@@ -54,3 +54,11 @@ def recuperar(request):
 
 def reset_password(request):
     return render(request, 'modules/auth/reset_password.html')
+
+def administracion(request):
+    # Sin blindaje server-side: el login es por JWT (stateless), asi que en una
+    # vista de template request.user seria anonimo (no hay sesion de Django).
+    # El blindaje REAL lo hacen administracion.js (via /api/accounts/me/ con
+    # Bearer) y el endpoint /api/admin/kpis/ (IsAdminUserCustom). Mismo patron
+    # que /panel/. Servir el template siempre evita el redirect falso a /login/.
+    return render(request, 'modules/admin/administracion.html')

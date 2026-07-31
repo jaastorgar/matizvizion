@@ -12,13 +12,15 @@ class CategoriaSerializer(serializers.ModelSerializer):
 class ProductoSerializer(serializers.ModelSerializer):
     categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
     en_stock = serializers.BooleanField(read_only=True)
+    stock_bajo = serializers.BooleanField(read_only=True)
     imagen_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Producto
         fields = [
-            'id', 'sku', 'nombre', 'descripcion', 'precio', 'stock', 'en_stock',
-            'imagen', 'imagen_url', 'categoria', 'categoria_nombre', 'destacado',
+            'id', 'sku', 'nombre', 'descripcion', 'precio', 'stock', 'stock_minimo',
+            'en_stock', 'stock_bajo', 'imagen', 'imagen_url', 'categoria',
+            'categoria_nombre', 'destacado',
         ]
         read_only_fields = fields
 
