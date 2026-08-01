@@ -115,3 +115,23 @@ class HistorialEstadoAdmin(admin.ModelAdmin):
         'cambiado_en',
         'usuario',
     )
+
+# ---- Registro de Politicas de garantia (Matizvision) ----
+from .models import PoliticaGarantia as _PolGar
+
+
+@admin.register(_PolGar)
+class PoliticaGarantiaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'base', 'plazo_label', 'activa', 'orden_prioridad')
+    list_filter = ('base', 'activa')
+    list_editable = ('activa', 'orden_prioridad')
+    search_fields = ('nombre', 'codigo')
+    fieldsets = (
+        (None, {'fields': ('codigo', 'nombre', 'base', 'activa', 'orden_prioridad')}),
+        ('Cobertura', {'fields': ('descripcion', 'exclusiones')}),
+        ('Plazo', {'fields': ('plazo_label', 'plazo_dias_min', 'plazo_dias_max')}),
+        ('Resoluciones que ofrece', {'fields': (
+            'permite_devolucion', 'permite_cambio', 'permite_reparacion', 'permite_rehacer')}),
+        ('Aplicabilidad (refinado en nivel Completo)', {'fields': ('solo_con_receta', 'categorias'),
+                                                       'classes': ('collapse',)}),
+    )

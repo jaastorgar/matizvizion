@@ -5,15 +5,19 @@
   var selSuc = document.getElementById('r-sucursal'), selTec = document.getElementById('r-tecnologo');
   var inpFecha = document.getElementById('r-fecha'), chips = document.getElementById('r-chips');
   var selBox = document.getElementById('r-selected'), btn = document.getElementById('r-confirm'), msg = document.getElementById('r-msg');
+  var daysWrap = document.getElementById('r-days');
   var TEC = [], selectedBloque = null, loadedFecha = null;
   var reagendarId = new URLSearchParams(location.search).get('reagendar');
+  var DAYS_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   console.log('[reserva] modo inicial =', reagendarId ? ('REAGENDAR cita ' + reagendarId) : 'CREAR');
 
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
-  function todayStr(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
-  function fmtHora(h){ return String(h).slice(0,5); }
+  function isoOf(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function todayStr(){ return isoOf(new Date()); }
+  function fmtHora(h){ return String(h).slice(0, 5); }
   function setMsg(t, ok){ msg.textContent = t || ''; msg.className = 'text-center mt-2 mb-0 ' + (ok ? 'text-cta' : 'text-danger'); }
   function tecLabel(t){ return t.nombre + (t.especialidad ? ' (' + t.especialidad + ')' : ''); }
+
   function fillSelect(el, items, labelFn){
     el.innerHTML = '<option value="">Selecciona…</option>';
     items.forEach(function (it){ var o = document.createElement('option'); o.value = it.id; o.textContent = labelFn(it); o.dataset.nombre = (it.nombre || ''); el.appendChild(o); });
@@ -23,14 +27,50 @@
     selectedBloque = null; btn.disabled = true;
     selBox.className = 'mv-selected-box empty'; selBox.textContent = 'Bloque seleccionado: ninguno';
   }
+
+  // ---- Fila de dias proximos (Hoy, Manana y los 6 siguientes) ----
+  function dayDow(i, iso){
+    if (i === 0) return 'Hoy';
+    if (i === 1) return 'Mañana';
+    var p = iso.split('-');
+    return DAYS_ES[new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+  }
+  function buildDays(){
+    if (!daysWrap) return;
+    var base = new Date(); var html = '';
+    for (var i = 0; i < 8; i++){
+      var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+      var iso = isoOf(d);
+      var p = iso.split('-');
+      html += '<button type="button" class="mv-day-chip" data-fecha="' + iso + '" style="animation-delay:' + (i * 0.045) + 's">' +
+              '<span class="mv-day-dow">' + dayDow(i, iso) + '</span>' +
+              '<span class="mv-day-num">' + parseInt(p[2], 10) + '</span></button>';
+    }
+    daysWrap.innerHTML = html;
+  }
+  function syncDayChips(){
+    if (!daysWrap) return;
+    daysWrap.querySelectorAll('.mv-day-chip').forEach(function (c){
+      c.classList.toggle('active', c.getAttribute('data-fecha') === inpFecha.value);
+    });
+  }
+  if (daysWrap) {
+    daysWrap.addEventListener('click', function (e){
+      var c = e.target.closest('.mv-day-chip'); if (!c) return;
+      inpFecha.value = c.getAttribute('data-fecha');
+      loadBloques();
+    });
+  }
+
   function loadBloques(){
     resetSelection();
     var s = selSuc.value, t = selTec.value, f = inpFecha.value;
     loadedFecha = f;
+    syncDayChips();
     if (!s || !t || !f) { chips.innerHTML = '<span class="mv-empty">Selecciona sucursal, tecnólogo y fecha.</span>'; return; }
     if (f < todayStr()) { chips.innerHTML = '<span class="mv-empty">No se puede agendar en una fecha pasada.</span>'; return; }
     api.get('/appointments/bloques/?sucursal=' + s + '&fecha=' + f).then(function (r){
-      loadedFecha = f;
+      loadedFecha = f; syncDayChips();
       if (!r.ok || !Array.isArray(r.data)) { chips.innerHTML = '<span class="mv-empty">No se pudieron cargar los bloques.</span>'; return; }
       var list = r.data.filter(function (b){ return String(b.tecnologo) === String(t); });
       if (!list.length) { chips.innerHTML = '<span class="mv-empty">No hay bloques disponibles para esa selección.</span>'; return; }
@@ -39,14 +79,11 @@
       }).join('');
     });
   }
+
   chips.addEventListener('click', function (e){
     var c = e.target.closest('.mv-chip'); if (!c) return;
-    // Doble seguro: si el input no coincide con la fecha de los chips cargados,
-    // recargo y NO selecciono (evita mandar un id de otra fecha).
     if (inpFecha.value !== loadedFecha || c.getAttribute('data-fecha') !== inpFecha.value) {
-      toast('La fecha cambió; recargando bloques…', 'error');
-      loadBloques();
-      return;
+      toast('La fecha cambió; recargando bloques…', 'error'); loadBloques(); return;
     }
     chips.querySelectorAll('.mv-chip').forEach(function (x){ x.classList.remove('active'); });
     c.classList.add('active');
@@ -55,10 +92,10 @@
     selBox.textContent = 'Bloque seleccionado: ' + inpFecha.value + ' · ' + c.getAttribute('data-hi') + ' – ' + c.getAttribute('data-hf');
     btn.disabled = false; setMsg('');
   });
+
   btn.addEventListener('click', function (){
     if (!auth.isAuthenticated()) { toast('Inicia sesión para continuar.', 'error'); window.location.href = '/login/?next=/citas/'; return; }
     if (!selectedBloque) return;
-    // Validaciones finales antes de enviar
     if (inpFecha.value < todayStr()) { setMsg('No se puede agendar ni reagendar en una fecha pasada.', false); return; }
     if (inpFecha.value !== loadedFecha) { setMsg('Los bloques no coinciden con la fecha seleccionada; recargando.', false); loadBloques(); return; }
     var modoReagendar = !!reagendarId;
@@ -68,7 +105,7 @@
       ? api.post('/appointments/citas/' + reagendarId + '/reagendar/', { body: { bloque: Number(selectedBloque) } })
       : api.post('/appointments/citas/', { body: { bloque: Number(selectedBloque) } });
     prom.then(function (r){
-      btn.textContent = modoReagendar ? 'Confirmar reagenda' : 'Confirmar Reserva';
+      btn.textContent = modoReagendar ? 'Confirmar reagenda' : 'Confirmar reserva';
       if (r.ok) {
         if (modoReagendar) { toast('¡Cita reagendada con éxito!', 'success'); setMsg('Tu cita fue movida al nuevo bloque.', true); setTimeout(function(){ window.location.href = '/mis-citas/'; }, 900); }
         else { toast('¡Cita reservada con éxito!', 'success'); setMsg('Cita agendada. Te esperamos.', true); loadBloques(); }
@@ -78,12 +115,15 @@
       }
     });
   });
+
   selSuc.addEventListener('change', function (){
     fillSelect(selTec, TEC.filter(function (t){ return String(t.sucursal) === selSuc.value; }), tecLabel);
     selTec.value = ''; inpFecha.value = ''; loadedFecha = null; loadBloques();
   });
-  selTec.addEventListener('change', function (){ inpFecha.value = todayStr(); loadBloques(); });
-  // Escuchamos 'input' Y 'change' para que el date nunca quede desincronizado
+  selTec.addEventListener('change', function (){
+    if (!inpFecha.value) inpFecha.value = todayStr();
+    loadBloques();
+  });
   inpFecha.addEventListener('change', loadBloques);
   inpFecha.addEventListener('input', loadBloques);
 
@@ -105,13 +145,13 @@
       var ot = selTec.querySelectorAll('option');
       for (var j = 0; j < ot.length; j++) { if (ot[j].dataset.nombre === c.tecnologo_nombre) { selTec.value = ot[j].value; break; } }
       inpFecha.disabled = false; selTec.disabled = false;
-      // La fecha precargada nunca puede ser pasada; si lo fuera, cae a hoy
       var fc = c.bloque_fecha || todayStr();
       inpFecha.value = (fc < todayStr()) ? todayStr() : fc;
       loadBloques();
     }).catch(function () {});
   }
 
+  buildDays();
   Promise.all([api.get('/core/sucursales/'), api.get('/appointments/tecnologos/')]).then(function (res){
     var rs = res[0], rt = res[1];
     if (rs.ok && Array.isArray(rs.data)) fillSelect(selSuc, rs.data, function (s){ return s.nombre; });

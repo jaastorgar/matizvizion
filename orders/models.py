@@ -3,6 +3,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class EstadoOrden(models.TextChoices):
@@ -77,6 +78,10 @@ class Orden(models.Model):
     )
     total = models.DecimalField('Total', max_digits=10, decimal_places=2)
     estado = models.CharField('Estado', max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
+    fecha_entrega = models.DateField(
+        'Fecha de entrega', null=True, blank=True,
+        help_text='Se sella automaticamente al pasar a ENTREGADA. Ancla el reloj de garantias.'
+    )
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
@@ -100,7 +105,6 @@ class Orden(models.Model):
         return f"MV-{self.creado_en.year}-{uuid.uuid4().hex[:5].upper()}"
 
     def save(self, *args, **kwargs):
-        # Captura el estado previo (si ya existe) para que la signal detecte cambios
         if self.pk:
             self._prev_estado = Orden.objects.filter(pk=self.pk).values_list('estado', flat=True).first()
         super().save(*args, **kwargs)
@@ -116,13 +120,16 @@ class Orden(models.Model):
             raise ValueError(f"No se puede cambiar la orden de {self.estado} a {nuevo_estado}.")
         estado_anterior = self.estado
         self.estado = nuevo_estado
-        self.save(update_fields=['estado', 'actualizado_en'])
+        fields = ['estado', 'actualizado_en']
+        if nuevo_estado == self.Estado.ENTREGADA and self.fecha_entrega is None:
+            self.fecha_entrega = timezone.localdate()
+            fields.append('fecha_entrega')
+        self.save(update_fields=fields)
         HistorialEstado.objects.create(
             orden=self, estado_anterior=estado_anterior, estado_nuevo=nuevo_estado, usuario=usuario
         )
 
     def revertir_stock(self):
-        """Devuelve al inventario los productos de la orden. Llamar dentro de transaction.atomic."""
         from django.db.models import F
         from store.models import Producto
         for it in self.items.select_related('producto').all():
@@ -175,16 +182,29 @@ class EstadoDevolucion(models.TextChoices):
     RECHAZADA = 'RECHAZADA', 'Rechazada'
 
 
+class ResolucionDevolucion(models.TextChoices):
+    DEVOLUCION = 'devolucion', 'Devolucion del dinero'
+    CAMBIO = 'cambio', 'Cambio directo'
+    REPARACION = 'reparacion', 'Reparacion gratuita'
+    REHACER = 'rehacer', 'Re-hacer (multifocal)'
+
+
 class SolicitudDevolucion(models.Model):
-    """
-    Devolucion por garantia de satisfaccion. El cliente SOLICITA; el vendedor
-    APRUEBA cuando el cliente entrega el producto en tienda (ahi se devuelve
-    el stock y la orden pasa a DEVUELTA). No es autoservicio por seguridad.
-    """
     orden = models.ForeignKey(Orden, on_delete=models.CASCADE, related_name='devoluciones')
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='solicitudes_devolucion')
+    # Productos concretos que el cliente devuelve (lineas completas de la orden).
+    items = models.ManyToManyField(
+        ItemOrden, blank=True, related_name='devoluciones',
+        help_text='Lineas de la orden que se devuelven. Vacio en solicitudes legacy.'
+    )
     motivo = models.TextField('Motivo del cliente')
     estado = models.CharField('Estado', max_length=12, choices=EstadoDevolucion.choices, default=EstadoDevolucion.PENDIENTE, db_index=True)
+    resolucion = models.CharField(
+        'Resolucion aplicada', max_length=16, choices=ResolucionDevolucion.choices,
+        blank=True, null=True,
+        help_text='Solo "devolucion" repone stock; la orden pasa a DEVUELTA solo si se devuelven todas sus lineas.'
+    )
+    garantia_aplicada = models.CharField('Garantia aplicada (codigo de politica)', max_length=40, blank=True, null=True)
     motivo_rechazo = models.TextField('Motivo de rechazo (vendedor)', blank=True, null=True)
     reembolso_procesado = models.BooleanField('Reembolso procesado (manual)', default=False)
     creado_en = models.DateTimeField(auto_now_add=True)
@@ -199,8 +219,51 @@ class SolicitudDevolucion(models.Model):
     def __str__(self):
         return f"Devolucion #{self.id} orden {self.orden_id} [{self.estado}]"
 
+    def revertir_stock_items(self):
+        """Repone al inventario SOLO los productos de esta solicitud (lineas completas)."""
+        from django.db.models import F
+        from store.models import Producto
+        for it in self.items.select_related('producto').all():
+            Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + it.cantidad)
 
-# ---- Signal: mail cuando cambia el ESTADO de una orden (cualquiera sea el origen) ----
+
+class PoliticaGarantia(models.Model):
+    BASE_LEGAL = 'LEGAL'
+    BASE_FABRICANTE = 'FABRICANTE'
+    BASE_CONFORT = 'CONFORT'
+    BASE_CHOICES = [
+        (BASE_LEGAL, 'Garantía legal'),
+        (BASE_FABRICANTE, 'Técnica / fabricante'),
+        (BASE_CONFORT, 'Adaptación / confort'),
+    ]
+
+    codigo = models.CharField('Código interno', max_length=40, unique=True)
+    nombre = models.CharField('Nombre', max_length=120)
+    base = models.CharField('Base', max_length=20, choices=BASE_CHOICES, db_index=True)
+    descripcion = models.TextField('Cobertura')
+    exclusiones = models.TextField('Exclusiones', blank=True)
+    plazo_label = models.CharField('Plazo (texto)', max_length=40)
+    plazo_dias_min = models.PositiveIntegerField('Plazo mínimo (días)')
+    plazo_dias_max = models.PositiveIntegerField('Plazo máximo (días)')
+    activa = models.BooleanField('Activa', default=True, db_index=True)
+    orden_prioridad = models.PositiveIntegerField('Orden', default=0)
+    permite_devolucion = models.BooleanField('Permite devolución', default=False)
+    permite_cambio = models.BooleanField('Permite cambio', default=False)
+    permite_reparacion = models.BooleanField('Permite reparación', default=False)
+    permite_rehacer = models.BooleanField('Permite re-hacer (multifocal)', default=False)
+    solo_con_receta = models.BooleanField('Solo con receta óptica', default=False)
+    categorias = models.ManyToManyField('store.Categoria', blank=True, related_name='politicas_garantia')
+
+    class Meta:
+        verbose_name = 'Política de garantía'
+        verbose_name_plural = 'Políticas de garantía'
+        ordering = ['orden_prioridad', 'nombre']
+
+    def __str__(self):
+        return f"{self.nombre} [{self.get_base_display()}]"
+
+
+# ---- Signal: mail cuando cambia el ESTADO de una orden ----
 from django.db import transaction as _tx
 from django.db.models.signals import post_save as _post_save_orden
 from django.dispatch import receiver as _receiver_orden
@@ -218,7 +281,7 @@ def _enviar_mail_orden(orden_id, estado):
 @_receiver_orden(_post_save_orden, sender=Orden)
 def _orden_estado_mail(sender, instance, created, **kwargs):
     if created:
-        return  # PENDIENTE inicial no manda mail
+        return
     prev = getattr(instance, '_prev_estado', None)
     if prev is None or prev == instance.estado:
         return

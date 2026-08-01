@@ -1,36 +1,145 @@
 {% extends 'shared/base.html' %}
 {% load static %}
-{% block title %}Agendar cita — Óptica Matiz Visión{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/appointments/reserva.css' %}" />{% endblock %}
+{% block title %}Agendar examen visual — Matizvisión{% endblock %}
+{% block extra_css %}
+<style>
+  @keyframes mvRise   { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes mvChipIn { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+
+  .mv-reserva-shell {
+    position: relative; min-height: 70vh; border-radius: 22px;
+    padding: clamp(1.1rem, 3vw, 2.25rem);
+    background:
+      radial-gradient(rgba(31,41,55,.035) 1px, transparent 1.4px) 0 0 / 22px 22px,
+      radial-gradient(1000px 480px at 90% -12%, rgba(16,185,129,.12), transparent 62%),
+      radial-gradient(760px 420px at -8% 110%, rgba(6,95,70,.08), transparent 60%),
+      var(--white, #fff);
+    background-attachment: fixed, fixed, fixed, scroll;
+    box-shadow: 0 18px 50px rgba(31,41,55,.08);
+    animation: mvRise .6s ease both;
+  }
+  .mv-reserva-head { margin-bottom: 1.5rem; }
+  .mv-reserva-eyebrow {
+    display: inline-block; font-size: .74rem; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--green-dark, #065F46);
+    background: rgba(16,185,129,.12); padding: .28rem .7rem; border-radius: 999px; margin-bottom: .8rem;
+  }
+  .mv-reserva-title {
+    font-family: var(--font-head); font-weight: 800; color: var(--lead-dark, #1f2937);
+    font-size: clamp(1.9rem, 4.2vw, 3rem); line-height: 1.03; letter-spacing: -.02em; margin: 0;
+  }
+  .mv-reserva-sub { color: var(--lead-muted, #6B7280); max-width: 640px; margin: .55rem 0 0; font-size: 1.02rem; }
+
+  .mv-reserva-card {
+    background: var(--white, #fff); border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 18px; box-shadow: var(--shadow, 0 8px 24px rgba(31,41,55,.08));
+    padding: clamp(1.1rem, 2.4vw, 1.9rem); max-width: 880px;
+    transition: box-shadow .18s ease;
+  }
+  .mv-reserva-card:hover { box-shadow: 0 14px 34px rgba(31,41,55,.12); }
+
+  .mv-reserva-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem; }
+  @media (max-width: 640px){ .mv-reserva-grid { grid-template-columns: 1fr; } }
+  .mv-field { margin-bottom: 1.15rem; }
+  .mv-field > label, .mv-days-label {
+    display: block; font-size: .74rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--lead-muted, #6B7280); margin-bottom: .45rem;
+  }
+  .mv-field select, .mv-field input[type="date"] {
+    width: 100%; padding: .62rem .8rem; border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 11px; font-family: inherit; font-size: .98rem; color: var(--lead-dark, #1f2937);
+    background: var(--white, #fff); transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .mv-field select:focus, .mv-field input[type="date"]:focus {
+    outline: none; border-color: var(--green-primary, #10B981); box-shadow: 0 0 0 3px rgba(16,185,129,.18);
+  }
+  .mv-field select:disabled, .mv-field input[type="date"]:disabled { background: var(--lead-light, #f3f4f6); cursor: not-allowed; }
+
+  /* Fila de dias proximos */
+  .mv-days { display: flex; gap: .55rem; overflow-x: auto; padding: .2rem .1rem .5rem; scrollbar-width: thin; }
+  .mv-day-chip {
+    flex: 0 0 auto; min-width: 64px; display: flex; flex-direction: column; align-items: center; gap: .1rem;
+    padding: .55rem .5rem; border: 1px solid var(--border-color, #e5e7eb); border-radius: 13px;
+    background: var(--white, #fff); cursor: pointer; transition: transform .14s ease, border-color .14s ease, background .14s ease, box-shadow .14s ease;
+    animation: mvChipIn .35s ease both;
+  }
+  .mv-day-chip:hover { transform: translateY(-3px); border-color: var(--green-primary, #10B981); box-shadow: 0 8px 18px rgba(16,185,129,.16); }
+  .mv-day-chip .mv-day-dow { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--lead-muted, #6B7280); }
+  .mv-day-chip .mv-day-num { font-size: 1.2rem; font-weight: 800; font-family: var(--font-head); color: var(--lead-dark, #1f2937); line-height: 1; }
+  .mv-day-chip.active { background: var(--green-dark, #065F46); border-color: var(--green-dark, #065F46); box-shadow: 0 8px 20px rgba(6,95,70,.28); }
+  .mv-day-chip.active .mv-day-dow, .mv-day-chip.active .mv-day-num { color: #fff; }
+
+  /* Chips de hora */
+  .mv-chips { display: flex; flex-wrap: wrap; gap: .55rem; min-height: 44px; }
+  .mv-chip {
+    border: 1px solid var(--green-primary, #10B981); background: var(--white, #fff); color: var(--green-dark, #065F46);
+    border-radius: 999px; padding: .5rem 1.1rem; font-weight: 700; font-family: var(--font-head); cursor: pointer;
+    transition: transform .14s ease, background .14s ease, color .14s ease, box-shadow .14s ease;
+    animation: mvChipIn .3s ease both;
+  }
+  .mv-chip:hover { transform: translateY(-2px); background: rgba(16,185,129,.1); box-shadow: 0 6px 14px rgba(16,185,129,.16); }
+  .mv-chip.active { background: var(--green-dark, #065F46); color: #fff; border-color: var(--green-dark, #065F46); transform: scale(1.04); box-shadow: 0 8px 18px rgba(6,95,70,.26); }
+
+  .mv-selected-box {
+    margin-top: 1.1rem; padding: .85rem 1rem; border-radius: 12px; font-weight: 600;
+    border: 1px dashed var(--border-color, #e5e7eb); background: var(--lead-light, #f3f4f6);
+    color: var(--lead-muted, #6B7280); transition: background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .mv-selected-box:not(.empty) {
+    border-style: solid; border-color: rgba(16,185,129,.45); background: rgba(16,185,129,.1); color: var(--green-dark, #065F46);
+  }
+
+  .mv-reserva-submit {
+    margin-top: 1.1rem; width: 100%; border: none; border-radius: 12px; padding: .85rem 1rem;
+    background: var(--green-primary, #10B981); color: #fff; font-weight: 800; font-family: var(--font-head);
+    font-size: 1.02rem; cursor: pointer; transition: background .15s ease, transform .1s ease, opacity .15s ease;
+  }
+  .mv-reserva-submit:hover:not(:disabled) { background: var(--green-dark, #065F46); }
+  .mv-reserva-submit:active:not(:disabled) { transform: scale(.99); }
+  .mv-reserva-submit:disabled { opacity: .5; cursor: not-allowed; background: var(--lead-muted, #6B7280); }
+
+  #r-msg { min-height: 1.3rem; }
+  .mv-empty { color: var(--lead-muted, #6B7280); padding: .4rem 0; }
+</style>
+{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <h1 class="h3 mb-1"><i class="bi bi-heart-pulse"></i> Agendar examen visual</h1>
-    <p class="text-secondary mb-4">Elige sucursal, tecnólogo, fecha y bloque horario disponible.</p>
-    <div class="mv-reserva-card">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label" for="r-sucursal">Sucursal</label>
-          <select class="form-select" id="r-sucursal"><option value="">Selecciona…</option></select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="r-tecnologo">Tecnólogo médico</label>
-          <select class="form-select" id="r-tecnologo" disabled><option value="">Selecciona…</option></select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="r-fecha">Fecha</label>
-          <input type="date" class="form-control" id="r-fecha" disabled />
-        </div>
+<div class="mv-reserva-shell">
+  <header class="mv-reserva-head">
+    <span class="mv-reserva-eyebrow">Agendamiento clínico</span>
+    <h1 class="mv-reserva-title">Agenda tu examen visual</h1>
+    <p class="mv-reserva-sub">Elige sucursal, tecnólogo y el día que mejor te acomode. Te mostramos los próximos 8 días para que reserves con anticipación, no solo hoy.</p>
+  </header>
+
+  <div class="mv-reserva-card">
+    <div class="mv-reserva-grid">
+      <div class="mv-field">
+        <label for="r-sucursal">Sucursal</label>
+        <select id="r-sucursal"></select>
       </div>
-      <div class="mt-4">
-        <label class="form-label">Bloques horarios disponibles</label>
-        <div id="r-chips" class="mv-chips"><span class="mv-empty">Selecciona sucursal, tecnólogo y fecha.</span></div>
+      <div class="mv-field">
+        <label for="r-tecnologo">Tecnólogo médico</label>
+        <select id="r-tecnologo"></select>
       </div>
-      <div id="r-selected" class="mv-selected-box empty">Bloque seleccionado: ninguno</div>
-      <button id="r-confirm" class="btn btn-cta w-100 mt-3" disabled>Confirmar Reserva</button>
-      <p id="r-msg" class="text-center mt-2 mb-0"></p>
     </div>
+
+    <div class="mv-field">
+      <label for="r-fecha">Fecha</label>
+      <input type="date" id="r-fecha" />
+      <div class="mv-days-label" style="margin-top:.85rem;">Próximos días</div>
+      <div id="r-days" class="mv-days"></div>
+    </div>
+
+    <div class="mv-field" style="margin-bottom:.4rem;">
+      <div class="mv-days-label">Bloques horarios disponibles</div>
+      <div id="r-chips" class="mv-chips"><span class="mv-empty">Selecciona sucursal, tecnólogo y fecha.</span></div>
+    </div>
+
+    <div id="r-selected" class="mv-selected-box empty">Bloque seleccionado: ninguno</div>
+    <button type="button" id="r-confirm" class="mv-reserva-submit" disabled>Confirmar reserva</button>
+    <p id="r-msg"></p>
   </div>
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'modules/appointments/reserva.js' %}?v=4"></script>{% endblock %}
+{% block extra_js %}
+<script src="{% static 'modules/appointments/reserva.js' %}?v=4"></script>
+{% endblock %}
