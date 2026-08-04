@@ -6,14 +6,23 @@
   var inpFecha = document.getElementById('r-fecha'), chips = document.getElementById('r-chips');
   var selBox = document.getElementById('r-selected'), btn = document.getElementById('r-confirm'), msg = document.getElementById('r-msg');
   var daysWrap = document.getElementById('r-days');
-  var TEC = [], selectedBloque = null, loadedFecha = null;
+  var TEC = [], selectedBloque = null, selectedHi = null, loadedFecha = null;
   var reagendarId = new URLSearchParams(location.search).get('reagendar');
   var DAYS_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   console.log('[reserva] modo inicial =', reagendarId ? ('REAGENDAR cita ' + reagendarId) : 'CREAR');
 
+  // Estilo para chips de horarios que ya pasaron (se inyecta una sola vez)
+  if (!document.getElementById('mv-reserva-past-style')) {
+    var st = document.createElement('style'); st.id = 'mv-reserva-past-style';
+    st.textContent = '.mv-chip.past,.mv-chip:disabled{opacity:.45;border-color:var(--border-color,#e5e7eb);color:var(--lead-muted,#6b7280);background:var(--lead-light,#f3f4f6);cursor:not-allowed;transform:none;box-shadow:none;text-decoration:line-through;}';
+    document.head.appendChild(st);
+  }
+
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
   function isoOf(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function todayStr(){ return isoOf(new Date()); }
+  function nowHM(){ var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function isPast(f, hi){ return f === todayStr() && hi <= nowHM(); }
   function fmtHora(h){ return String(h).slice(0, 5); }
   function setMsg(t, ok){ msg.textContent = t || ''; msg.className = 'text-center mt-2 mb-0 ' + (ok ? 'text-cta' : 'text-danger'); }
   function tecLabel(t){ return t.nombre + (t.especialidad ? ' (' + t.especialidad + ')' : ''); }
@@ -24,11 +33,11 @@
     el.disabled = items.length === 0;
   }
   function resetSelection(){
-    selectedBloque = null; btn.disabled = true;
+    selectedBloque = null; selectedHi = null; btn.disabled = true;
     selBox.className = 'mv-selected-box empty'; selBox.textContent = 'Bloque seleccionado: ninguno';
   }
 
-  // ---- Fila de dias proximos (Hoy, Manana y los 6 siguientes) ----
+  // ---- Fila de dias proximos ----
   function dayDow(i, iso){
     if (i === 0) return 'Hoy';
     if (i === 1) return 'Mañana';
@@ -40,8 +49,7 @@
     var base = new Date(); var html = '';
     for (var i = 0; i < 8; i++){
       var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
-      var iso = isoOf(d);
-      var p = iso.split('-');
+      var iso = isoOf(d); var p = iso.split('-');
       html += '<button type="button" class="mv-day-chip" data-fecha="' + iso + '" style="animation-delay:' + (i * 0.045) + 's">' +
               '<span class="mv-day-dow">' + dayDow(i, iso) + '</span>' +
               '<span class="mv-day-num">' + parseInt(p[2], 10) + '</span></button>';
@@ -75,21 +83,42 @@
       var list = r.data.filter(function (b){ return String(b.tecnologo) === String(t); });
       if (!list.length) { chips.innerHTML = '<span class="mv-empty">No hay bloques disponibles para esa selección.</span>'; return; }
       chips.innerHTML = list.map(function (b){
-        return '<button type="button" class="mv-chip" data-id="' + b.id + '" data-fecha="' + f + '" data-hi="' + fmtHora(b.hora_inicio) + '" data-hf="' + fmtHora(b.hora_fin) + '">' + fmtHora(b.hora_inicio) + '</button>';
+        var hi = fmtHora(b.hora_inicio);
+        var past = isPast(f, hi);
+        return '<button type="button" class="mv-chip' + (past ? ' past' : '') + '" data-id="' + b.id + '" data-fecha="' + f + '" data-hi="' + hi + '" data-hf="' + fmtHora(b.hora_fin) + '"' + (past ? ' disabled title="Este horario ya pasó"' : '') + '>' + hi + '</button>';
       }).join('');
+      tickPast();
     });
   }
 
+  // Deshabilita en tiempo real los bloques de hoy que ya pasaron (cada 30 s)
+  function tickPast(){
+    var changed = false;
+    chips.querySelectorAll('.mv-chip:not([disabled])').forEach(function (c){
+      if (isPast(c.getAttribute('data-fecha'), c.getAttribute('data-hi'))) {
+        c.disabled = true; c.classList.add('past'); c.title = 'Este horario ya pasó'; changed = true;
+        if (c.classList.contains('active')) {
+          c.classList.remove('active');
+          selectedBloque = null; selectedHi = null; btn.disabled = true;
+          selBox.className = 'mv-selected-box empty'; selBox.textContent = 'Bloque seleccionado: ninguno';
+        }
+      }
+    });
+    if (changed) toast('Algunos horarios ya pasaron y se deshabilitaron.', 'error');
+  }
+  setInterval(tickPast, 30000);
+
   chips.addEventListener('click', function (e){
-    var c = e.target.closest('.mv-chip'); if (!c) return;
+    var c = e.target.closest('.mv-chip'); if (!c || c.disabled) return;
     if (inpFecha.value !== loadedFecha || c.getAttribute('data-fecha') !== inpFecha.value) {
       toast('La fecha cambió; recargando bloques…', 'error'); loadBloques(); return;
     }
     chips.querySelectorAll('.mv-chip').forEach(function (x){ x.classList.remove('active'); });
     c.classList.add('active');
     selectedBloque = c.getAttribute('data-id');
+    selectedHi = c.getAttribute('data-hi');
     selBox.className = 'mv-selected-box';
-    selBox.textContent = 'Bloque seleccionado: ' + inpFecha.value + ' · ' + c.getAttribute('data-hi') + ' – ' + c.getAttribute('data-hf');
+    selBox.textContent = 'Bloque seleccionado: ' + inpFecha.value + ' · ' + selectedHi + ' – ' + c.getAttribute('data-hf');
     btn.disabled = false; setMsg('');
   });
 
@@ -97,9 +126,9 @@
     if (!auth.isAuthenticated()) { toast('Inicia sesión para continuar.', 'error'); window.location.href = '/login/?next=/citas/'; return; }
     if (!selectedBloque) return;
     if (inpFecha.value < todayStr()) { setMsg('No se puede agendar ni reagendar en una fecha pasada.', false); return; }
+    if (selectedHi && isPast(inpFecha.value, selectedHi)) { setMsg('Ese horario ya pasó; elige uno vigente.', false); loadBloques(); return; }
     if (inpFecha.value !== loadedFecha) { setMsg('Los bloques no coinciden con la fecha seleccionada; recargando.', false); loadBloques(); return; }
     var modoReagendar = !!reagendarId;
-    console.log('[reserva] CONFIRMAR modo =', modoReagendar ? ('reagendar ' + reagendarId) : 'crear', '| bloque =', selectedBloque, '| fecha =', inpFecha.value);
     btn.disabled = true; btn.textContent = modoReagendar ? 'Reagendando…' : 'Reservando…';
     var prom = modoReagendar
       ? api.post('/appointments/citas/' + reagendarId + '/reagendar/', { body: { bloque: Number(selectedBloque) } })

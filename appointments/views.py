@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+from django.utils import timezone
 
 from django.db import IntegrityError, transaction
 from rest_framework import mixins, status, viewsets
@@ -50,7 +51,7 @@ class CitaMedicaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.R
             bloque = BloqueHorario.objects.select_for_update().select_related('tecnologo__sucursal').get(id=bloque_id, disponible=True)
         except BloqueHorario.DoesNotExist:
             return Response({'error': 'El bloque seleccionado ya no esta disponible.'}, status=status.HTTP_400_BAD_REQUEST)
-        if bloque.fecha < date.today():
+        if bloque.fecha < date.today() or (bloque.fecha == date.today() and bloque.hora_inicio <= timezone.localtime().time()):
             return Response({'error': 'No se puede agendar en una fecha pasada.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             cita = CitaMedica.objects.create(cliente=request.user, bloque=bloque, estado='AGENDADA')
@@ -100,7 +101,7 @@ class CitaMedicaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.R
                 nuevo = BloqueHorario.objects.select_for_update().select_related('tecnologo__sucursal').get(pk=nuevo_id, disponible=True)
             except BloqueHorario.DoesNotExist:
                 return Response({'error': 'El nuevo bloque ya no esta disponible.'}, status=status.HTTP_400_BAD_REQUEST)
-            if nuevo.fecha < date.today():
+            if nuevo.fecha < date.today() or (nuevo.fecha == date.today() and nuevo.hora_inicio <= timezone.localtime().time()):
                 return Response({'error': 'No se puede reagendar a una fecha pasada.'}, status=status.HTTP_400_BAD_REQUEST)
             viejo.disponible = True
             viejo.save(update_fields=['disponible'])
