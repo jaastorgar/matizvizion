@@ -29,7 +29,7 @@
     if (!MV || !MV.me) return;
     MV.me().then(function (u) {
       if (!u) return;
-      if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/panel/'); return; }
+      if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/inicio/'); return; }
       var a1 = document.getElementById('home-cta-1'), a2 = document.getElementById('home-cta-2');
       if (a1) { a1.href = '/catalogo/'; a1.textContent = 'Ir al catálogo'; }
       if (a2) { a2.href = '/citas/'; a2.textContent = 'Agendar cita'; }

@@ -33,7 +33,7 @@
   });
   MV.me().then(function (u){
     if (!u) { location.replace('/login/?next=/mis-citas/'); return; }
-    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/panel/'); return; }
+    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/inicio/'); return; }
     load();
   });
 })();

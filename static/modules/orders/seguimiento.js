@@ -34,7 +34,7 @@
   }
   MV.me().then(function (u){
     if (!u) { location.replace('/login/?next=/seguimiento/'); return; }
-    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/panel/'); return; }
+    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/inicio/'); return; }
     var box = document.getElementById('seg-list');
     var ordenParam = (new URLSearchParams(location.search).get('orden') || '').trim().toUpperCase();
     api.get('/orders/ordenes/').then(function (r){

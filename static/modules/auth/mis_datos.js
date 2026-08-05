@@ -12,7 +12,7 @@
   }
   MV.me().then(function (u){
     if (!u) { location.replace('/login/?next=/mis-datos/'); return; }
-    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/panel/'); return; }
+    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/inicio/'); return; }
     var nombre = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
     set('pf-name', nombre || 'Mi cuenta');
     set('pf-email', u.email || '—');

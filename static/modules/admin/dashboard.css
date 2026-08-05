@@ -108,3 +108,5 @@
 .mv-res-note.err { color: #b91c1c; }
 .mv-res-foot { display: flex; gap: .6rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
 .mv-res-loading { color: var(--lead-muted, #6B7280); font-size: .88rem; display: flex; align-items: center; gap: .5rem; }
+.mv-side-item i, .mv-dash-panel h1 i { color: var(--green-dark); margin-right: .4rem; }
+.mv-dash-panel h1 i { font-size: 1.1rem; }

@@ -23,14 +23,14 @@
 
   function layout(){
     root.innerHTML =
-      '<h1 class="h3 mb-3">📋 Panel de operaciones</h1>' +
+      '<h1 class="h3 mb-3"><i class="bi bi-clipboard2-pulse"></i>  Panel de operaciones</h1>' +
       '<div class="mv-dash-wrap">' +
         '<aside class="mv-dash-side">' +
-          '<button class="mv-side-item active" data-pane="pedidos">📦 Pedidos por Entregar</button>' +
-          '<button class="mv-side-item" data-pane="devoluciones">↩️ Devoluciones</button>' +
-          '<button class="mv-side-item" data-pane="stock">⚠️ Stock bajo</button>' +
-          '<button class="mv-side-item" data-pane="citas">🩺 Citas del Día</button>' +
-          '<button class="mv-side-item" data-pane="rut">🔍 Buscar por RUT</button>' +
+          '<button class="mv-side-item active" data-pane="pedidos"><i class="bi bi-box-seam"></i>  Pedidos por Entregar</button>' +
+          '<button class="mv-side-item" data-pane="devoluciones"><i class="bi bi-arrow-return-left"></i>  Devoluciones</button>' +
+          '<button class="mv-side-item" data-pane="stock"><i class="bi bi-exclamation-triangle"></i>  Stock bajo</button>' +
+          '<button class="mv-side-item" data-pane="citas"><i class="bi bi-calendar2-heart"></i>  Citas del Día</button>' +
+          '<button class="mv-side-item" data-pane="rut"><i class="bi bi-search"></i>  Buscar por RUT</button>' +
         '</aside>' +
         '<section>' +
           '<div class="mv-dash-panel" id="pane-pedidos"><h2 class="h5 mb-3">Gestión de entregas</h2><div id="pedidos-body"></div></div>' +

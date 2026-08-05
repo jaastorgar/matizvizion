@@ -91,7 +91,7 @@
   });
   MV.me().then(function (u) {
     if (!u) { window.location.replace('/login/?next=/perfil/'); return; }
-    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { window.location.replace('/panel/'); return; }
+    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { window.location.replace('/inicio/'); return; }
     loadIdentidad(); loadPedidos(); loadCitas();
     activateTabFromHash();
     window.addEventListener('hashchange', activateTabFromHash);

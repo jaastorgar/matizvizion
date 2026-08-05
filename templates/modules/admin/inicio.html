@@ -1,0 +1,120 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Inicio — Matizvisión{% endblock %}
+{% block extra_css %}
+<style>
+  @keyframes mvInRise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .mv-in-shell {
+    position: relative; border-radius: 22px; padding: clamp(1.2rem, 3.4vw, 2.6rem);
+    background:
+      radial-gradient(rgba(31,41,55,.03) 1px, transparent 1.4px) 0 0 / 22px 22px,
+      radial-gradient(1000px 480px at 92% -12%, rgba(16,185,129,.11), transparent 62%),
+      radial-gradient(760px 420px at -8% 110%, rgba(6,95,70,.07), transparent 60%),
+      var(--white, #fff);
+    box-shadow: 0 16px 44px rgba(31,41,55,.07); animation: mvInRise .55s ease both;
+  }
+  .mv-in-eyebrow { display: inline-flex; align-items: center; gap: .45rem; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--green-dark); background: rgba(16,185,129,.12); padding: .3rem .8rem; border-radius: 999px; margin-bottom: .9rem; }
+  .mv-in-title { font-family: var(--font-head); font-weight: 800; color: var(--lead-dark); font-size: clamp(2rem, 4.6vw, 3.2rem); letter-spacing: -.02em; line-height: 1.03; margin: 0; }
+  .mv-in-sub { color: var(--lead-muted, #6B7280); margin: .5rem 0 1.8rem; font-size: 1.02rem; }
+  .mv-in-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.1rem; }
+  @media (max-width: 860px){ .mv-in-grid { grid-template-columns: 1fr; } }
+  .mv-in-main {
+    position: relative; display: flex; flex-direction: column; gap: 1rem; justify-content: space-between;
+    border: 1px solid rgba(6,95,70,.25); border-radius: 18px; padding: 1.6rem 1.7rem; text-decoration: none;
+    background: linear-gradient(140deg, #065F46, #0B7A5C 55%, #10B981); color: #fff; overflow: hidden;
+    transition: transform .16s ease, box-shadow .16s ease; box-shadow: 0 14px 34px rgba(6,95,70,.28);
+  }
+  .mv-in-main::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,.08); }
+  .mv-in-main:hover { transform: translateY(-4px); box-shadow: 0 22px 48px rgba(6,95,70,.36); color: #fff; }
+  .mv-in-main-ico { width: 56px; height: 56px; border-radius: 16px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; }
+  .mv-in-main h2 { font-family: var(--font-head); font-weight: 800; font-size: 1.5rem; margin: .2rem 0 .3rem; }
+  .mv-in-main p { color: rgba(255,255,255,.85); font-size: .95rem; margin: 0; max-width: 46ch; }
+  .mv-in-cta { display: inline-flex; align-items: center; gap: .5rem; font-weight: 800; font-family: var(--font-head); background: #fff; color: var(--green-dark); border-radius: 999px; padding: .6rem 1.2rem; width: fit-content; transition: gap .15s ease; }
+  .mv-in-main:hover .mv-in-cta { gap: .9rem; }
+  .mv-in-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .mv-in-stat { border: 1px solid var(--border-color); border-radius: 14px; background: var(--white); padding: .95rem 1rem; box-shadow: 0 4px 14px rgba(31,41,55,.05); display: flex; flex-direction: column; gap: .2rem; transition: transform .14s ease, box-shadow .14s ease; }
+  .mv-in-stat:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(31,41,55,.1); }
+  .mv-in-num { font-family: var(--font-head); font-weight: 800; font-size: 1.9rem; color: var(--green-dark); line-height: 1; }
+  .mv-in-lbl { font-size: .74rem; color: var(--lead-muted, #6B7280); display: flex; align-items: center; gap: .35rem; }
+  .mv-in-lbl i { color: var(--green-primary); }
+  .mv-in-quick { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
+  .mv-in-quick a { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--border-color); background: var(--white); color: var(--lead-dark); border-radius: 999px; padding: .55rem 1.05rem; font-weight: 700; font-size: .88rem; text-decoration: none; transition: border-color .14s ease, transform .13s ease, box-shadow .14s ease; }
+  .mv-in-quick a i { color: var(--green-dark); }
+  .mv-in-quick a:hover { border-color: var(--green-primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16,185,129,.15); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mv-in-shell">
+  <header>
+    <span class="mv-in-eyebrow"><i class="bi bi-shield-check"></i> Área de trabajo</span>
+    <h1 class="mv-in-title">Hola, <span id="in-nombre">…</span></h1>
+    <p class="mv-in-sub">Tu espacio de trabajo en Matizvisión. <span id="in-rol"></span></p>
+  </header>
+
+  <div class="mv-in-grid">
+    <a class="mv-in-main" href="/panel/">
+      <div class="mv-in-main-ico"><i class="bi bi-clipboard2-pulse"></i></div>
+      <div>
+        <h2>Panel de Operaciones</h2>
+        <p>Gestiona pedidos por entregar, devoluciones con marco de garantía, stock bajo y citas del día, todo en un solo lugar.</p>
+      </div>
+      <span class="mv-in-cta">Ir al Panel <i class="bi bi-arrow-right"></i></span>
+    </a>
+
+    <div class="mv-in-stats">
+      <div class="mv-in-stat"><span class="mv-in-num" id="st-pedidos">0</span><span class="mv-in-lbl"><i class="bi bi-box-seam"></i> Pedidos activos</span></div>
+      <div class="mv-in-stat"><span class="mv-in-num" id="st-dev">0</span><span class="mv-in-lbl"><i class="bi bi-arrow-return-left"></i> Devoluciones</span></div>
+      <div class="mv-in-stat"><span class="mv-in-num" id="st-citas">0</span><span class="mv-in-lbl"><i class="bi bi-calendar2-heart"></i> Citas hoy</span></div>
+      <div class="mv-in-stat"><span class="mv-in-num" id="st-stock">0</span><span class="mv-in-lbl"><i class="bi bi-exclamation-triangle"></i> Stock bajo</span></div>
+    </div>
+  </div>
+
+  <div class="mv-in-quick">
+    <a href="/mi-perfil/"><i class="bi bi-person-circle"></i> Mi perfil</a>
+    <a href="/administracion/" id="in-admin" hidden><i class="bi bi-graph-up-arrow"></i> Administración</a>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+  var MV = window.MV; if (!MV || !MV.me) return;
+  var api = MV.api;
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function todayStr(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function countUp(el, to){
+    var t0 = null;
+    function step(ts){ if (!t0) t0 = ts; var p = Math.min((ts - t0) / 600, 1); el.textContent = Math.round(to * p); if (p < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  MV.me().then(function (u) {
+    if (!u || (u.role !== 'VENDEDOR' && u.role !== 'ADMIN')) { location.replace('/'); return; }
+    var dn = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
+    document.getElementById('in-nombre').textContent = dn || u.email;
+    document.getElementById('in-rol').textContent = 'Rol: ' + (u.role === 'ADMIN' ? 'Administración' : 'Ventas');
+    if (u.role === 'ADMIN' || u.is_superuser) { var a = document.getElementById('in-admin'); if (a) a.hidden = false; }
+    Promise.all([
+      api.get('/orders/operaciones/'),
+      api.get('/orders/devoluciones/'),
+      api.get('/appointments/citas/'),
+      api.get('/store/productos/')
+    ]).then(function (res) {
+      var ORD = (res[0].ok && Array.isArray(res[0].data)) ? res[0].data : [];
+      var DEV = (res[1].ok && Array.isArray(res[1].data)) ? res[1].data : [];
+      var CIT = (res[2].ok && Array.isArray(res[2].data)) ? res[2].data : [];
+      var PRO = (res[3].ok && Array.isArray(res[3].data)) ? res[3].data : [];
+      var activos = ORD.filter(function (o){ return ['PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO','ENVIADA'].indexOf(o.estado) !== -1; }).length;
+      var devPend = DEV.filter(function (d){ return d.estado === 'PENDIENTE'; }).length;
+      var hoy = todayStr();
+      var citasHoy = CIT.filter(function (c){ return c.bloque_fecha === hoy && (c.estado === 'AGENDADA' || c.estado === 'CONFIRMADA'); }).length;
+      var stockBajo = PRO.filter(function (p){ return p.stock_bajo === true; }).length;
+      countUp(document.getElementById('st-pedidos'), activos);
+      countUp(document.getElementById('st-dev'), devPend);
+      countUp(document.getElementById('st-citas'), citasHoy);
+      countUp(document.getElementById('st-stock'), stockBajo);
+    });
+  });
+})();
+</script>
+{% endblock %}

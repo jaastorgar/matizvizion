@@ -62,3 +62,11 @@ def administracion(request):
     # Bearer) y el endpoint /api/admin/kpis/ (IsAdminUserCustom). Mismo patron
     # que /panel/. Servir el template siempre evita el redirect falso a /login/.
     return render(request, 'modules/admin/administracion.html')
+
+def inicio(request):
+    return render(request, 'modules/admin/inicio.html')
+def mi_perfil(request):
+    from django.shortcuts import render
+    return render(request, 'modules/admin/perfil_staff.html')
+
+

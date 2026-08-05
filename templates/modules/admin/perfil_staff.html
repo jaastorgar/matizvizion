@@ -1,0 +1,111 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Mi perfil — Matizvisión{% endblock %}
+{% block extra_css %}
+<style>
+  @keyframes mvPfRise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .mv-pf-shell { position: relative; border-radius: 22px; padding: clamp(1.2rem, 3.4vw, 2.4rem);
+    background: radial-gradient(rgba(31,41,55,.03) 1px, transparent 1.4px) 0 0 / 22px 22px,
+      radial-gradient(900px 440px at 92% -12%, rgba(16,185,129,.10), transparent 62%),
+      radial-gradient(700px 400px at -8% 110%, rgba(6,95,70,.07), transparent 60%), var(--white, #fff);
+    box-shadow: 0 16px 44px rgba(31,41,55,.07); animation: mvPfRise .55s ease both; }
+  .mv-pf-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.1rem; }
+  @media (max-width: 860px){ .mv-pf-grid { grid-template-columns: 1fr; } }
+  .mv-pf-card { border: 1px solid var(--border-color); border-radius: 18px; background: var(--white); padding: 1.6rem 1.7rem; box-shadow: 0 6px 18px rgba(31,41,55,.06); }
+  .mv-pf-id { display: flex; align-items: center; gap: 1.1rem; }
+  .mv-pf-avatar { width: 74px; height: 74px; border-radius: 22px; background: linear-gradient(140deg, #065F46, #10B981); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.1rem; box-shadow: 0 10px 24px rgba(6,95,70,.3); }
+  .mv-pf-name { font-family: var(--font-head); font-weight: 800; font-size: 1.5rem; color: var(--lead-dark); line-height: 1.1; }
+  .mv-pf-mail { color: var(--lead-muted, #6B7280); font-size: .92rem; }
+  .mv-pf-role { display: inline-flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .28rem .75rem; border-radius: 999px; }
+  .mv-pf-role.admin { background: rgba(14,116,144,.14); color: #0e7490; }
+  .mv-pf-role.vend { background: rgba(16,185,129,.14); color: var(--green-dark); }
+  .mv-pf-sec { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--lead-muted, #6B7280); margin: 0 0 .8rem; display: flex; align-items: center; gap: .45rem; }
+  .mv-pf-sec i { color: var(--green-dark); }
+  .mv-pf-row { display: flex; justify-content: space-between; gap: 1rem; padding: .65rem 0; border-bottom: 1px dashed var(--border-color); font-size: .94rem; }
+  .mv-pf-row:last-child { border-bottom: none; }
+  .mv-pf-row .k { color: var(--lead-muted, #6B7280); }
+  .mv-pf-row .v { color: var(--lead-dark); font-weight: 700; text-align: right; }
+  .mv-pf-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.3rem; }
+  .mv-pf-actions a, .mv-pf-actions button { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .6rem 1.15rem; font-weight: 700; font-size: .9rem; text-decoration: none; cursor: pointer; transition: transform .13s ease, box-shadow .14s ease, border-color .14s ease; }
+  .mv-pf-actions .primary { background: var(--green-primary); color: #fff; border: none; }
+  .mv-pf-actions .primary:hover { background: var(--green-dark); transform: translateY(-2px); }
+  .mv-pf-actions .ghost { border: 1px solid var(--border-color); background: var(--white); color: var(--lead-dark); }
+  .mv-pf-actions .ghost:hover { border-color: var(--green-primary); transform: translateY(-2px); }
+  .mv-pf-actions .danger { border: 1px solid rgba(220,38,38,.4); background: var(--white); color: #b91c1c; }
+  .mv-pf-actions .danger:hover { background: rgba(220,38,38,.08); transform: translateY(-2px); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mv-pf-shell">
+  <div class="mv-pf-grid">
+    <div class="mv-pf-card">
+      <div class="mv-pf-id">
+        <div class="mv-pf-avatar"><i class="bi bi-person-fill"></i></div>
+        <div>
+          <div class="mv-pf-name" id="pf-name">…</div>
+          <div class="mv-pf-mail" id="pf-mail"></div>
+          <span class="mv-pf-role vend" id="pf-role" hidden></span>
+        </div>
+      </div>
+      <div class="mv-pf-actions">
+        <a class="primary" href="/inicio/"><i class="bi bi-house-door"></i> Inicio</a>
+        <a class="ghost" href="/panel/"><i class="bi bi-clipboard2-pulse"></i> Panel</a>
+        <a class="ghost" href="/administracion/" id="pf-admin" hidden><i class="bi bi-graph-up-arrow"></i> Administración</a>
+        <a class="ghost" href="/recuperar/"><i class="bi bi-key"></i> Cambiar contraseña</a>
+        <button class="danger" id="pf-logout" type="button"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="mv-pf-card">
+      <div class="mv-pf-sec"><i class="bi bi-person-vcard"></i> Información de la cuenta</div>
+      <div class="mv-pf-row"><span class="k">Nombre</span><span class="v" id="pf-nombre">—</span></div>
+      <div class="mv-pf-row"><span class="k">Correo</span><span class="v" id="pf-correo">—</span></div>
+      <div class="mv-pf-row"><span class="k">Rol</span><span class="v" id="pf-rol">—</span></div>
+      <div class="mv-pf-row"><span class="k">Miembro desde</span><span class="v" id="pf-miembro">—</span></div>
+
+      <div class="mv-pf-sec" style="margin-top:1.4rem;"><i class="bi bi-briefcase"></i> Datos de trabajo</div>
+      <div class="mv-pf-row" id="row-sucursal"><span class="k">Sucursal</span><span class="v" id="pf-sucursal">—</span></div>
+      <div class="mv-pf-row" id="row-codigo"><span class="k">Código vendedor</span><span class="v" id="pf-codigo">—</span></div>
+      <div class="mv-pf-row" id="row-acceso" hidden><span class="k">Acceso</span><span class="v">Administración total</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+  var MV = window.MV; if (!MV || !MV.me) return;
+  var api = MV.api;
+  function fmtFecha(iso){ try { return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return '—'; } }
+  document.getElementById('pf-logout').addEventListener('click', function () { if (MV.auth) MV.auth.logout(true); });
+  MV.me().then(function (u) {
+    if (!u || (u.role !== 'VENDEDOR' && u.role !== 'ADMIN')) { location.replace('/'); return; }
+    api.get('/accounts/staff-perfil/').then(function (r) {
+      if (!r.ok) return;
+      var d = r.data;
+      var dn = ((d.first_name || '') + ' ' + (d.last_name || '')).trim();
+      document.getElementById('pf-name').textContent = dn || d.email;
+      document.getElementById('pf-mail').textContent = d.email;
+      document.getElementById('pf-nombre').textContent = dn || '—';
+      document.getElementById('pf-correo').textContent = d.email;
+      document.getElementById('pf-rol').textContent = (d.role === 'ADMIN' ? 'Administrador' : 'Vendedor');
+      document.getElementById('pf-miembro').textContent = fmtFecha(d.date_joined);
+      var badge = document.getElementById('pf-role');
+      badge.hidden = false;
+      if (d.role === 'ADMIN' || d.is_superuser) {
+        badge.className = 'mv-pf-role admin'; badge.innerHTML = '<i class="bi bi-shield-lock"></i> Administrador';
+        document.getElementById('pf-admin').hidden = false;
+        document.getElementById('row-sucursal').hidden = true;
+        document.getElementById('row-codigo').hidden = true;
+        document.getElementById('row-acceso').hidden = false;
+      } else {
+        badge.className = 'mv-pf-role vend'; badge.innerHTML = '<i class="bi bi-briefcase"></i> Vendedor';
+        document.getElementById('pf-sucursal').textContent = d.sucursal || '—';
+        document.getElementById('pf-codigo').textContent = d.codigo_vendedor || '—';
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}
