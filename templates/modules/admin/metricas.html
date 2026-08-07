@@ -1,0 +1,51 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Administración — Matizvisión{% endblock %}
+{% block extra_css %}
+<style>
+  @keyframes mvBiRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .mv-bi-shell { position: relative; border-radius: 22px; padding: clamp(1rem, 3vw, 2rem);
+    background: radial-gradient(rgba(31,41,55,.03) 1px, transparent 1.4px) 0 0 / 22px 22px,
+      radial-gradient(900px 440px at 92% -12%, rgba(16,185,129,.10), transparent 62%), var(--white, #fff);
+    box-shadow: 0 16px 44px rgba(31,41,55,.07); animation: mvBiRise .5s ease both; }
+  .mv-bi-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .mv-bi-title { font-family: var(--font-head); font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2.2rem); color: var(--lead-dark); letter-spacing: -.02em; }
+  .mv-bi-sub { color: var(--lead-muted, #6B7280); }
+  .mv-bi-filter { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+  .mv-bi-filter input { border: 1px solid var(--border-color); border-radius: 10px; padding: .5rem .6rem; }
+  .mv-bi-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .8rem; margin-bottom: 1.2rem; }
+  .mv-bi-kpi { border: 1px solid var(--border-color); border-radius: 14px; background: var(--white); padding: .95rem 1rem; box-shadow: 0 4px 14px rgba(31,41,55,.05); }
+  .mv-bi-kpi .n { font-family: var(--font-head); font-weight: 800; font-size: 1.7rem; color: var(--green-dark); }
+  .mv-bi-kpi .l { font-size: .74rem; color: var(--lead-muted, #6B7280); display: flex; align-items: center; gap: .35rem; }
+  .mv-bi-kpi .l i { color: var(--green-primary); }
+  .mv-bi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+  .mv-bi-card { border: 1px solid var(--border-color); border-radius: 16px; background: var(--white); padding: 1.1rem 1.2rem; box-shadow: 0 4px 14px rgba(31,41,55,.05); }
+  .mv-bi-card h3 { font-family: var(--font-head); font-weight: 700; font-size: 1rem; color: var(--lead-dark); display: flex; align-items: center; gap: .5rem; margin: 0 0 .8rem; }
+  .mv-bi-card h3 i { color: var(--green-dark); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mv-bi-shell">
+  <div class="mv-bi-head">
+    <div>
+      <div class="mv-bi-title">Inteligencia de negocio</div>
+      <div class="mv-bi-sub">Métricas en tiempo real de ventas, citas e inventario.</div>
+    </div>
+    <div class="mv-bi-filter">
+      <input type="date" id="bi-desde" /> <span>→</span> <input type="date" id="bi-hasta" />
+      <button class="btn btn-cta btn-sm" id="bi-apply"><i class="bi bi-funnel"></i> Aplicar</button>
+    </div>
+  </div>
+  <div class="mv-bi-kpis" id="bi-kpis"></div>
+  <div class="mv-bi-grid">
+    <div class="mv-bi-card"><h3><i class="bi bi-graph-up-arrow"></i> Ventas por día</h3><canvas id="ch-ventas"></canvas></div>
+    <div class="mv-bi-card"><h3><i class="bi bi-trophy"></i> Top productos vendidos</h3><canvas id="ch-top"></canvas></div>
+    <div class="mv-bi-card"><h3><i class="bi bi-funnel"></i> Órdenes por estado</h3><canvas id="ch-ordenes"></canvas></div>
+    <div class="mv-bi-card"><h3><i class="bi bi-calendar2-heart"></i> Citas por estado</h3><canvas id="ch-citas"></canvas></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'modules/admin/metricas.js' %}?v=1"></script>
+{% endblock %}

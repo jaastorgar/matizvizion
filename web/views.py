@@ -69,4 +69,5 @@ def mi_perfil(request):
     from django.shortcuts import render
     return render(request, 'modules/admin/perfil_staff.html')
 
-
+def metricas(request):
+    return render(request, 'modules/admin/metricas.html')

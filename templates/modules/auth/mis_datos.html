@@ -2,39 +2,79 @@
 {% load static %}
 {% block title %}Mis datos — Matizvisión{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />
-<link rel="stylesheet" href="{% static 'modules/auth/perfil.css' %}" />
+<style>
+  .mv-md-hero { position: relative; border-radius: 22px; overflow: hidden; padding: 2.2rem 2.2rem 3.4rem;
+    background: linear-gradient(135deg, #065F46, #0B7A5C 55%, #10B981); color: #fff;
+    box-shadow: 0 18px 44px rgba(6,95,70,.28); }
+  .mv-md-hero::after { content:''; position:absolute; right:-70px; top:-70px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.08); }
+  .mv-md-hero-id { display:flex; align-items:center; gap:1.2rem; position:relative; z-index:1; }
+  .mv-md-hero-avatar { width:84px; height:84px; border-radius:26px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:2.4rem; }
+  .mv-md-hero-name { font-family:var(--font-head); font-weight:800; font-size:clamp(1.5rem,3.4vw,2.2rem); letter-spacing:-.02em; }
+  .mv-md-hero-mail { color:rgba(255,255,255,.85); font-size:.95rem; }
+  .mv-md-hero-chips { display:flex; gap:.5rem; margin-top:.7rem; flex-wrap:wrap; }
+  .mv-md-hero-chips span { display:inline-flex; align-items:center; gap:.4rem; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); border-radius:999px; padding:.3rem .8rem; font-size:.78rem; font-weight:700; }
+  .mv-md-grid { display:grid; grid-template-columns: 1fr 1.4fr; gap:1.1rem; margin-top:-2.2rem; position:relative; z-index:2; padding:0 1.2rem 1.2rem; }
+  @media (max-width: 860px){ .mv-md-grid { grid-template-columns:1fr; } }
+  .mv-md-card { background:var(--white); border:1px solid var(--border-color); border-radius:18px; box-shadow:var(--shadow); padding:1.6rem 1.7rem; }
+  .mv-md-card h3 { font-family:var(--font-head); font-weight:800; font-size:1.05rem; color:var(--lead-dark); display:flex; align-items:center; gap:.5rem; margin:0 0 1.1rem; }
+  .mv-md-card h3 i { color:var(--green-dark); }
+  .mv-md-row { display:flex; justify-content:space-between; gap:1rem; padding:.7rem 0; border-bottom:1px dashed var(--border-color); font-size:.92rem; }
+  .mv-md-row:last-child { border-bottom:none; }
+  .mv-md-row .k { color:var(--lead-muted,#6B7280); display:flex; align-items:center; gap:.4rem; }
+  .mv-md-row .v { color:var(--lead-dark); font-weight:700; text-align:right; }
+  .mv-md-formgrid { display:grid; grid-template-columns:1fr 1fr; gap:.9rem 1rem; }
+  @media (max-width: 560px){ .mv-md-formgrid { grid-template-columns:1fr; } }
+  .mv-md-field { display:flex; flex-direction:column; gap:.3rem; }
+  .mv-md-field.full { grid-column:1 / -1; }
+  .mv-md-field label { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--lead-muted,#6B7280); }
+  .mv-md-field input, .mv-md-field select { border:1px solid var(--border-color); border-radius:11px; padding:.62rem .8rem; font-family:inherit; font-size:.95rem; transition:border-color .15s ease, box-shadow .15s ease; }
+  .mv-md-field input:focus, .mv-md-field select:focus { outline:none; border-color:var(--green-primary); box-shadow:0 0 0 3px rgba(16,185,129,.16); }
+  .mv-md-note { margin-top:1rem; font-size:.8rem; color:var(--lead-muted,#6B7280); background:var(--lead-light); border-radius:10px; padding:.7rem .9rem; display:flex; gap:.5rem; align-items:flex-start; }
+  .mv-md-err { display:none; margin-top:1rem; background:rgba(220,38,38,.08); border:1px solid rgba(220,38,38,.3); color:#b91c1c; border-radius:10px; padding:.7rem .9rem; font-size:.88rem; }
+  .mv-md-foot { display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.3rem; }
+</style>
 {% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <h1 class="h3 mb-3"><i class="bi bi-pencil-square"></i> Mis datos</h1>
-    <div class="mv-card mv-id-card p-4 mb-4">
-      <div class="d-flex align-items-center gap-3">
-        <div class="mv-avatar" id="pf-avatar">?</div>
-        <div>
-          <h2 class="h4 mb-1" id="pf-name">…</h2>
-          <div class="text-secondary" id="pf-email">…</div>
-          <div class="mt-2"><span class="mv-rut-chip"><i class="bi bi-lock-fill"></i> RUT: <span id="pf-rut-ro">—</span></span></div>
-        </div>
+<div class="mv-md-hero">
+  <div class="mv-md-hero-id">
+    <div class="mv-md-hero-avatar"><i class="bi bi-person-fill"></i></div>
+    <div>
+      <div class="mv-md-hero-name" id="md-nombre">…</div>
+      <div class="mv-md-hero-mail" id="md-email"></div>
+      <div class="mv-md-hero-chips">
+        <span id="md-role"><i class="bi bi-person-badge"></i> Cliente</span>
+        <span id="md-rut"><i class="bi bi-shield-lock"></i> RUT: —</span>
       </div>
-    </div>
-    <div class="mv-card p-4">
-      <h2 class="h6 text-uppercase text-muted mb-3">Datos de contacto</h2>
-      <form id="pf-form" novalidate>
-        <div class="mb-3">
-          <label class="form-label" for="pf-tel">Teléfono</label>
-          <input type="tel" class="form-control" id="pf-tel" placeholder="+56912345678" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="pf-dir">Dirección</label>
-          <input type="text" class="form-control" id="pf-dir" />
-        </div>
-        <button type="submit" class="btn btn-cta w-100" id="pf-save">Guardar cambios</button>
-        <p class="mv-note mt-2 mb-0">El RUT no se puede modificar por seguridad. Si necesitas corregirlo, contacta a soporte.</p>
-      </form>
     </div>
   </div>
 </div>
+
+<div class="mv-md-grid">
+  <div class="mv-md-card">
+    <h3><i class="bi bi-fingerprint"></i> Identidad</h3>
+    <div class="mv-md-row"><span class="k"><i class="bi bi-envelope"></i> Correo</span><span class="v" id="md-id-email">—</span></div>
+    <div class="mv-md-row"><span class="k"><i class="bi bi-person-vcard"></i> RUT</span><span class="v" id="md-id-rut">—</span></div>
+    <div class="mv-md-note"><i class="bi bi-info-circle"></i> El RUT y el correo no se pueden modificar por seguridad. Si necesitas corregirlos, contacta a soporte.</div>
+  </div>
+
+  <div class="mv-md-card">
+    <h3><i class="bi bi-pencil-square"></i> Datos de contacto y ubicación</h3>
+    <form id="md-form" novalidate>
+      <div class="mv-md-formgrid">
+        <div class="mv-md-field"><label>Nombre</label><input id="md-first" type="text" /></div>
+        <div class="mv-md-field"><label>Apellido</label><input id="md-last" type="text" /></div>
+        <div class="mv-md-field"><label>Teléfono de contacto</label><input id="md-telefono" type="tel" placeholder="+56912345678" /></div>
+        <div class="mv-md-field"><label>Dirección</label><input id="md-direccion" type="text" /></div>
+        <div class="mv-md-field"><label>Región</label><select id="md-region"><option value="">Selecciona…</option></select></div>
+        <div class="mv-md-field"><label>Comuna</label><select id="md-comuna" disabled><option value="">Selecciona región…</option></select></div>
+      </div>
+      <div class="mv-md-err" id="md-err"></div>
+      <div class="mv-md-foot">
+        <button class="btn btn-outline-mv" type="button" id="md-discard"><i class="bi bi-arrow-counterclockwise"></i> Descartar</button>
+        <button class="btn btn-cta" type="submit" id="md-save"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'modules/auth/mis_datos.js' %}"></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/mis_datos.js' %}?v=2"></script>{% endblock %}

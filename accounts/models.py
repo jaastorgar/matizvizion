@@ -70,6 +70,11 @@ class CustomUser(AbstractUser):
         'Cuenta invitada (sin contraseña)', default=False, db_index=True,
         help_text='True para compradores invitados creados sin contraseña.'
     )
+    # Datos de contacto del usuario (aplican a cliente, vendedor y admin)
+    telefono = models.CharField('Teléfono de contacto', max_length=15, blank=True, default='')
+    direccion = models.CharField('Dirección', max_length=200, blank=True, default='')
+    comuna = models.CharField('Comuna', max_length=80, blank=True, default='')
+    region = models.CharField('Región', max_length=80, blank=True, default='')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -110,6 +115,8 @@ class PerfilCliente(models.Model):
     rut = models.CharField('RUT', max_length=12, unique=True)
     telefono = models.CharField('Teléfono', max_length=15, blank=True, null=True)
     direccion = models.TextField('Dirección de despacho', blank=True, null=True)
+    comuna = models.CharField('Comuna', max_length=80, blank=True, default='')
+    region = models.CharField('Región', max_length=80, blank=True, default='')
 
     class Meta:
         verbose_name = 'Perfil cliente'
@@ -185,6 +192,7 @@ class PerfilVendedor(models.Model):
 # ---- Signal: mail cuando el cliente actualiza sus datos (no en el alta) ----
 from django.db.models.signals import post_save as _post_save
 from django.dispatch import receiver as _receiver
+
 
 @_receiver(_post_save, sender=PerfilCliente)
 def _perfil_mail(sender, instance, created, **kwargs):

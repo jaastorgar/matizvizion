@@ -1,24 +1,7 @@
 from django.contrib import admin
+from . import models
 
-from .models import Sucursal
 
-
-@admin.register(Sucursal)
+@admin.register(models.Sucursal)
 class SucursalAdmin(admin.ModelAdmin):
-    list_display = (
-        'nombre',
-        'direccion',
-        'telefono',
-        'activa',
-    )
-    search_fields = (
-        'nombre',
-        'direccion',
-        'telefono',
-    )
-    list_filter = (
-        'activa',
-    )
-    ordering = (
-        'nombre',
-    )
+    search_fields = ('nombre',)

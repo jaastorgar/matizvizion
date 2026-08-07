@@ -31,8 +31,26 @@ class MeView(APIView):
             'role': u.role,
             'is_guest': getattr(u, 'is_guest', False),
             'is_superuser': getattr(u, 'is_superuser', False),
+            'telefono': getattr(u, 'telefono', ''),
+            'direccion': getattr(u, 'direccion', ''),
+            'comuna': getattr(u, 'comuna', ''),
+            'region': getattr(u, 'region', ''),
         })
 
+
+    def patch(self, request):
+        # [mv] actualiza el perfil propio (nombre, apellido y datos de contacto)
+        u = request.user
+        for f in ['first_name', 'last_name', 'telefono', 'direccion', 'comuna', 'region']:
+            if f in request.data:
+                setattr(u, f, (request.data.get(f) or '').strip())
+        u.save()
+        return Response({
+            'id': u.id, 'email': u.email, 'first_name': u.first_name, 'last_name': u.last_name,
+            'role': u.role, 'is_guest': getattr(u, 'is_guest', False), 'is_superuser': getattr(u, 'is_superuser', False),
+            'telefono': getattr(u, 'telefono', ''), 'direccion': getattr(u, 'direccion', ''),
+            'comuna': getattr(u, 'comuna', ''), 'region': getattr(u, 'region', ''),
+        })
 
 class MiPerfilView(APIView):
     """
@@ -45,7 +63,7 @@ class MiPerfilView(APIView):
         try:
             perfil = request.user.perfil_cliente
         except PerfilCliente.DoesNotExist:
-            return Response({'rut': '', 'telefono': '', 'direccion': ''})
+            return Response({'rut': '', 'telefono': '', 'direccion': '', 'comuna': '', 'region': ''})
         return Response(PerfilClienteSerializer(perfil).data)
 
     def put(self, request):

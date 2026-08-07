@@ -34,3 +34,9 @@ body.js-reveal .reveal.in { opacity: 1; transform: none; }
 .mv-cta-band h2 { color: #fff; font-family: var(--font-head); font-weight: 800; }
 .mv-cta-band .btn-light { font-family: var(--font-head); font-weight: 600; border-radius: var(--radius); color: var(--green-dark); }
 .mv-cta-band .btn-outline-light { border-radius: var(--radius); font-weight: 600; }
+/* img-a-sangre: cuando el destacado tiene imagen, llena el area de la card */
+.mv-feat-emoji { position: relative; overflow: hidden; }
+.mv-feat-emoji:has(img) { height: 190px; padding: 0; background: var(--lead-light); }
+.mv-feat-emoji img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.3,1); }
+.mv-feat-emoji:has(img)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,24,39,.18), transparent 45%); pointer-events: none; }
+.mv-feat-card:hover .mv-feat-emoji img { transform: scale(1.07); }

@@ -1,88 +1,41 @@
 {% extends 'shared/base.html' %}
 {% load static %}
-
-{% block title %}Crear cuenta — Óptica Matiz Visión{% endblock %}
-
+{% block title %}Crear cuenta — Matizvisión{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'modules/auth/auth.css' %}" />
+<style>
+  .mv-reg-card { max-width: 620px; margin: 2.5rem auto; background: var(--white); border-radius: 18px; box-shadow: var(--shadow); padding: 2rem 2.1rem; }
+  .mv-reg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem 1rem; }
+  @media (max-width: 560px){ .mv-reg-grid { grid-template-columns: 1fr; } }
+  .mv-reg-field { display: flex; flex-direction: column; gap: .3rem; }
+  .mv-reg-field.full { grid-column: 1 / -1; }
+  .mv-reg-field label { font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--lead-muted, #6B7280); }
+  .mv-reg-field label b { color: var(--danger, #dc2626); }
+  .mv-reg-field input, .mv-reg-field select { border: 1px solid var(--border-color); border-radius: 10px; padding: .6rem .75rem; font-family: inherit; font-size: .95rem; }
+  .mv-reg-field input:focus, .mv-reg-field select:focus { outline: none; border-color: var(--green-primary); box-shadow: 0 0 0 3px rgba(16,185,129,.16); }
+  .mv-reg-err { display: none; margin-top: 1rem; background: rgba(220,38,38,.08); border: 1px solid rgba(220,38,38,.3); color: #b91c1c; border-radius: 10px; padding: .7rem .9rem; font-size: .88rem; }
+</style>
 {% endblock %}
-
 {% block content %}
-<div class="mv-auth-wrap">
-  <div class="mv-auth-card" style="max-width: 520px;">
-    <h1>Crear cuenta</h1>
-    <p class="text-secondary mb-3">Regístrate como cliente en segundos.</p>
-
-    <div id="register-error" class="mv-form-error" role="alert"></div>
-
-    <form id="register-form" novalidate>
-      <div class="row g-3">
-        <div class="col-sm-6">
-          <label for="reg-first-name" class="form-label">Nombre</label>
-          <input type="text" class="form-control" id="reg-first-name" name="first_name" />
-          <div class="mv-field-error" data-error-for="first_name"></div>
-        </div>
-        <div class="col-sm-6">
-          <label for="reg-last-name" class="form-label">Apellido</label>
-          <input type="text" class="form-control" id="reg-last-name" name="last_name" />
-          <div class="mv-field-error" data-error-for="last_name"></div>
-        </div>
-      </div>
-
-      <div class="mt-3">
-        <label for="reg-email" class="form-label">Correo electrónico</label>
-        <input type="email" class="form-control" id="reg-email" name="email"
-               autocomplete="email" required />
-        <div class="mv-field-error" data-error-for="email"></div>
-      </div>
-
-      <div class="mt-3">
-        <label for="reg-rut" class="form-label">RUT</label>
-        <input type="text" class="form-control" id="reg-rut" name="rut"
-               placeholder="12.345.678-9" required />
-        <div class="mv-field-error" data-error-for="rut"></div>
-      </div>
-
-      <div class="row g-3 mt-0">
-        <div class="col-sm-6">
-          <label for="reg-phone" class="form-label">Teléfono <span class="text-muted fw-normal">(opcional)</span></label>
-          <input type="tel" class="form-control" id="reg-phone" name="telefono"
-               placeholder="+56912345678" />
-          <div class="mv-field-error" data-error-for="telefono"></div>
-        </div>
-        <div class="col-sm-6">
-          <label for="reg-address" class="form-label">Dirección <span class="text-muted fw-normal">(opcional)</span></label>
-          <input type="text" class="form-control" id="reg-address" name="direccion" />
-          <div class="mv-field-error" data-error-for="direccion"></div>
-        </div>
-      </div>
-
-      <div class="row g-3 mt-0">
-        <div class="col-sm-6">
-          <label for="reg-password" class="form-label">Contraseña</label>
-          <input type="password" class="form-control" id="reg-password" name="password"
-                 autocomplete="new-password" required />
-          <div class="mv-field-error" data-error-for="password"></div>
-        </div>
-        <div class="col-sm-6">
-          <label for="reg-password2" class="form-label">Repetir contraseña</label>
-          <input type="password" class="form-control" id="reg-password2" name="password2"
-                 autocomplete="new-password" required />
-          <div class="mv-field-error" data-error-for="password2"></div>
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-cta w-100 mt-3" id="register-submit">Registrarme</button>
-    </form>
-
-    <p class="mv-auth-switch">
-      ¿Ya tienes cuenta?
-      <a href="{% url 'web:login' %}">Inicia sesión</a>
-    </p>
-  </div>
+<div class="mv-reg-card">
+  <h1 style="font-family:var(--font-head);font-weight:800;">Crear cuenta</h1>
+  <p style="color:var(--lead-muted,#6B7280);margin:.3rem 0 1.4rem;">Regístrate como cliente en segundos.</p>
+  <form id="reg-form" novalidate>
+    <div class="mv-reg-grid">
+      <div class="mv-reg-field"><label>Nombre</label><input id="reg-nombre" type="text" /></div>
+      <div class="mv-reg-field"><label>Apellido</label><input id="reg-apellido" type="text" /></div>
+      <div class="mv-reg-field full"><label>Correo electrónico <b>*</b></label><input id="reg-email" type="email" required /></div>
+      <div class="mv-reg-field"><label>RUT <b>*</b></label><input id="reg-rut" type="text" placeholder="12.345.678-5" required /></div>
+      <div class="mv-reg-field"><label>Teléfono de contacto <b>*</b></label><input id="reg-telefono" type="tel" placeholder="+56912345678" required /></div>
+      <div class="mv-reg-field full"><label>Dirección <b>*</b></label><input id="reg-direccion" type="text" required /></div>
+      <div class="mv-reg-field"><label>Región <b>*</b></label><select id="reg-region" required><option value="">Selecciona…</option></select></div>
+      <div class="mv-reg-field"><label>Comuna <b>*</b></label><select id="reg-comuna" required disabled><option value="">Selecciona región…</option></select></div>
+      <div class="mv-reg-field"><label>Contraseña <b>*</b></label><input id="reg-pass" type="password" required /></div>
+      <div class="mv-reg-field"><label>Repetir contraseña <b>*</b></label><input id="reg-pass2" type="password" required /></div>
+    </div>
+    <div class="mv-reg-err" id="reg-err"></div>
+    <button class="btn btn-cta w-100 mt-3" type="submit">Registrarme</button>
+    <p class="text-center mt-3" style="color:var(--lead-muted,#6B7280);">¿Ya tienes cuenta? <a href="{% url 'web:login' %}">Inicia sesión</a></p>
+  </form>
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'modules/auth/auth.js' %}"></script>
-{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/register.js' %}?v=1"></script>{% endblock %}

@@ -3,70 +3,81 @@
 {% block title %}Mi perfil — Matizvisión{% endblock %}
 {% block extra_css %}
 <style>
-  @keyframes mvPfRise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
-  .mv-pf-shell { position: relative; border-radius: 22px; padding: clamp(1.2rem, 3.4vw, 2.4rem);
+  .mv-ps-shell { position: relative; border-radius: 22px; padding: clamp(1rem, 3vw, 2rem);
     background: radial-gradient(rgba(31,41,55,.03) 1px, transparent 1.4px) 0 0 / 22px 22px,
-      radial-gradient(900px 440px at 92% -12%, rgba(16,185,129,.10), transparent 62%),
-      radial-gradient(700px 400px at -8% 110%, rgba(6,95,70,.07), transparent 60%), var(--white, #fff);
-    box-shadow: 0 16px 44px rgba(31,41,55,.07); animation: mvPfRise .55s ease both; }
-  .mv-pf-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.1rem; }
-  @media (max-width: 860px){ .mv-pf-grid { grid-template-columns: 1fr; } }
-  .mv-pf-card { border: 1px solid var(--border-color); border-radius: 18px; background: var(--white); padding: 1.6rem 1.7rem; box-shadow: 0 6px 18px rgba(31,41,55,.06); }
-  .mv-pf-id { display: flex; align-items: center; gap: 1.1rem; }
-  .mv-pf-avatar { width: 74px; height: 74px; border-radius: 22px; background: linear-gradient(140deg, #065F46, #10B981); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.1rem; box-shadow: 0 10px 24px rgba(6,95,70,.3); }
-  .mv-pf-name { font-family: var(--font-head); font-weight: 800; font-size: 1.5rem; color: var(--lead-dark); line-height: 1.1; }
-  .mv-pf-mail { color: var(--lead-muted, #6B7280); font-size: .92rem; }
-  .mv-pf-role { display: inline-flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .28rem .75rem; border-radius: 999px; }
-  .mv-pf-role.admin { background: rgba(14,116,144,.14); color: #0e7490; }
-  .mv-pf-role.vend { background: rgba(16,185,129,.14); color: var(--green-dark); }
-  .mv-pf-sec { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--lead-muted, #6B7280); margin: 0 0 .8rem; display: flex; align-items: center; gap: .45rem; }
-  .mv-pf-sec i { color: var(--green-dark); }
-  .mv-pf-row { display: flex; justify-content: space-between; gap: 1rem; padding: .65rem 0; border-bottom: 1px dashed var(--border-color); font-size: .94rem; }
-  .mv-pf-row:last-child { border-bottom: none; }
-  .mv-pf-row .k { color: var(--lead-muted, #6B7280); }
-  .mv-pf-row .v { color: var(--lead-dark); font-weight: 700; text-align: right; }
-  .mv-pf-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.3rem; }
-  .mv-pf-actions a, .mv-pf-actions button { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .6rem 1.15rem; font-weight: 700; font-size: .9rem; text-decoration: none; cursor: pointer; transition: transform .13s ease, box-shadow .14s ease, border-color .14s ease; }
-  .mv-pf-actions .primary { background: var(--green-primary); color: #fff; border: none; }
-  .mv-pf-actions .primary:hover { background: var(--green-dark); transform: translateY(-2px); }
-  .mv-pf-actions .ghost { border: 1px solid var(--border-color); background: var(--white); color: var(--lead-dark); }
-  .mv-pf-actions .ghost:hover { border-color: var(--green-primary); transform: translateY(-2px); }
-  .mv-pf-actions .danger { border: 1px solid rgba(220,38,38,.4); background: var(--white); color: #b91c1c; }
-  .mv-pf-actions .danger:hover { background: rgba(220,38,38,.08); transform: translateY(-2px); }
+      radial-gradient(900px 440px at 92% -12%, rgba(16,185,129,.10), transparent 62%), var(--white, #fff);
+    box-shadow: 0 16px 44px rgba(31,41,55,.07); }
+  .mv-ps-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 1.1rem; }
+  @media (max-width: 860px){ .mv-ps-grid { grid-template-columns: 1fr; } }
+  .mv-ps-card { background: var(--white); border: 1px solid var(--border-color); border-radius: 18px; box-shadow: var(--shadow); padding: 1.7rem 1.8rem; }
+  .mv-ps-id { display: flex; align-items: center; gap: 1.1rem; }
+  .mv-ps-avatar { width: 78px; height: 78px; border-radius: 24px; background: linear-gradient(140deg, #065F46, #10B981); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
+  .mv-ps-name { font-family: var(--font-head); font-weight: 800; font-size: 1.5rem; color: var(--lead-dark); }
+  .mv-ps-mail { color: var(--lead-muted, #6B7280); font-size: .92rem; }
+  .mv-ps-role { display: inline-flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .28rem .75rem; border-radius: 999px; }
+  .mv-ps-role.admin { background: rgba(14,116,144,.14); color: #0e7490; }
+  .mv-ps-role.vend { background: rgba(16,185,129,.14); color: var(--green-dark); }
+  .mv-ps-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.3rem; }
+  .mv-ps-actions a, .mv-ps-actions button { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .6rem 1.1rem; font-weight: 700; font-size: .88rem; text-decoration: none; cursor: pointer; }
+  .mv-ps-actions .primary { background: var(--green-primary); color: #fff; border: none; }
+  .mv-ps-actions .ghost { border: 1px solid var(--border-color); background: var(--white); color: var(--lead-dark); }
+  .mv-ps-actions .danger { border: 1px solid rgba(220,38,38,.4); background: var(--white); color: #b91c1c; }
+  .mv-ps-sec { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--lead-muted, #6B7280); margin: 0 0 .9rem; display: flex; align-items: center; gap: .45rem; }
+  .mv-ps-sec i { color: var(--green-dark); }
+  .mv-ps-row { display: flex; justify-content: space-between; gap: 1rem; padding: .65rem 0; border-bottom: 1px dashed var(--border-color); font-size: .92rem; }
+  .mv-ps-row:last-child { border-bottom: none; }
+  .mv-ps-row .k { color: var(--lead-muted, #6B7280); }
+  .mv-ps-row .v { color: var(--lead-dark); font-weight: 700; text-align: right; }
+  .mv-ps-formgrid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem 1rem; }
+  @media (max-width: 560px){ .mv-ps-formgrid { grid-template-columns: 1fr; } }
+  .mv-ps-field { display: flex; flex-direction: column; gap: .3rem; }
+  .mv-ps-field label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--lead-muted, #6B7280); }
+  .mv-ps-field input, .mv-ps-field select { border: 1px solid var(--border-color); border-radius: 11px; padding: .6rem .8rem; font-family: inherit; font-size: .95rem; }
+  .mv-ps-field input:focus, .mv-ps-field select:focus { outline: none; border-color: var(--green-primary); box-shadow: 0 0 0 3px rgba(16,185,129,.16); }
 </style>
 {% endblock %}
 {% block content %}
-<div class="mv-pf-shell">
-  <div class="mv-pf-grid">
-    <div class="mv-pf-card">
-      <div class="mv-pf-id">
-        <div class="mv-pf-avatar"><i class="bi bi-person-fill"></i></div>
+<div class="mv-ps-shell">
+  <div class="mv-ps-grid">
+    <div class="mv-ps-card">
+      <div class="mv-ps-id">
+        <div class="mv-ps-avatar"><i class="bi bi-person-fill"></i></div>
         <div>
-          <div class="mv-pf-name" id="pf-name">…</div>
-          <div class="mv-pf-mail" id="pf-mail"></div>
-          <span class="mv-pf-role vend" id="pf-role" hidden></span>
+          <div class="mv-ps-name" id="ps-nombre">…</div>
+          <div class="mv-ps-mail" id="ps-email"></div>
+          <span class="mv-ps-role vend" id="ps-role"></span>
         </div>
       </div>
-      <div class="mv-pf-actions">
+      <div class="mv-ps-actions">
         <a class="primary" href="/inicio/"><i class="bi bi-house-door"></i> Inicio</a>
         <a class="ghost" href="/panel/"><i class="bi bi-clipboard2-pulse"></i> Panel</a>
-        <a class="ghost" href="/administracion/" id="pf-admin" hidden><i class="bi bi-graph-up-arrow"></i> Administración</a>
+        <a class="ghost" href="/metricas/" id="ps-admin" hidden><i class="bi bi-graph-up-arrow"></i> Administración</a>
         <a class="ghost" href="/recuperar/"><i class="bi bi-key"></i> Cambiar contraseña</a>
-        <button class="danger" id="pf-logout" type="button"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+        <button class="danger" id="ps-logout" type="button"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+      </div>
+      <div style="margin-top:1.4rem;">
+        <div class="mv-ps-sec"><i class="bi bi-person-vcard"></i> Información de la cuenta</div>
+        <div class="mv-ps-row"><span class="k">Correo</span><span class="v" id="ps-id-email">—</span></div>
+        <div class="mv-ps-row"><span class="k">Rol</span><span class="v" id="ps-id-rol">—</span></div>
+        <div class="mv-ps-row"><span class="k">Miembro desde</span><span class="v" id="ps-id-desde">—</span></div>
       </div>
     </div>
 
-    <div class="mv-pf-card">
-      <div class="mv-pf-sec"><i class="bi bi-person-vcard"></i> Información de la cuenta</div>
-      <div class="mv-pf-row"><span class="k">Nombre</span><span class="v" id="pf-nombre">—</span></div>
-      <div class="mv-pf-row"><span class="k">Correo</span><span class="v" id="pf-correo">—</span></div>
-      <div class="mv-pf-row"><span class="k">Rol</span><span class="v" id="pf-rol">—</span></div>
-      <div class="mv-pf-row"><span class="k">Miembro desde</span><span class="v" id="pf-miembro">—</span></div>
-
-      <div class="mv-pf-sec" style="margin-top:1.4rem;"><i class="bi bi-briefcase"></i> Datos de trabajo</div>
-      <div class="mv-pf-row" id="row-sucursal"><span class="k">Sucursal</span><span class="v" id="pf-sucursal">—</span></div>
-      <div class="mv-pf-row" id="row-codigo"><span class="k">Código vendedor</span><span class="v" id="pf-codigo">—</span></div>
-      <div class="mv-pf-row" id="row-acceso" hidden><span class="k">Acceso</span><span class="v">Administración total</span></div>
+    <div class="mv-ps-card">
+      <div class="mv-ps-sec"><i class="bi bi-pencil-square"></i> Mis datos personales y de contacto</div>
+      <form id="ps-form" novalidate>
+        <div class="mv-ps-formgrid">
+          <div class="mv-ps-field"><label>Nombre</label><input id="ps-first" type="text" /></div>
+          <div class="mv-ps-field"><label>Apellido</label><input id="ps-last" type="text" /></div>
+          <div class="mv-ps-field"><label>Teléfono de contacto</label><input id="ps-telefono" type="tel" placeholder="+56912345678" /></div>
+          <div class="mv-ps-field"><label>Dirección</label><input id="ps-direccion" type="text" /></div>
+          <div class="mv-ps-field"><label>Región</label><select id="ps-region"><option value="">Selecciona…</option></select></div>
+          <div class="mv-ps-field"><label>Comuna</label><select id="ps-comuna" disabled><option value="">Selecciona región…</option></select></div>
+        </div>
+        <div class="mv-ps-actions" style="justify-content:flex-end;">
+          <button class="primary" type="submit" id="ps-save"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -76,34 +87,74 @@
 (function () {
   'use strict';
   var MV = window.MV; if (!MV || !MV.me) return;
-  var api = MV.api;
+  var api = MV.api, toast = MV.toast;
+  var REG = {
+    'Arica y Parinacota': ['Arica','Camarones','Putre','General Lagos'],
+    'Tarapacá': ['Iquique','Alto Hospicio','Pozo Almonte','Camiña','Colchane','Huara','Pica'],
+    'Antofagasta': ['Antofagasta','Mejillones','Sierra Gorda','Taltal','Calama','Ollagüe','San Pedro de Atacama','Tocopilla','María Elena'],
+    'Atacama': ['Copiapó','Caldera','Tierra Amarilla','Chañaral','Diego de Almagro','Vallenar','Freirina','Huasco','Alto del Carmen'],
+    'Coquimbo': ['La Serena','Coquimbo','Andacollo','La Higuera','Paiguano','Vicuña','Illapel','Canela','Los Vilos','Salamanca','Ovalle','Combarbalá','Monte Patria','Punitaqui','Río Hurtado'],
+    'Valparaíso': ['Valparaíso','Casablanca','Concón','Juan Fernández','Puchuncaví','Quintero','Viña del Mar','Isla de Pascua','Los Andes','Calle Larga','Rinconada','San Esteban','La Ligua','Cabildo','Papudo','Petorca','Zapallar','Quillota','La Calera','Hijuelas','La Cruz','Nogales','San Antonio','Algarrobo','Cartagena','El Quisco','El Tabo','Santo Domingo','San Felipe','Catemu','Llaillay','Panquehue','Putaendo','Santa María','Quilpué','Limache','Olmué','Villa Alemana'],
+    'Metropolitana': ['Santiago','Cerrillos','Cerro Navia','Conchalí','El Bosque','Estación Central','Huechuraba','Independencia','La Cisterna','La Florida','La Granja','La Pintana','La Reina','Las Condes','Lo Barnechea','Lo Espejo','Lo Prado','Macul','Maipú','Ñuñoa','Pedro Aguirre Cerda','Peñalolén','Providencia','Pudahuel','Quilicura','Quinta Normal','Recoleta','Renca','San Joaquín','San Miguel','San Ramón','Vitacura','Puente Alto','Pirque','San José de Maipo','Colina','Lampa','Tiltil','Paine','Buin','Calera de Tango','San Bernardo','El Monte','Isla de Maipo','María Pinto','Melipilla','Padre Hurtado','Peñaflor','Talagante','Curacaví','Alhué'],
+    "O'Higgins": ['Rancagua','Codegua','Coinco','Coltauco','Doñihue','Graneros','Las Cabras','Machalí','Malloa','Mostazal','Olivar','Peumo','Pichidegua','Quinta de Tilcoco','Rengo','Requínoa','San Vicente','Pichilemu','La Estrella','Litueche','Marchihue','Navidad','Paredones','San Fernando','Chépica','Chimbarongo','Lolol','Nancagua','Palmilla','Peralillo','Placilla','Pumanque','Santa Cruz'],
+    'Maule': ['Talca','Constitución','Curepto','Empedrado','Maule','Pelarco','Pencahue','Río Claro','San Clemente','San Rafael','Cauquenes','Chanco','Pelluhue','Curicó','Hualañé','Licantén','Molina','Rauco','Romeral','Sagrada Familia','Teno','Vichuquén','Linares','Colbún','Longaví','Parral','Retiro','San Javier','Villa Alegre','Yerbas Buenas'],
+    'Ñuble': ['Chillán','Chillán Viejo','Bulnes','Cobquecura','Coelemu','Coihueco','El Carmen','Ninquihue','Ñiquén','Pemuco','Pinto','Portezuelo','Quillón','Quirihue','Ránquil','San Carlos','San Fabián','San Ignacio','San Nicolás','Treguaco','Yungay'],
+    'Biobío': ['Concepción','Coronel','Chiguayante','Florida','Hualpén','Hualqui','Lota','Penco','San Pedro de la Paz','Santa Juana','Talcahuano','Tomé','Lebu','Arauco','Cañete','Contulmo','Curanilahue','Los Álamos','Tirúa','Los Ángeles','Antuco','Cabrero','Laja','Mulchén','Nacimiento','Negrete','Quilaco','Quilleco','San Rosendo','Santa Bárbara','Tucapel','Yumbel','Alto Biobío'],
+    'La Araucanía': ['Temuco','Carahue','Cholchol','Cunco','Curarrehue','Freire','Gorbea','Lautaro','Loncoche','Melipeuco','Nueva Imperial','Padre Las Casas','Perquenco','Pitrufquén','Pucón','Saavedra','Teodoro Schmidt','Toltén','Vilcún','Villarrica','Angol','Collipulli','Curacautín','Ercilla','Lonquimay','Lumaco','Purén','Renaico','Traiguén','Victoria'],
+    'Los Ríos': ['Valdivia','Corral','Lanco','Los Lagos','Máfil','Mariquina','Paillaco','Panguipulli','La Unión','Futrono','Lago Ranco','Río Bueno'],
+    'Los Lagos': ['Puerto Montt','Calbuco','Cochamó','Fresia','Frutillar','Los Muermos','Llanquihue','Maullín','Puerto Varas','Ancud','Castro','Curaco de Vélez','Dalcahue','Puqueldón','Queilén','Quellón','Quemchi','Chonchi','Osorno','Puerto Octay','Purranque','Puyehue','Río Negro','San Juan de la Costa','San Pablo','Palena','Futaleufú','Chaitén','Hualaihué'],
+    'Aysén': ['Coyhaique','Lago Verde','Aysén','Cisnes','Guaitecas','Cochrane',"O'Higgins",'Tortel','Chile Chico','Río Ibáñez'],
+    'Magallanes': ['Punta Arenas','Laguna Blanca','Río Verde','San Gregorio','Cabo de Hornos','Antártica','Porvenir','Primavera','Timaukel','Natales','Torres del Paine']
+  };
+  var selReg = document.getElementById('ps-region'), selCom = document.getElementById('ps-comuna');
+  Object.keys(REG).forEach(function (r){ var o = document.createElement('option'); o.value = r; o.textContent = r; selReg.appendChild(o); });
+  function fillComunas(region, comuna){
+    selCom.innerHTML = '<option value="">Selecciona…</option>';
+    (REG[region] || []).forEach(function (c){ var o = document.createElement('option'); o.value = c; o.textContent = c; selCom.appendChild(o); });
+    selCom.disabled = !region;
+    if (comuna && REG[region] && REG[region].indexOf(comuna) !== -1) selCom.value = comuna;
+  }
+  selReg.addEventListener('change', function (){ fillComunas(selReg.value, null); });
+
   function fmtFecha(iso){ try { return new Date(iso).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return '—'; } }
-  document.getElementById('pf-logout').addEventListener('click', function () { if (MV.auth) MV.auth.logout(true); });
-  MV.me().then(function (u) {
-    if (!u || (u.role !== 'VENDEDOR' && u.role !== 'ADMIN')) { location.replace('/'); return; }
-    api.get('/accounts/staff-perfil/').then(function (r) {
-      if (!r.ok) return;
-      var d = r.data;
-      var dn = ((d.first_name || '') + ' ' + (d.last_name || '')).trim();
-      document.getElementById('pf-name').textContent = dn || d.email;
-      document.getElementById('pf-mail').textContent = d.email;
-      document.getElementById('pf-nombre').textContent = dn || '—';
-      document.getElementById('pf-correo').textContent = d.email;
-      document.getElementById('pf-rol').textContent = (d.role === 'ADMIN' ? 'Administrador' : 'Vendedor');
-      document.getElementById('pf-miembro').textContent = fmtFecha(d.date_joined);
-      var badge = document.getElementById('pf-role');
-      badge.hidden = false;
-      if (d.role === 'ADMIN' || d.is_superuser) {
-        badge.className = 'mv-pf-role admin'; badge.innerHTML = '<i class="bi bi-shield-lock"></i> Administrador';
-        document.getElementById('pf-admin').hidden = false;
-        document.getElementById('row-sucursal').hidden = true;
-        document.getElementById('row-codigo').hidden = true;
-        document.getElementById('row-acceso').hidden = false;
-      } else {
-        badge.className = 'mv-pf-role vend'; badge.innerHTML = '<i class="bi bi-briefcase"></i> Vendedor';
-        document.getElementById('pf-sucursal').textContent = d.sucursal || '—';
-        document.getElementById('pf-codigo').textContent = d.codigo_vendedor || '—';
-      }
+
+  MV.me().then(function (u){
+    if (!u) { location.replace('/login/?next=/mi-perfil/'); return; }
+    var dn = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
+    document.getElementById('ps-nombre').textContent = dn || u.email;
+    document.getElementById('ps-email').textContent = u.email;
+    document.getElementById('ps-id-email').textContent = u.email;
+    document.getElementById('ps-id-rol').textContent = (u.role === 'ADMIN' ? 'Administrador' : (u.role === 'VENDEDOR' ? 'Vendedor' : 'Cliente'));
+    var badge = document.getElementById('ps-role');
+    badge.className = 'mv-ps-role ' + (u.role === 'ADMIN' ? 'admin' : 'vend');
+    badge.innerHTML = '<i class="bi bi-shield-lock"></i> ' + (u.role === 'ADMIN' ? 'Administrador' : (u.role === 'VENDEDOR' ? 'Vendedor' : 'Cliente'));
+    if (u.role === 'ADMIN' || u.is_superuser) document.getElementById('ps-admin').hidden = false;
+    document.getElementById('ps-first').value = u.first_name || '';
+    document.getElementById('ps-last').value = u.last_name || '';
+    document.getElementById('ps-telefono').value = u.telefono || '';
+    document.getElementById('ps-direccion').value = u.direccion || '';
+    if (u.region) { selReg.value = u.region; fillComunas(u.region, u.comuna); }
+  });
+
+  document.getElementById('ps-logout').addEventListener('click', function (){ if (MV.auth) MV.auth.logout(true); });
+
+  document.getElementById('ps-form').addEventListener('submit', function (ev){
+    ev.preventDefault();
+    var body = {
+      first_name: document.getElementById('ps-first').value.trim(),
+      last_name: document.getElementById('ps-last').value.trim(),
+      telefono: document.getElementById('ps-telefono').value.trim(),
+      direccion: document.getElementById('ps-direccion').value.trim(),
+      region: selReg.value,
+      comuna: selCom.value
+    };
+    var btn = document.getElementById('ps-save'); btn.disabled = true;
+    api.patch('/accounts/me/', { body: body }).then(function (r){
+      btn.disabled = false;
+      if (r.ok) { toast('Perfil actualizado.', 'success');
+        var dn = ((r.data.first_name || '') + ' ' + (r.data.last_name || '')).trim();
+        document.getElementById('ps-nombre').textContent = dn || r.data.email;
+      } else { toast('No se pudo guardar el perfil.', 'error'); }
     });
   });
 })();

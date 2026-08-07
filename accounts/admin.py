@@ -1,200 +1,35 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-
-from .models import CustomUser, PerfilCliente, PerfilVendedor
+from . import models
 
 
-class CustomUserCreationForm(UserCreationForm):
-    """
-    Formulario personalizado para crear usuarios en el admin.
-    Se usa email en lugar de username.
-    """
-    class Meta:
-        model = CustomUser
-        fields = ('email', 'role')
-        field_classes = {}
-
-
-class CustomUserChangeForm(UserChangeForm):
-    """
-    Formulario personalizado para editar usuarios en el admin.
-    """
-    class Meta:
-        model = CustomUser
-        fields = (
-            'email',
-            'first_name',
-            'last_name',
-            'role',
-            'is_active',
-            'is_staff',
-            'is_superuser',
-            'groups',
-            'user_permissions',
-        )
-        field_classes = {}
-
-
-@admin.register(CustomUser)
+@admin.register(models.CustomUser)
 class CustomUserAdmin(UserAdmin):
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm
-
     ordering = ('email',)
-
-    list_display = (
-        'email',
-        'role',
-        'is_active',
-        'is_staff',
-        'is_superuser',
-    )
-
-    list_filter = (
-        'role',
-        'is_active',
-        'is_staff',
-        'is_superuser',
-    )
-
-    search_fields = (
-        'email',
-        'first_name',
-        'last_name',
-    )
-
-    readonly_fields = (
-        'last_login',
-        'date_joined',
-    )
-
+    list_display = ('email', 'first_name', 'last_name', 'role', 'is_active', 'is_staff')
+    list_filter = ('role', 'is_active', 'is_staff', 'is_superuser')
+    search_fields = ('email', 'first_name', 'last_name')
+    readonly_fields = ('last_login', 'date_joined')
     fieldsets = (
-        (
-            None,
-            {
-                'fields': (
-                    'email',
-                    'password',
-                )
-            }
-        ),
-        (
-            'Información personal',
-            {
-                'fields': (
-                    'first_name',
-                    'last_name',
-                    'role',
-                )
-            }
-        ),
-        (
-            'Permisos',
-            {
-                'fields': (
-                    'is_active',
-                    'is_staff',
-                    'is_superuser',
-                    'groups',
-                    'user_permissions',
-                )
-            }
-        ),
-        (
-            'Fechas importantes',
-            {
-                'fields': (
-                    'last_login',
-                    'date_joined',
-                )
-            }
-        ),
+        (None, {'fields': ('email', 'password')}),
+        ('Personal', {'fields': ('first_name', 'last_name')}),
+        ('Rol y permisos', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Fechas', {'fields': ('last_login', 'date_joined')}),
     )
-
     add_fieldsets = (
-        (
-            None,
-            {
-                'classes': ('wide',),
-                'fields': (
-                    'email',
-                    'role',
-                    'password1',
-                    'password2',
-                ),
-            }
-        ),
+        (None, {'classes': ('wide',),
+                'fields': ('email', 'password1', 'password2', 'role', 'is_staff', 'is_superuser')}),
     )
 
-    actions = [
-        'activar_usuarios',
-        'desactivar_usuarios',
-    ]
 
-    @admin.action(description='Activar usuarios seleccionados')
-    def activar_usuarios(self, request, queryset):
-        queryset.update(is_active=True)
-
-    @admin.action(description='Desactivar usuarios seleccionados')
-    def desactivar_usuarios(self, request, queryset):
-        queryset.update(is_active=False)
-
-
-@admin.register(PerfilCliente)
+@admin.register(models.PerfilCliente)
 class PerfilClienteAdmin(admin.ModelAdmin):
-    list_display = (
-        'user',
-        'rut',
-        'telefono',
-    )
-
-    search_fields = (
-        'user__email',
-        'user__first_name',
-        'user__last_name',
-        'rut',
-    )
-
-    list_filter = (
-        'user__role',
-    )
-
-    raw_id_fields = (
-        'user',
-    )
-
-    list_select_related = (
-        'user',
-    )
+    list_display = ('user', 'rut', 'telefono', 'comuna', 'region')
+    search_fields = ('user__email', 'rut')
 
 
-@admin.register(PerfilVendedor)
+@admin.register(models.PerfilVendedor)
 class PerfilVendedorAdmin(admin.ModelAdmin):
-    list_display = (
-        'user',
-        'codigo_vendedor',
-        'sucursal',
-    )
-
-    search_fields = (
-        'user__email',
-        'user__first_name',
-        'user__last_name',
-        'codigo_vendedor',
-        'sucursal__nombre',
-    )
-
-    list_filter = (
-        'sucursal',
-    )
-
-    raw_id_fields = (
-        'user',
-        'sucursal',
-    )
-
-    list_select_related = (
-        'user',
-        'sucursal',
-    )
+    list_display = ('user', 'codigo_vendedor', 'sucursal')
+    search_fields = ('user__email', 'codigo_vendedor')
+    list_filter = ('sucursal',)

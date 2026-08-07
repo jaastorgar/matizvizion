@@ -5,7 +5,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.kpis_views import KpisView
 
+from core.admin_api import admin_router
 urlpatterns = [
+    path('api/admin/', include(admin_router.urls)),
     path('admin/', admin.site.urls),
     # Endpoints JWT Auth (Login nativo de SimpleJWT)
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

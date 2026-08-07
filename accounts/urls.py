@@ -13,3 +13,10 @@ urlpatterns = [
     path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('staff-perfil/', StaffProfileView.as_view(), name='staff_perfil'),
 ]
+
+# Alias para que /api/accounts/mi-perfil/ y /mi_perfil/ apunten al mismo perfil
+from .views import MiPerfilView as _MiPerfilView
+urlpatterns += [
+    path('mi-perfil/', _MiPerfilView.as_view(), name='mi_perfil_h'),
+    path('mi_perfil/', _MiPerfilView.as_view(), name='mi_perfil_u'),
+]

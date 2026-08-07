@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var MV = window.MV; if (!MV || !MV.me) return;
+  var MV = window.MV; if (!MV || !MV.api) return;
   var api = MV.api, toast = MV.toast;
   var REG = {
     'Arica y Parinacota': ['Arica','Camarones','Putre','General Lagos'],
@@ -20,63 +20,37 @@
     'Aysén': ['Coyhaique','Lago Verde','Aysén','Cisnes','Guaitecas','Cochrane',"O'Higgins",'Tortel','Chile Chico','Río Ibáñez'],
     'Magallanes': ['Punta Arenas','Laguna Blanca','Río Verde','San Gregorio','Cabo de Hornos','Antártica','Porvenir','Primavera','Timaukel','Natales','Torres del Paine']
   };
-  var selReg = document.getElementById('md-region'), selCom = document.getElementById('md-comuna');
+  var selReg = document.getElementById('reg-region'), selCom = document.getElementById('reg-comuna');
   Object.keys(REG).forEach(function (r){ var o = document.createElement('option'); o.value = r; o.textContent = r; selReg.appendChild(o); });
-  function fillComunas(region, comuna){
+  selReg.addEventListener('change', function (){
     selCom.innerHTML = '<option value="">Selecciona…</option>';
-    (REG[region] || []).forEach(function (c){ var o = document.createElement('option'); o.value = c; o.textContent = c; selCom.appendChild(o); });
-    selCom.disabled = !region;
-    if (comuna && REG[region] && REG[region].indexOf(comuna) !== -1) selCom.value = comuna;
-  }
-  selReg.addEventListener('change', function (){ fillComunas(selReg.value, null); });
-  function err(msg){ var e = document.getElementById('md-err'); e.style.display = 'block'; e.innerHTML = msg; }
-
-  var loaded = null;
-  function paint(d){
-    loaded = d;
-    var dn = ((d.first_name || '') + ' ' + (d.last_name || '')).trim();
-    document.getElementById('md-nombre').textContent = dn || d.email || '—';
-    document.getElementById('md-email').textContent = d.email || '';
-    document.getElementById('md-id-email').textContent = d.email || '—';
-    document.getElementById('md-id-rut').textContent = d.rut || '—';
-    document.getElementById('md-rut').innerHTML = '<i class="bi bi-shield-lock"></i> RUT: ' + (d.rut || '—');
-    document.getElementById('md-first').value = d.first_name || '';
-    document.getElementById('md-last').value = d.last_name || '';
-    document.getElementById('md-telefono').value = d.telefono || '';
-    document.getElementById('md-direccion').value = d.direccion || '';
-    if (d.region) { selReg.value = d.region; fillComunas(d.region, d.comuna); }
-  }
-
-  MV.me().then(function (u){
-    if (!u) { location.replace('/login/?next=/mis-datos/'); return; }
-    if (u.role === 'VENDEDOR' || u.role === 'ADMIN') { location.replace('/panel/'); return; }
-    document.getElementById('md-role').innerHTML = '<i class="bi bi-person-badge"></i> ' + (u.role === 'ADMIN' ? 'Administrador' : 'Cliente');
-    api.get('/accounts/mi-perfil/').then(function (r){
-      if (r.ok && r.data) paint(r.data);
-    });
+    (REG[selReg.value] || []).forEach(function (c){ var o = document.createElement('option'); o.value = c; o.textContent = c; selCom.appendChild(o); });
+    selCom.disabled = !selReg.value;
   });
 
-  document.getElementById('md-discard').addEventListener('click', function (){ if (loaded) paint(loaded); });
-
-  document.getElementById('md-form').addEventListener('submit', function (ev){
+  function err(msg){ var e = document.getElementById('reg-err'); e.style.display = 'block'; e.innerHTML = msg; }
+  document.getElementById('reg-form').addEventListener('submit', function (ev){
     ev.preventDefault();
-    document.getElementById('md-err').style.display = 'none';
-    var body = {
-      first_name: document.getElementById('md-first').value.trim(),
-      last_name: document.getElementById('md-last').value.trim(),
-      telefono: document.getElementById('md-telefono').value.trim(),
-      direccion: document.getElementById('md-direccion').value.trim(),
+    document.getElementById('reg-err').style.display = 'none';
+    var data = {
+      email: document.getElementById('reg-email').value.trim(),
+      password: document.getElementById('reg-pass').value,
+      first_name: document.getElementById('reg-nombre').value.trim(),
+      last_name: document.getElementById('reg-apellido').value.trim(),
+      rut: document.getElementById('reg-rut').value.trim(),
+      telefono: document.getElementById('reg-telefono').value.trim(),
+      direccion: document.getElementById('reg-direccion').value.trim(),
       region: selReg.value,
       comuna: selCom.value
     };
-    var btn = document.getElementById('md-save'); btn.disabled = true;
-    api.patch('/accounts/mi-perfil/', { body: body }).then(function (r){
-      btn.disabled = false;
-      if (r.ok) { toast('Datos guardados.', 'success'); paint(r.data); }
+    if (!data.email || !data.rut || !data.telefono || !data.direccion || !data.region || !data.comuna) { err('Completa todos los campos obligatorios (*).'); return; }
+    if (data.password !== document.getElementById('reg-pass2').value) { err('Las contraseñas no coinciden.'); return; }
+    api.post('/accounts/register/', { body: data }).then(function (r){
+      if (r.ok) { toast('¡Cuenta creada! Inicia sesión.', 'success'); setTimeout(function(){ location.href = '/login/'; }, 700); }
       else {
         var msgs = [];
         if (r.data) Object.keys(r.data).forEach(function (k){ var v = r.data[k]; msgs.push('<b>' + k + ':</b> ' + (Array.isArray(v) ? v.join(' ') : v)); });
-        err(msgs.join('<br>') || 'No se pudo guardar.');
+        err(msgs.join('<br>') || 'No se pudo registrar.');
       }
     });
   });

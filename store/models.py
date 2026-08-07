@@ -50,6 +50,9 @@ class Producto(models.Model):
     imagen = models.ImageField('Imagen del producto', upload_to='productos/', blank=True, null=True)
     activo = models.BooleanField('Visible en catalogo', default=True, db_index=True)
     destacado = models.BooleanField('Destacado en home', default=False, db_index=True)
+    grupo = models.CharField('Grupo/Familia (colores)', max_length=60, blank=True, default='', db_index=True,
+        help_text='Productos con el mismo grupo se muestran como una sola tarjeta con selector de color.')
+    color = models.CharField('Color (etiqueta)', max_length=60, blank=True, default='')
     creado_en = models.DateTimeField('Creado', auto_now_add=True)
     actualizado_en = models.DateTimeField('Actualizado', auto_now=True)
 
@@ -79,19 +82,38 @@ class Producto(models.Model):
     def save(self, *args, **kwargs):
         # Captura el stock previo para detectar cruce de umbral hacia abajo
         prev_stock = None
+        prev_imagen = None
         if self.pk:
             prev_stock = Producto.objects.filter(pk=self.pk).values_list('stock', flat=True).first()
+            prev_imagen = Producto.objects.filter(pk=self.pk).values_list('imagen', flat=True).first()
         if self.nombre:
             self.nombre = self.nombre.strip()
         super().save(*args, **kwargs)
         if not self.sku:
             self.sku = self._generar_sku()
             super().save(update_fields=['sku'])
+        # Si la imagen fue reemplazada, elimina el archivo anterior del disco
+        if prev_imagen and prev_imagen != self.imagen:
+            try:
+                from django.core.files.storage import default_storage
+                if default_storage.exists(prev_imagen):
+                    default_storage.delete(prev_imagen)
+            except Exception:
+                pass
         # Signal de alerta: solo si el stock CRUZO el umbral hacia abajo
         if prev_stock is not None:
             umbral = self.stock_minimo if self.stock_minimo is not None else getattr(settings, 'STOCK_ALERT_THRESHOLD', 5)
             if prev_stock > umbral and self.stock <= umbral:
                 self._notificar_stock_bajo(umbral)
+
+    def delete(self, *args, **kwargs):
+        # Elimina tambien el archivo de imagen (media/productos/) al borrar el producto
+        try:
+            if self.imagen:
+                self.imagen.delete(save=False)
+        except Exception:
+            pass
+        return super().delete(*args, **kwargs)
 
     def _notificar_stock_bajo(self, umbral):
         """Manda mail a ADMIN/VENDEDOR cuando un producto cruza el umbral hacia abajo."""
