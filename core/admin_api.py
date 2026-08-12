@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.text import slugify
 from rest_framework import serializers, status, viewsets
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
@@ -264,6 +265,35 @@ class UsuarioViewSet(AdminMixin, viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+
+class StatsView(AdminMixin, APIView):
+    """Estadisticas globales para el admin (todas las ordenes/citas/productos)."""
+
+    def get(self, request):
+        from orders.models import Orden, SolicitudDevolucion
+        from appointments.models import CitaMedica
+        from store.models import Producto
+        ordenes = []
+        for o in Orden.objects.select_related('cliente').prefetch_related('items__producto').all():
+            ordenes.append({
+                'id': o.id, 'codigo': o.codigo, 'estado': o.estado,
+                'total': float(o.total or 0), 'creado_en': o.creado_en,
+                'cliente_email': getattr(o.cliente, 'email', ''),
+                'items': [{'producto_nombre': it.producto.nombre, 'cantidad': it.cantidad} for it in o.items.all()],
+            })
+        citas = []
+        for c in CitaMedica.objects.select_related('bloque__tecnologo__sucursal').all():
+            tec = c.bloque.tecnologo
+            citas.append({
+                'id': c.id, 'estado': c.estado,
+                'bloque_fecha': c.bloque.fecha.isoformat(),
+                'tecnologo': tec.id, 'tecnologo_nombre': tec.nombre,
+                'sucursal': getattr(tec, 'sucursal_id', None),
+                'sucursal_nombre': getattr(tec.sucursal, 'nombre', '') if tec.sucursal else '',
+            })
+        productos = [{'nombre': p.nombre, 'sku': p.sku, 'stock': p.stock, 'stock_minimo': p.stock_minimo, 'stock_bajo': p.stock_bajo} for p in Producto.objects.all()]
+        devoluciones = [{'estado': d.estado} for d in SolicitudDevolucion.objects.all()]
+        return Response({'ordenes': ordenes, 'citas': citas, 'productos': productos, 'devoluciones': devoluciones})
 
 admin_router = DefaultRouter()
 admin_router.register('categorias', CategoriaViewSet, basename='admin-categorias')

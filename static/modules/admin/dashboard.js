@@ -5,32 +5,76 @@
   var root = document.getElementById('dash-root');
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
   function todayStr(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
-  function norm(s){ return (s || '').toUpperCase().replace(/[.\-\s]/g, ''); }
-  function fecha(iso){ if(!iso) return '—'; var s=String(iso); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m){ return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); } try{ return new Date(s).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return s; } }
-
+  function norm(s){ return (s || '').toUpperCase().replace(/[.-\s]/g, ''); }
+  function fecha(iso){ if(!iso) return '—'; var s=String(iso).slice(0,10); var m=s.split('-'); if(m.length===3){ return new Date(+m[0],+m[1]-1,+m[2]).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); } return s; }
   var NEXT = { 'PAGADA': 'EN_PREPARACION', 'EN_PREPARACION': 'LISTO_PARA_RETIRO', 'LISTO_PARA_RETIRO': 'ENTREGADA', 'ENVIADA': 'ENTREGADA' };
   var LABEL = { 'PAGADA': 'Marcar en preparación', 'EN_PREPARACION': 'Listo para retiro', 'LISTO_PARA_RETIRO': 'Marcar entregada', 'ENVIADA': 'Marcar entregada' };
   var STATE_TXT = { 'PAGADA': 'Pagada', 'EN_PREPARACION': 'En preparación', 'LISTO_PARA_RETIRO': 'Listo para retiro', 'ENVIADA': 'Enviada', 'ENTREGADA': 'Entregada', 'DEVUELTA': 'Devuelta' };
   var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
   var RES_LABEL = { devolucion:'Devolución del dinero', cambio:'Cambio directo', reparacion:'Reparación gratuita', rehacer:'Re-hacer (multifocal)' };
-  var CONSECUENCIA = {
-    devolucion: 'La orden pasará a <strong>Devuelta</strong> y el stock del producto se repone al inventario.',
-    cambio: 'No cambia el estado de la orden ni el stock: se registra un <strong>cambio directo</strong>.',
-    reparacion: 'No cambia el estado ni el stock: se abre un <strong>caso de reparación</strong>.',
-    rehacer: 'No cambia el estado ni el stock: se genera un <strong>trabajo óptico de re-hacer</strong>.'
-  };
   var ORD = [], allCitas = [], DEV = [], STOCK_BAJO = [];
+
+  // Estilos de los modales propios (confirm / prompt) - se inyectan una vez
+  (function(){
+    if (document.getElementById('mv-dlg-css')) return;
+    var s = document.createElement('style'); s.id = 'mv-dlg-css';
+    s.textContent = '.mv-dlg-ov{position:fixed;inset:0;z-index:2100;display:flex;align-items:center;justify-content:center;background:rgba(17,24,39,.55);backdrop-filter:blur(3px);padding:1rem;}' +
+      '.mv-dlg-card{width:100%;max-width:460px;background:var(--white);border-radius:16px;padding:1.5rem 1.6rem;box-shadow:0 30px 70px rgba(17,24,39,.4);}' +
+      '.mv-dlg-card h3{font-family:var(--font-head);font-weight:800;color:var(--lead-dark);margin:0 0 .6rem;font-size:1.1rem;}' +
+      '.mv-dlg-card p{color:var(--lead-muted,#6B7280);font-size:.92rem;margin:0 0 1.1rem;line-height:1.5;}' +
+      '.mv-dlg-card textarea{width:100%;border:1px solid var(--border-color);border-radius:10px;padding:.6rem .7rem;font-family:inherit;font-size:.92rem;box-sizing:border-box;}' +
+      '.mv-dlg-card textarea:focus{outline:none;border-color:var(--green-primary);box-shadow:0 0 0 3px rgba(16,185,129,.16);}' +
+      '.mv-dlg-foot{display:flex;justify-content:flex-end;gap:.6rem;}';
+    document.head.appendChild(s);
+  })();
+
+  // Confirmacion propia (reemplaza confirm())
+  function confirmBox(message, okLabel) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div'); ov.className = 'mv-dlg-ov';
+      ov.innerHTML = '<div class="mv-dlg-card"><h3>Confirmar acción</h3><p>' + message + '</p>' +
+        '<div class="mv-dlg-foot"><button class="btn btn-outline-mv btn-sm" id="dlg-no">Cancelar</button>' +
+        '<button class="btn btn-cta" id="dlg-yes">' + (okLabel || 'Sí, continuar') + '</button></div></div>';
+      document.body.appendChild(ov);
+      function done(v){ if (ov.parentNode) ov.parentNode.removeChild(ov); resolve(v); }
+      ov.querySelector('#dlg-no').addEventListener('click', function(){ done(false); });
+      ov.querySelector('#dlg-yes').addEventListener('click', function(){ done(true); });
+      ov.addEventListener('click', function(e){ if (e.target === ov) done(false); });
+    });
+  }
+  // Prompt propio (reemplaza prompt()) -> resuelve el texto o null si cancela
+  function promptBox(title, placeholder) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div'); ov.className = 'mv-dlg-ov';
+      ov.innerHTML = '<div class="mv-dlg-card"><h3>' + title + '</h3>' +
+        '<textarea id="dlg-val" rows="3" placeholder="' + (placeholder || '') + '"></textarea>' +
+        '<div class="mv-dlg-foot" style="margin-top:1rem;"><button class="btn btn-outline-mv btn-sm" id="dlg-no">Cancelar</button>' +
+        '<button class="btn btn-cta" id="dlg-yes">Aceptar</button></div></div>';
+      document.body.appendChild(ov);
+      function done(ok, val){ if (ov.parentNode) ov.parentNode.removeChild(ov); resolve(ok ? val : null); }
+      ov.querySelector('#dlg-no').addEventListener('click', function(){ done(false); });
+      ov.querySelector('#dlg-yes').addEventListener('click', function(){ done(true, ov.querySelector('#dlg-val').value.trim()); });
+      ov.addEventListener('click', function(e){ if (e.target === ov) done(false); });
+    });
+  }
+  function consecuencia(res, garNombre) {
+    var g = garNombre ? (' bajo <em>' + esc(garNombre) + '</em>') : '';
+    if (res === 'devolucion') return '<strong>Devolución del dinero</strong>' + g + '. La orden pasará a <strong>Devuelta</strong> y el stock del producto se repone al inventario.';
+    if (res === 'cambio') return '<strong>Cambio directo</strong>' + g + '. No cambia el estado de la orden ni el stock; se registra el cambio.';
+    if (res === 'reparacion') return '<strong>Reparación gratuita</strong>' + g + '. No cambia el estado ni el stock; se abre un caso de reparación.';
+    return '<strong>Re-hacer (multifocal)</strong>' + g + '. No cambia el estado ni el stock; se genera un trabajo óptico.';
+  }
 
   function layout(){
     root.innerHTML =
-      '<h1 class="h3 mb-3"><i class="bi bi-clipboard2-pulse"></i>  Panel de operaciones</h1>' +
+      '<h1 class="h3 mb-3"><i class="bi bi-clipboard2-pulse"></i> Panel de operaciones</h1>' +
       '<div class="mv-dash-wrap">' +
         '<aside class="mv-dash-side">' +
-          '<button class="mv-side-item active" data-pane="pedidos"><i class="bi bi-box-seam"></i>  Pedidos por Entregar</button>' +
-          '<button class="mv-side-item" data-pane="devoluciones"><i class="bi bi-arrow-return-left"></i>  Devoluciones</button>' +
-          '<button class="mv-side-item" data-pane="stock"><i class="bi bi-exclamation-triangle"></i>  Stock bajo</button>' +
-          '<button class="mv-side-item" data-pane="citas"><i class="bi bi-calendar2-heart"></i>  Citas del Día</button>' +
-          '<button class="mv-side-item" data-pane="rut"><i class="bi bi-search"></i>  Buscar por RUT</button>' +
+          '<button class="mv-side-item active" data-pane="pedidos"><i class="bi bi-box-seam"></i> Pedidos por Entregar</button>' +
+          '<button class="mv-side-item" data-pane="devoluciones"><i class="bi bi-arrow-return-left"></i> Devoluciones</button>' +
+          '<button class="mv-side-item" data-pane="stock"><i class="bi bi-exclamation-triangle"></i> Stock bajo</button>' +
+          '<button class="mv-side-item" data-pane="citas"><i class="bi bi-calendar2-heart"></i> Citas del Día</button>' +
+          '<button class="mv-side-item" data-pane="rut"><i class="bi bi-search"></i> Buscar por RUT</button>' +
         '</aside>' +
         '<section>' +
           '<div class="mv-dash-panel" id="pane-pedidos"><h2 class="h5 mb-3">Gestión de entregas</h2><div id="pedidos-body"></div></div>' +
@@ -65,102 +109,62 @@
   }
   function renderRut(v){ renderPedidos(v); }
 
-  // ---------- Mesa de resolucion de garantias ----------
-  function garMini(g, idx){
-    var cls = g.vigente ? (g.dias_restantes <= 7 ? 'warn' : 'ok') : 'exp';
-    var pct = g.plazo_dias_max > 0 ? Math.max(0, Math.min(100, Math.round(g.dias_restantes / g.plazo_dias_max * 100))) : 0;
-    if (!g.vigente) pct = 0;
-    return '<div class="mv-res-gar" data-base="' + esc(g.base) + '" style="animation-delay:' + (idx * 0.05) + 's">' +
-      '<div class="mv-res-gar-top"><span class="mv-res-gar-name">' + esc(g.nombre) + '</span><span class="mv-res-gar-base ' + esc(g.base) + '">' + esc(BASE_TXT[g.base] || g.base) + '</span></div>' +
-      '<div class="mv-res-bar ' + cls + '"><span style="width:' + pct + '%"></span></div>' +
-      '<div class="mv-res-gar-meta"><span>' + esc(g.plazo_label || '') + '</span><span>' + (g.vigente ? ('vence ' + esc(fecha(g.vence_en))) : 'vencida') + '</span></div>' +
-    '</div>';
-  }
-  function buildResMap(garantias){
-    // Para cada resolucion: esta permitida si alguna garantia VIGENTE la permite.
-    // La garantia aplicable = la vigente de mayor prioridad (menor orden) que la permita.
-    var vig = (garantias || []).filter(function (g){ return g.vigente; });
-    var map = {};
-    ['devolucion','cambio','reparacion','rehacer'].forEach(function (r){
-      var hit = null;
-      for (var i = 0; i < vig.length; i++) {
-        if (vig[i]['permite_' + r]) { hit = vig[i]; break; }
-      }
-      map[r] = hit ? { ok: true, codigo: hit.codigo, nombre: hit.nombre } : { ok: false, codigo: null, nombre: null };
-    });
-    return map;
-  }
-  function resChips(map){
-    return ['devolucion','cambio','reparacion','rehacer'].map(function (r){
-      var m = map[r];
-      var dis = m.ok ? '' : ' disabled';
-      var title = m.ok ? ('Amparado por: ' + m.nombre) : 'Sin garantía vigente que lo permita';
-      return '<button type="button" class="mv-res-chip" data-res="' + r + '"' + dis + ' title="' + esc(title) + '"><i class="bi bi-check2-circle"></i> ' + esc(RES_LABEL[r]) + '</button>';
-    }).join('');
-  }
   function renderDevoluciones(){
     var body = document.getElementById('dev-body');
     var pend = DEV.filter(function (d){ return d.estado === 'PENDIENTE'; });
-    if (!pend.length) { body.innerHTML = '<div class="mv-empty">No hay devoluciones pendientes. 🎉</div>'; return; }
+    if (!pend.length) { body.innerHTML = '<div class="mv-empty">No hay devoluciones pendientes.</div>'; return; }
     body.innerHTML = pend.map(function (d){
       return '<div class="mv-dev-card" data-devcard="' + d.id + '">' +
-        '<div class="mv-dev-head">' +
-          '<div><strong class="mv-dev-code">' + esc(d.orden_codigo || ('#' + d.orden)) + '</strong> · ' + esc(d.cliente_email || '') +
-            '<div class="mv-dev-motivo"><i class="bi bi-chat-left-text"></i> ' + esc(d.motivo || '') + '</div></div>' +
-          '<div class="mv-dev-actions"><button class="btn btn-cta btn-sm" data-res-toggle="' + d.id + '"><i class="bi bi-shield-check"></i> Resolver con garantía</button>' +
-          '<button class="btn btn-outline-mv btn-sm" data-dev-rech="' + d.id + '"><i class="bi bi-x-lg"></i> Rechazar</button></div>' +
-        '</div>' +
-        '<div class="mv-res-detail" id="res-detail-' + d.id + '" hidden></div>' +
-      '</div>';
+        '<div class="mv-dev-head"><div><strong>' + esc(d.orden_codigo || ('#' + d.orden)) + '</strong> · ' + esc(d.cliente_email || '') +
+        '<div class="mv-dev-motivo"><i class="bi bi-chat-left-text"></i> ' + esc(d.motivo || '') + '</div></div>' +
+        '<div class="mv-dev-actions"><button class="btn btn-cta btn-sm" data-dev-open="' + d.id + '"><i class="bi bi-shield-check"></i> Resolver con garantía</button>' +
+        '<button class="btn btn-outline-mv btn-sm" data-dev-rech="' + d.id + '"><i class="bi bi-x-lg"></i> Rechazar</button></div></div>' +
+        '<div class="mv-res-detail" id="res-detail-' + d.id + '" hidden></div></div>';
     }).join('');
   }
+
   function openResPanel(id){
-    var detail = document.getElementById('res-detail-' + id);
-    if (!detail) return;
-    var d = DEV.filter(function (x){ return String(x.id) === String(id); })[0];
-    if (!d) return;
+    var detail = document.getElementById('res-detail-' + id); if (!detail) return;
+    var d = DEV.filter(function (x){ return String(x.id) === String(id); })[0]; if (!d) return;
     detail.hidden = false;
-    detail.innerHTML = '<div class="mv-res-loading"><span class="spinner-border spinner-border-sm"></span> Cargando marco de garantía…</div>';
+    detail.innerHTML = '<div class="mv-res-loading">Cargando marco de garantía…</div>';
     api.get('/orders/garantias-marco/?orden=' + d.orden).then(function (r){
-      if (!r.ok || !r.data) { detail.innerHTML = '<div class="mv-res-note err"><i class="bi bi-exclamation-triangle"></i> No se pudo cargar el marco de garantía.</div>'; return; }
+      if (!r.ok || !r.data) { detail.innerHTML = '<div class="mv-res-note err">No se pudo cargar el marco de garantía.</div>'; return; }
       var g = r.data.garantias || [];
-      var map = buildResMap(g);
-      var algunaVigente = g.some(function (x){ return x.vigente; });
-      detail.dataset.res = '';
-      detail.dataset.gar = '';
-      var fichas = g.length ? g.map(garMini).join('') : '<div class="mv-res-note">Sin políticas cargadas. Ejecuta <code>seed_garantias</code>.</div>';
+      var vig = g.filter(function (x){ return x.vigente; });
+      var map = {};
+      ['devolucion','cambio','reparacion','rehacer'].forEach(function (res){
+        var hit = null;
+        for (var i = 0; i < vig.length; i++) { if (vig[i]['permite_' + res]) { hit = vig[i]; break; } }
+        map[res] = hit;
+      });
+      detail.dataset.res = ''; detail.dataset.gar = '';
+      detail._map = map;
+      var fichas = g.length ? g.map(function (x){
+        var cls = x.vigente ? (x.dias_restantes <= 7 ? 'warn' : 'ok') : 'exp';
+        var pct = x.plazo_dias_max > 0 ? Math.max(0, Math.min(100, Math.round(x.dias_restantes / x.plazo_dias_max * 100))) : 0;
+        if (!x.vigente) pct = 0;
+        return '<div class="mv-res-gar" data-base="' + esc(x.base) + '">' +
+          '<div class="mv-res-gar-top"><span class="mv-res-gar-name">' + esc(x.nombre) + '</span><span class="mv-res-gar-base ' + esc(x.base) + '">' + esc(BASE_TXT[x.base] || x.base) + '</span></div>' +
+          '<div class="mv-res-bar ' + cls + '"><span style="width:' + pct + '%"></span></div>' +
+          '<div class="mv-res-gar-meta"><span>' + esc(x.plazo_label || '') + '</span><span>' + (x.vigente ? ('vence ' + esc(fecha(x.vence_en))) : 'vencida') + '</span></div></div>';
+      }).join('') : '<div class="mv-res-note">Sin políticas cargadas. Ejecuta <code>seed_garantias</code>.</div>';
+      var chips = ['devolucion','cambio','reparacion','rehacer'].map(function (res){
+        var ok = !!map[res];
+        return '<button type="button" class="mv-res-chip" data-res="' + res + '"' + (ok ? '' : ' disabled') + ' title="' + (ok ? ('Amparado por: ' + esc(map[res].nombre)) : 'Sin garantía vigente que lo permita') + '"><i class="bi bi-check2-circle"></i> ' + esc(RES_LABEL[res]) + '</button>';
+      }).join('');
       detail.innerHTML =
         '<div class="mv-res-kicker"><i class="bi bi-shield-check"></i> Marco de garantía de esta compra</div>' +
         '<div class="mv-res-gar-grid">' + fichas + '</div>' +
         '<div class="mv-res-kicker" style="margin-top:1rem;"><i class="bi bi-hand-index"></i> Resolución a aplicar</div>' +
-        '<div class="mv-res-chips">' + resChips(map) + '</div>' +
+        '<div class="mv-res-chips">' + chips + '</div>' +
         '<div class="mv-res-consec" id="res-consec-' + id + '" hidden></div>' +
-        '<div class="mv-res-foot">' +
-          '<button class="btn btn-cta" data-res-apr="' + id + '" disabled><i class="bi bi-check-lg"></i> Aprobar con esta resolución</button>' +
-          '<button class="btn btn-outline-mv btn-sm" data-res-close="' + id + '">Cerrar</button>' +
-        '</div>';
-      if (!algunaVigente) {
-        detail.querySelector('.mv-res-consec').hidden = false;
-        detail.querySelector('.mv-res-consec').className = 'mv-res-consec err';
-        detail.querySelector('.mv-res-consec').innerHTML = '<i class="bi bi-calendar-x"></i> Ninguna garantía está vigente para esta compra hoy. Solo procede <strong>Rechazar</strong> (o evaluar fuera de garantía).';
+        '<div class="mv-res-foot"><button class="btn btn-cta" data-res-apr="' + id + '" disabled><i class="bi bi-check-lg"></i> Aprobar con esta resolución</button>' +
+        '<button class="btn btn-outline-mv btn-sm" data-res-close="' + id + '">Cerrar</button></div>';
+      if (!vig.length) {
+        var c = detail.querySelector('.mv-res-consec'); c.hidden = false; c.className = 'mv-res-consec err';
+        c.innerHTML = '<i class="bi bi-calendar-x"></i> Ninguna garantía está vigente para esta compra hoy. Solo procede <strong>Rechazar</strong> (o evaluar fuera de garantía).';
       }
-    });
-  }
-  function selectRes(id, res){
-    var detail = document.getElementById('res-detail-' + id);
-    if (!detail) return;
-    detail.dataset.res = res;
-    detail.querySelectorAll('.mv-res-chip').forEach(function (c){ c.classList.toggle('active', c.getAttribute('data-res') === res); });
-    // garantia aplicable = la primera vigente que permita esta res (mismo criterio que buildResMap)
-    var gar = '';
-    api.get('/orders/garantias-marco/?orden=' + (DEV.filter(function (x){ return String(x.id) === String(id); })[0] || {}).orden).then(function (r){
-      var vig = (r.ok && r.data && r.data.garantias) ? r.data.garantias.filter(function (x){ return x.vigente; }) : [];
-      for (var i = 0; i < vig.length; i++) { if (vig[i]['permite_' + res]) { gar = vig[i].codigo; break; } }
-      detail.dataset.gar = gar;
-      var consec = document.getElementById('res-consec-' + id);
-      consec.hidden = false; consec.className = 'mv-res-consec';
-      consec.innerHTML = '<i class="bi bi-info-circle"></i> <strong>' + esc(RES_LABEL[res]) + '</strong>' + (gar ? ' bajo <em>' + esc(gar) + '</em>.' : '.') + '<br>' + CONSECUENCIA[res];
-      var apr = detail.querySelector('button[data-res-apr]'); if (apr) apr.disabled = false;
     });
   }
 
@@ -213,34 +217,50 @@
       });
       return;
     }
-    var tg = e.target.closest('button[data-res-toggle]');
-    if (tg) { openResPanel(tg.getAttribute('data-res-toggle')); return; }
+    var op = e.target.closest('button[data-dev-open]');
+    if (op) { openResPanel(op.getAttribute('data-dev-open')); return; }
     var cl = e.target.closest('button[data-res-close]');
     if (cl) { var dt = document.getElementById('res-detail-' + cl.getAttribute('data-res-close')); if (dt) dt.hidden = true; return; }
-    var ch = e.target.closest('button[data-res]');
-    if (ch && !ch.disabled) { var card = ch.closest('.mv-dev-card'); selectRes(card.getAttribute('data-devcard'), ch.getAttribute('data-res')); return; }
-    var ap = e.target.closest('button[data-res-apr]');
+    var ch = e.target.closest('.mv-res-chip');
+    if (ch && !ch.disabled) {
+      var card = ch.closest('.mv-dev-card'); var cid2 = card.getAttribute('data-devcard');
+      var detail = document.getElementById('res-detail-' + cid2);
+      detail.querySelectorAll('.mv-res-chip').forEach(function (x){ x.classList.toggle('active', x === ch); });
+      var res = ch.getAttribute('data-res');
+      var hit = detail._map ? detail._map[res] : null;
+      detail.dataset.res = res;
+      detail.dataset.gar = hit ? hit.codigo : '';
+      var c2 = document.getElementById('res-consec-' + cid2);
+      c2.hidden = false; c2.className = 'mv-res-consec';
+      c2.innerHTML = '<i class="bi bi-info-circle"></i> ' + consecuencia(res, hit ? hit.nombre : '');
+      var apr = detail.querySelector('[data-res-apr]'); if (apr) apr.disabled = false;
+      return;
+    }
+    var ap = e.target.closest('[data-res-apr]');
     if (ap && !ap.disabled) {
-      var did = ap.getAttribute('data-res-apr');
-      var det = document.getElementById('res-detail-' + did);
-      var res = det ? det.dataset.res : '';
-      var gar = det ? det.dataset.gar : '';
-      if (!res) { toast('Elige una resolución antes de aprobar.', 'error'); return; }
-      if (!confirm('¿Aprobar como "' + RES_LABEL[res] + '"? ' + (res === 'devolucion' ? 'El stock se repone y la orden pasa a Devuelta.' : 'Se registra el caso sin mover el estado de la orden.'))) return;
-      ap.disabled = true;
-      api.post('/orders/devoluciones/' + did + '/aprobar/', { body: { resolucion: res, garantia_aplicada: gar } }).then(function (r){
-        if (r.ok) { toast('Resuelto como ' + RES_LABEL[res] + '.', 'success'); loadAll(); }
-        else { toast((r.data && r.data.error) || 'No se pudo aprobar.', 'error'); ap.disabled = false; }
+      var id2 = ap.getAttribute('data-res-apr');
+      var det = document.getElementById('res-detail-' + id2);
+      var res2 = det.dataset.res, gar = det.dataset.gar;
+      if (!res2) { toast('Elige una resolución antes de aprobar.', 'error'); return; }
+      confirmBox('¿Aprobar como "' + RES_LABEL[res2] + '"? ' + (res2 === 'devolucion' ? 'El stock se repone y la orden pasa a Devuelta.' : 'Se registra el caso sin mover el estado de la orden.'), 'Aprobar').then(function (ok){
+        if (!ok) return;
+        ap.disabled = true;
+        api.post('/orders/devoluciones/' + id2 + '/aprobar/', { body: { resolucion: res2, garantia_aplicada: gar } }).then(function (r){
+          if (r.ok) { toast('Resuelto como ' + RES_LABEL[res2] + '.', 'success'); loadAll(); }
+          else { toast((r.data && r.data.error) || 'No se pudo aprobar.', 'error'); ap.disabled = false; }
+        });
       });
       return;
     }
     var dr = e.target.closest('button[data-dev-rech]');
     if (dr) {
-      var motivo = (prompt('Motivo del rechazo (opcional):') || '').trim();
-      dr.disabled = true;
-      api.post('/orders/devoluciones/' + dr.getAttribute('data-dev-rech') + '/rechazar/', { body: { motivo_rechazo: motivo } }).then(function (r){
-        if (r.ok) { toast('Devolución rechazada.', 'success'); loadAll(); }
-        else { toast((r.data && r.data.error) || 'No se pudo rechazar.', 'error'); dr.disabled = false; }
+      promptBox('Motivo del rechazo', 'Motivo (opcional)').then(function (motivo){
+        if (motivo === null) return;
+        dr.disabled = true;
+        api.post('/orders/devoluciones/' + dr.getAttribute('data-dev-rech') + '/rechazar/', { body: { motivo_rechazo: motivo } }).then(function (r){
+          if (r.ok) { toast('Devolución rechazada.', 'success'); loadAll(); }
+          else { toast((r.data && r.data.error) || 'No se pudo rechazar.', 'error'); dr.disabled = false; }
+        });
       });
     }
   });

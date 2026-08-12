@@ -98,17 +98,18 @@
   function openOptica(id, list){
     var suc = (list || []).filter(function (s){ return String(s.id) === String(id); })[0] || {};
     Promise.all([
-      api.get('/appointments/tecnologos/'),
+      api.get('/admin/tecnologos/'),
       api.get('/appointments/bloques/?sucursal=' + id),
       api.get('/appointments/citas/')
     ]).then(function (res){
-      var TEC = (res[0].ok && Array.isArray(res[0].data)) ? res[0].data : [];
+      var TEC = (res[0].ok && Array.isArray(res[0].data)) ? res[0].data : []; cacheOpts['/admin/tecnologos/'] = TEC;
       var BLO = (res[1].ok && Array.isArray(res[1].data)) ? res[1].data : [];
-      var CIT = (res[2].ok && Array.isArray(res[2].data)) ? res[2].data : [];
+      var CIT = (res[2].ok && res[2].data && Array.isArray(res[2].data.citas)) ? res[2].data.citas : [];
       var tecIds = {};
       var tecs = TEC.filter(function (t){ return String(t.sucursal) === String(id); });
       tecs.forEach(function (t){ tecIds[t.id] = true; });
-      var citas = CIT.filter(function (c){ return tecIds[c.tecnologo]; });
+      var bloIds = {}; BLO.forEach(function (b){ bloIds[b.id] = true; });
+      var citas = CIT.filter(function (c){ return bloIds[c.bloque] || (tecIds[c.tecnologo] || String(c.sucursal) === String(id)); });
       var d = new Date(); var hoy = d.getFullYear() + '-' + (d.getMonth()+1<10?'0':'') + (d.getMonth()+1) + '-' + (d.getDate()<10?'0':'') + d.getDate();
       var citasHoy = citas.filter(function (c){ return c.bloque_fecha === hoy && (c.estado==='AGENDADA'||c.estado==='CONFIRMADA'); });
       var html = '<button class="btn btn-outline-mv btn-sm" data-back style="margin-bottom:1rem;"><i class="bi bi-arrow-left"></i> Volver a Mis Ópticas</button>';
@@ -166,10 +167,10 @@
     });
   }
   function renderResumen(){
-    Promise.all([api.get('/orders/operaciones/'), api.get('/orders/devoluciones/'), api.get('/appointments/citas/'), api.get('/store/productos/')]).then(function (res){
+    Promise.all([api.get('/orders/operaciones/'), api.get('/orders/devoluciones/'), api.get('/admin/stats/'), api.get('/store/productos/')]).then(function (res){
       var ORD = (res[0].ok && Array.isArray(res[0].data)) ? res[0].data : [];
       var DEV = (res[1].ok && Array.isArray(res[1].data)) ? res[1].data : [];
-      var CIT = (res[2].ok && Array.isArray(res[2].data)) ? res[2].data : [];
+      var CIT = (res[2].ok && res[2].data && Array.isArray(res[2].data.citas)) ? res[2].data.citas : [];
       var PRO = (res[3].ok && Array.isArray(res[3].data)) ? res[3].data : [];
       var d = new Date(); var hoy = d.getFullYear() + '-' + (d.getMonth()+1<10?'0':'') + (d.getMonth()+1) + '-' + (d.getDate()<10?'0':'') + d.getDate();
       body.innerHTML = '<div class="mv-ad-stats">' +

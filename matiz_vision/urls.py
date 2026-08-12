@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.kpis_views import KpisView
 
-from core.admin_api import admin_router
+from core.admin_api import admin_router, StatsView
 urlpatterns = [
     path('api/admin/', include(admin_router.urls)),
     path('admin/', admin.site.urls),
@@ -23,6 +23,7 @@ urlpatterns = [
     # Inteligencia de negocio (solo ADMIN)
     path('api/admin/kpis/', KpisView.as_view(), name='admin-kpis'),
     # Páginas HTML (capa de presentación)
+    path('api/admin/stats/', StatsView.as_view()),
     path('', include('web.urls')),
 ]
 
