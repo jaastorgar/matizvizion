@@ -11,6 +11,9 @@ var searchInput = document.getElementById('search-input');
 var resetBtn = document.getElementById('reset-filters');
 var countInfo = document.getElementById('count-info');
 var ALL = [], cartMap = {}, MAX_PRICE = 150000;
+var WA_META = document.querySelector('meta[name=whatsapp-asesor]');
+var WHATSAPP_NUM = (WA_META && WA_META.content) ? WA_META.content.trim() : '56964126663'; // <- PON AQUI TU NUMERO REAL con codigo de pais, ej: 569xxxxxxxx
+function waLink(msg){ return 'https://wa.me/' + WHATSAPP_NUM + '?text=' + encodeURIComponent(msg); }
 var priceFmt = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
 function formatPrice(n) { return priceFmt.format(Number(n) || 0); }
 function emojiFor(c) { c = (c || '').toLowerCase(); if (c.indexOf('sol') !== -1) return '🕶️'; if (c.indexOf('contacto') !== -1) return '👁️'; if (c.indexOf('armaz') !== -1) return '👓'; return '🛍️'; }
@@ -63,7 +66,7 @@ function cardHtml(p, members) {
     '<h3 class="mv-product-name">' + esc(p.nombre) + '</h3>' +
     swatchesHtml(p, members) +
     '<p class="mv-product-desc">' + desc + '</p>' +
-    '<div class="mv-product-foot"><span class="mv-product-price">' + formatPrice(p.precio) + '</span>' + stockBadge + '</div>' +
+    '<div class="mv-product-foot"><span class="mv-product-price">' + formatPrice(p.precio) + '</span>' + stockBadge + '<button type="button" class="mv-wa-card-btn" data-wa="' + p.id + '" title="Consultar por WhatsApp"><i class="bi bi-whatsapp"></i></button></div>' +
     slot +
     '</div></div></div>';
 }
@@ -154,6 +157,19 @@ grid.addEventListener('click', function (e) {
     if (col) col.outerHTML = cardHtml(prod, members);
     return;
   }
+  var wa = e.target.closest('.mv-wa-card-btn');
+  if (wa) {
+    var wpid = wa.getAttribute('data-wa');
+    var wprod = ALL.find(function (x){ return String(x.id) === String(wpid); });
+    if (wprod) {
+      var wmsg = 'Hola Matiz Visión! Me interesa "' + wprod.nombre + '"' +
+        (wprod.sku ? ' (SKU ' + wprod.sku + ')' : '') +
+        (wprod.color ? ' en color ' + wprod.color : '') +
+        ' a ' + formatPrice(wprod.precio) + '. ¿Me pueden asesorar?';
+      window.open(waLink(wmsg), '_blank', 'noopener');
+    }
+    return;
+  }
   var a = e.target.closest('.btn-add'); if (a && !a.disabled) { doAdd(a); return; }
   var i = e.target.closest('.mv-q-inc'); if (i && !i.disabled) { doInc(i); return; }
   var d = e.target.closest('.mv-q-dec'); if (d && !d.disabled) { doDec(d); return; }
@@ -179,4 +195,26 @@ Promise.all([api.get('/store/productos/'), api.get('/store/categorias/'), loadCa
   if (rc.ok && Array.isArray(rc.data)) rc.data.forEach(function (c) { var o = document.createElement('option'); o.value = String(c.id); o.textContent = c.nombre; catSelect.appendChild(o); });
   applyFilters(); badge();
 });
+
+
+// ---- Asesor WhatsApp: boton flotante + estilos ----
+(function () {
+  if (document.getElementById('mv-wa-css')) return;
+  var s = document.createElement('style'); s.id = 'mv-wa-css';
+  s.textContent = '.mv-wa-float{position:fixed;right:18px;bottom:18px;z-index:1050;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 10px 26px rgba(0,0,0,.25);border:none;cursor:pointer;transition:transform .15s ease;}' +
+    '.mv-wa-float:hover{transform:scale(1.08);}' +
+    '.mv-wa-card-btn{border:none;background:#25D366;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;flex:0 0 auto;margin-left:.4rem;transition:transform .12s ease;}' +
+    '.mv-wa-card-btn:hover{transform:scale(1.12);}';
+  document.head.appendChild(s);
+  if (document.getElementById('mv-wa-float')) return;
+  var b = document.createElement('button');
+  b.id = 'mv-wa-float'; b.type = 'button'; b.className = 'mv-wa-float';
+  b.title = 'Chatear con un asesor por WhatsApp';
+  b.setAttribute('aria-label', 'Chatear con un asesor por WhatsApp');
+  b.innerHTML = '<i class="bi bi-whatsapp"></i>';
+  b.addEventListener('click', function () {
+    window.open(waLink('Hola Matiz Visión! Quiero asesoría óptica personalizada.'), '_blank', 'noopener');
+  });
+  document.body.appendChild(b);
+})();
 })();
