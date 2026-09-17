@@ -34,14 +34,15 @@ class OrdenSerializer(serializers.ModelSerializer):
     cliente_rut = serializers.SerializerMethodField()
     items = ItemOrdenSerializer(many=True, read_only=True)
     historial = HistorialEstadoSerializer(many=True, read_only=True)
+    saldo_pendiente = serializers.ReadOnlyField()
 
     class Meta:
         model = Orden
         fields = [
             'id', 'codigo', 'cliente', 'cliente_email', 'cliente_rut',
-            'total', 'estado', 'creado_en', 'items', 'historial',
+            'total', 'estado', 'creado_en', 'items', 'historial', 'modo_pago', 'monto_abonado', 'saldo_cancelado', 'saldo_pendiente',
         ]
-        read_only_fields = ['id', 'codigo', 'cliente', 'cliente_email', 'cliente_rut', 'total', 'estado', 'creado_en', 'items', 'historial']
+        read_only_fields = ['id', 'codigo', 'cliente', 'cliente_email', 'cliente_rut', 'total', 'estado', 'creado_en', 'items', 'historial', 'modo_pago', 'monto_abonado', 'saldo_cancelado', 'saldo_pendiente']
 
     def get_cliente_rut(self, obj):
         try:

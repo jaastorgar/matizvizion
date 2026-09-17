@@ -78,6 +78,14 @@ class Orden(models.Model):
     )
     total = models.DecimalField('Total', max_digits=10, decimal_places=2)
     estado = models.CharField('Estado', max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
+    modo_pago = models.CharField(
+        'Modalidad de pago', max_length=10,
+        choices=[('COMPLETO', 'Pago completo'), ('ABONO', 'Abono 50% + saldo en tienda')],
+        default='COMPLETO'
+    )
+    monto_abonado = models.DecimalField('Monto abonado online', max_digits=10, decimal_places=2, default=0)
+    saldo_cancelado = models.BooleanField('Saldo cancelado en tienda', default=False)
+    saldo_cancelado_en = models.DateTimeField('Fecha de cancelacion del saldo', null=True, blank=True)
     fecha_entrega = models.DateField(
         'Fecha de entrega', null=True, blank=True,
         help_text='Se sella automaticamente al pasar a ENTREGADA. Ancla el reloj de garantias.'
@@ -96,6 +104,13 @@ class Orden(models.Model):
 
     def __str__(self):
         return f"{self.codigo or ('Orden #' + str(self.id))} - {self.cliente}"
+
+    @property
+    def saldo_pendiente(self):
+        from decimal import Decimal
+        if self.modo_pago != 'ABONO' or self.saldo_cancelado:
+            return Decimal('0')
+        return max(self.total - (self.monto_abonado or Decimal('0')), Decimal('0'))
 
     def _generar_codigo(self):
         for _ in range(10):

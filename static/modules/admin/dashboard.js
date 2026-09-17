@@ -10,7 +10,8 @@
   var NEXT = { 'PAGADA': 'EN_PREPARACION', 'EN_PREPARACION': 'LISTO_PARA_RETIRO', 'LISTO_PARA_RETIRO': 'ENTREGADA', 'ENVIADA': 'ENTREGADA' };
   var LABEL = { 'PAGADA': 'Marcar en preparación', 'EN_PREPARACION': 'Listo para retiro', 'LISTO_PARA_RETIRO': 'Marcar entregada', 'ENVIADA': 'Marcar entregada' };
   var STATE_TXT = { 'PAGADA': 'Pagada', 'EN_PREPARACION': 'En preparación', 'LISTO_PARA_RETIRO': 'Listo para retiro', 'ENVIADA': 'Enviada', 'ENTREGADA': 'Entregada', 'DEVUELTA': 'Devuelta' };
-  var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
+  var money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format;
+var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
   var RES_LABEL = { devolucion:'Devolución del dinero', cambio:'Cambio directo', reparacion:'Reparación gratuita', rehacer:'Re-hacer (multifocal)' };
   var ORD = [], allCitas = [], DEV = [], STOCK_BAJO = [];
 
@@ -102,7 +103,9 @@
     if (!list.length) { body.innerHTML = '<div class="mv-empty">No hay pedidos para mostrar.</div>'; return; }
     var rows = list.map(function (o){
       var st = o.estado;
-      var acc = NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '">' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>';
+      var saldoBtn = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && Number(o.saldo_pendiente) > 0) ? '<button class="btn btn-outline-mv btn-sm me-1" data-saldo="' + o.id + '"><i class="bi bi-cash-coin"></i> Saldo ' + money(o.saldo_pendiente) + '</button>' : '';
+    var nextDis = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && st === 'LISTO_PARA_RETIRO') ? ' disabled title="Registra el pago del saldo primero"' : '';
+    var acc = saldoBtn + (NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '"' + nextDis + '>' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>');
       return '<tr><td>' + esc(o.codigo || ('#' + o.id)) + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
     }).join('');
     body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Código</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -204,6 +207,19 @@
       api.patch('/orders/operaciones/' + id + '/actualizar-entrega/', { body: { estado: next } }).then(function (r){
         if (r.ok) { toast('Estado actualizado.', 'success'); loadAll(); }
         else { toast((r.data && r.data.error) || 'No se pudo actualizar.', 'error'); b.disabled = false; }
+      });
+      return;
+    }
+    var sb = e.target.closest('button[data-saldo]');
+    if (sb) {
+      var sid = sb.getAttribute('data-saldo');
+      confirmBox('¿Confirmas que el cliente canceló el saldo restante en tienda? Esto habilita marcar la orden como entregada.', 'Confirmar saldo').then(function (ok) {
+        if (!ok) return;
+        sb.disabled = true;
+        api.post('/orders/operaciones/' + sid + '/confirmar-saldo/', {}).then(function (r) {
+          if (r.ok) { toast('Saldo registrado como cancelado.', 'success'); loadAll(); }
+          else { toast((r.data && r.data.error) || 'No se pudo confirmar el saldo.', 'error'); sb.disabled = false; }
+        });
       });
       return;
     }

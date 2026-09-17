@@ -1,7 +1,8 @@
 from collections import defaultdict
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.db import transaction
+from django.utils import timezone
 from django.db.models import F
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -120,8 +121,15 @@ class OrdenViewSet(
             Decimal('0'),
         )
         # El save() del modelo autogenera el codigo de pedido (MV-AAAA-XXXXX)
+        modo_pago = (request.data.get('modo_pago') or 'COMPLETO').upper()
+        if modo_pago not in ('COMPLETO', 'ABONO'):
+            raise ValidationError({'modo_pago': 'Modalidad de pago inválida.'})
+        monto_abonado = Decimal('0')
+        if modo_pago == 'ABONO':
+            monto_abonado = (total / 2).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
         orden = Orden.objects.create(
-            cliente=request.user, total=total, estado=Orden.Estado.PENDIENTE
+            cliente=request.user, total=total, estado=Orden.Estado.PENDIENTE,
+            modo_pago=modo_pago, monto_abonado=monto_abonado
         )
         HistorialEstado.objects.create(
             orden=orden, estado_anterior='', estado_nuevo=Orden.Estado.PENDIENTE, usuario=request.user
@@ -174,9 +182,24 @@ class OperacionOrdenViewSet(
                 # el inventario vuelve al estante (retiro en tienda: el producto no salio del local).
                 if nuevo_estado == 'CANCELADA' and orden.estado not in ('CANCELADA', 'FALLIDA'):
                     orden.revertir_stock()
-                orden.cambiar_estado(nuevo_estado=nuevo_estado, usuario=request.user)
+            if nuevo_estado == Orden.Estado.ENTREGADA and getattr(orden, 'modo_pago', 'COMPLETO') == 'ABONO' and not orden.saldo_cancelado:
+                return Response({'error': 'Registra el pago del saldo en tienda antes de marcar entregada.'}, status=status.HTTP_400_BAD_REQUEST)
+            orden.cambiar_estado(nuevo_estado=nuevo_estado, usuario=request.user)
         except ValueError as error:
             return Response({'error': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(self.get_serializer(orden).data)
+
+
+    @action(detail=True, methods=['post'], url_path='confirmar-saldo')
+    def confirmar_saldo(self, request, pk=None):
+        orden = self.get_object()
+        if getattr(orden, 'modo_pago', 'COMPLETO') != 'ABONO':
+            return Response({'error': 'La orden es de pago completo; no tiene saldo.'}, status=status.HTTP_400_BAD_REQUEST)
+        if orden.saldo_cancelado:
+            return Response({'message': 'El saldo ya estaba cancelado.', 'saldo_cancelado': True}, status=status.HTTP_200_OK)
+        orden.saldo_cancelado = True
+        orden.saldo_cancelado_en = timezone.now()
+        orden.save(update_fields=['saldo_cancelado', 'saldo_cancelado_en', 'actualizado_en'])
         return Response(self.get_serializer(orden).data)
 
 

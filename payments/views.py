@@ -103,7 +103,8 @@ class WebpayCreateView(APIView):
 
         buy_order = 'ORD-' + str(orden.id) + '-' + uuid.uuid4().hex[:8]
         session_id = 'SESS-' + str(request.user.id) + '-' + str(orden.id) + '-' + uuid.uuid4().hex[:8]
-        amount = int(orden.total)
+        # Si la orden es con ABONO, Webpay cobra solo el abono (50%); el saldo se paga en tienda
+        amount = int(orden.monto_abonado) if getattr(orden, 'modo_pago', 'COMPLETO') == 'ABONO' else int(orden.total)
 
         try:
             data = _tbk_create(buy_order, session_id, amount, return_url)
@@ -119,7 +120,7 @@ class WebpayCreateView(APIView):
 
         transaccion = TransaccionWebpay.objects.create(
             orden=orden, buy_order=buy_order, session_id=session_id,
-            token=token, amount=orden.total, status='INICIADA',
+            token=token, amount=amount, status='INICIADA',
         )
         LogPago.objects.create(transaccion=transaccion, raw_response=data)
 
