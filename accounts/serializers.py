@@ -61,12 +61,16 @@ class RegistroClienteSerializer(serializers.ModelSerializer):
     direccion = serializers.CharField(write_only=True)
     comuna = serializers.CharField(max_length=80, write_only=True)
     region = serializers.CharField(max_length=80, write_only=True)
+    acepta_terminos = serializers.BooleanField(write_only=True, required=True)
+    consiente_salud = serializers.BooleanField(write_only=True, required=False, default=False)
+    consiente_marketing = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = CustomUser
         fields = [
             'id', 'email', 'password', 'first_name', 'last_name', 'role',
             'rut', 'telefono', 'direccion', 'comuna', 'region',
+            'acepta_terminos', 'consiente_salud', 'consiente_marketing',
         ]
         extra_kwargs = {
             'password': {'write_only': True, 'style': {'input_type': 'password'}},
@@ -115,8 +119,16 @@ class RegistroClienteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('La región es obligatoria.')
         return value
 
+    def validate_acepta_terminos(self, value):
+        if value is not True:
+            raise serializers.ValidationError('Debes aceptar los términos y la política de privacidad para registrarte.')
+        return value
+
     @transaction.atomic
     def create(self, validated_data):
+        acepta_terminos = validated_data.pop('acepta_terminos', False)
+        consiente_salud = validated_data.pop('consiente_salud', False)
+        consiente_marketing = validated_data.pop('consiente_marketing', False)
         rut = validated_data.pop('rut')
         telefono = validated_data.pop('telefono', None)
         direccion = validated_data.pop('direccion', None)
@@ -129,6 +141,13 @@ class RegistroClienteSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
             role='CLIENTE'
         )
+        from .consent import sellar_terminos, sellar_salud
+        if acepta_terminos:
+            sellar_terminos(user)
+        if consiente_salud:
+            sellar_salud(user)
+        user.consiente_marketing = bool(consiente_marketing)
+        user.save()
         PerfilCliente.objects.create(
             user=user, rut=rut, telefono=telefono,
             direccion=direccion, comuna=comuna, region=region

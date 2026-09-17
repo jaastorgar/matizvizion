@@ -137,3 +137,23 @@ def _cita_mail(sender, instance, created, **kwargs):
             return
     cid = instance.pk
     _tx.on_commit(lambda: _enviar_mail_cita(cid, evento))
+
+# ---- Guard: consentimiento de salud para CREAR citas (Ley 21.719) ----
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models.signals import pre_save as _pre_save_cita
+from django.dispatch import receiver as _receiver_cita
+
+
+@_receiver_cita(_pre_save_cita, sender=CitaMedica)
+def _requerir_consentimiento_salud(sender, instance, **kwargs):
+    # Solo al CREAR la cita; los cambios de estado del panel no se ven afectados
+    if not instance._state.adding:
+        return
+    from accounts.consent import requiere_salud
+    cliente = getattr(instance, 'cliente', None)
+    user = getattr(cliente, 'user', None)
+    if user is not None and not requiere_salud(user):
+        raise DjangoValidationError({
+            'code': 'CONSENTIMIENTO_SALUD_REQUERIDO',
+            'detail': 'Debes autorizar el tratamiento de tus datos de salud visual para agendar una cita.',
+        })

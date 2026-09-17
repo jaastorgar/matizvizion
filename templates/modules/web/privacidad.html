@@ -1,0 +1,42 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Política de Privacidad — Matizvisión{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:860px;">
+  <h1 class="h2 mb-1">Política de Privacidad y Protección de Datos</h1>
+  <p class="text-secondary small mb-4">Conforme a la Ley N° 21.719 · Vigente desde 2026 ·
+    <a href="{% static 'docs/Terminos_y_Politica_Privacidad_Matiz_Vision.docx' %}">Descargar versión Word</a></p>
+
+  <h2 class="h5 mt-4">1. Marco Normativo</h2>
+  <p>Óptica Matiz Visión adopta estándares de seguridad y confidencialidad conforme a la Ley N° 21.719 sobre Protección de Datos Personales y las normas sanitarias vigentes en Chile.</p>
+
+  <h2 class="h5 mt-4">2. Categorías de Datos Recolectados</h2>
+  <ul>
+    <li><strong>Identificatorios y de contacto:</strong> RUT, nombres, correo, teléfono y dirección de despacho.</li>
+    <li><strong>Datos sensibles de salud visual:</strong> graduación oftalmológica, historial de recetas y observaciones clínicas.</li>
+    <li><strong>Transaccionales:</strong> compras, estados de despacho, comprobantes de pago y agendamiento.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">3. Carácter Sensible de la Receta y Consentimiento Explícito</h2>
+  <p>Los parámetros de graduación constituyen <strong>datos sensibles</strong>. Su tratamiento requiere consentimiento previo, explícito e informado, otorgado mediante casilla independiente en el registro y el agendamiento. Se usan únicamente para confeccionar dispositivos ópticos y seguir la ficha clínica.</p>
+
+  <h2 class="h5 mt-4">4. Derechos del Titular (ARCOP)</h2>
+  <ul>
+    <li><strong>Acceso:</strong> conocer qué datos y antecedentes clínicos almacenamos.</li>
+    <li><strong>Rectificación:</strong> corregir datos inexactos o desactualizados.</li>
+    <li><strong>Cancelación/Supresión:</strong> borrado cuando ya no sean necesarios, salvo recetas que deban conservarse por norma sanitaria.</li>
+    <li><strong>Oposición:</strong> oponerse al tratamiento para fines no esenciales (marketing).</li>
+    <li><strong>Portabilidad:</strong> copia de tu historial en formato estructurado e interoperable.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">5. Medidas de Seguridad</h2>
+  <ul>
+    <li>Cifrado en tránsito (HTTPS/TLS).</li>
+    <li>Contraseñas con derivación criptográfica segura (PBKDF2/SHA-256).</li>
+    <li>Auditoría y control de acceso sobre antecedentes médicos y transacciones.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">6. Contacto y Ejercicio de Derechos</h2>
+  <p>Escribe a <a href="mailto:privacidad@matizvision.cl">privacidad@matizvision.cl</a> o acude a sucursal central para ejercer tus derechos ARCOP.</p>
+</div>
+{% endblock %}

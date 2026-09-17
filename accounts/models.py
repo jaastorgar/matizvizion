@@ -76,6 +76,15 @@ class CustomUser(AbstractUser):
     comuna = models.CharField('Comuna', max_length=80, blank=True, default='')
     region = models.CharField('Región', max_length=80, blank=True, default='')
 
+    # ---- Consentimientos (Ley 21.719 / Ley 19.496) ----
+    acepta_terminos = models.BooleanField('Acepta terminos y privacidad', default=False)
+    acepta_terminos_en = models.DateTimeField('Fecha aceptacion terminos', null=True, blank=True)
+    acepta_terminos_version = models.CharField('Version terminos aceptada', max_length=20, blank=True, default='')
+    consiente_salud = models.BooleanField('Consiente tratamiento de datos de salud', default=False)
+    consiente_salud_en = models.DateTimeField('Fecha consentimiento salud', null=True, blank=True)
+    consiente_salud_version = models.CharField('Version consentimiento salud', max_length=20, blank=True, default='')
+    consiente_marketing = models.BooleanField('Consiente ofertas y promociones', default=False)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

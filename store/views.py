@@ -64,6 +64,10 @@ class RecetaOpticaViewSet(
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
+        from accounts.consent import requiere_salud, ERROR_CONSENTIMIENTO_SALUD
+        if not requiere_salud(self.request.user):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'code': ERROR_CONSENTIMIENTO_SALUD, 'detail': 'Debes autorizar el tratamiento de tus datos de salud visual.'})
         # La receta siempre se asigna al perfil del cliente autenticado
         try:
             perfil = self.request.user.perfil_cliente

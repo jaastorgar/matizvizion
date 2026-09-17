@@ -52,6 +52,30 @@ class MeView(APIView):
             'comuna': getattr(u, 'comuna', ''), 'region': getattr(u, 'region', ''),
         })
 
+class ConsentimientosView(APIView):
+    """Lectura y actualizacion de consentimientos del usuario autenticado."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .consent import consent_payload
+        return Response(consent_payload(request.user))
+
+    def patch(self, request):
+        from .consent import consent_payload, sellar_salud
+        u = request.user
+        if 'consiente_salud' in request.data:
+            val = bool(request.data.get('consiente_salud'))
+            if val and not u.consiente_salud:
+                sellar_salud(u)
+            elif not val:
+                u.consiente_salud = False
+                u.consiente_salud_en = None
+        if 'consiente_marketing' in request.data:
+            u.consiente_marketing = bool(request.data.get('consiente_marketing'))
+        u.save()
+        return Response(consent_payload(u))
+
+
 class MiPerfilView(APIView):
     """
     Perfil de cliente con UPSERT: si el usuario (p.ej. un invitado) aun no

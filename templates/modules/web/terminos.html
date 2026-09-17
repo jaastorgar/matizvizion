@@ -1,0 +1,41 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Términos del Servicio — Matizvisión{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:860px;">
+  <h1 class="h2 mb-1">Términos y Condiciones del Servicio</h1>
+  <p class="text-secondary small mb-4">Óptica Matiz Visión · Conforme a la Ley N° 19.496 (SERNAC) · Vigente desde 2026 ·
+    <a href="{% static 'docs/Terminos_y_Politica_Privacidad_Matiz_Vision.docx' %}">Descargar versión Word</a></p>
+
+  <h2 class="h5 mt-4">1. Disposiciones Generales e Individualización</h2>
+  <p>Este instrumento establece los términos y condiciones que rigen el uso del sitio web, comercio electrónico y servicios de agendamiento clínico de Óptica Matiz Visión. La navegación, registro, compra o agendamiento confiere la condición de Usuario/Paciente e implica la aceptación de todas las cláusulas aquí contenidas.</p>
+
+  <h2 class="h5 mt-4">2. Perfiles de Usuario y Acceso</h2>
+  <ul>
+    <li><strong>Cliente/Paciente:</strong> vitrina pública, carrito, registro de recetas, seguimiento de órdenes y agendamiento clínico.</li>
+    <li><strong>Vendedor/Personal operativo:</strong> gestión de sucursal, verificación de citas, cambio de estado de entrega y asesoría técnica.</li>
+    <li><strong>Administrador:</strong> catálogo, precios, bloques médicos y auditoría del sistema.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">3. Proceso de Compra, Precios e Inmutabilidad de Órdenes</h2>
+  <ul>
+    <li>Precios en pesos chilenos (CLP), IVA incluido.</li>
+    <li>Al confirmar el carrito se genera una Orden en estado <em>PENDIENTE</em> que congela el stock.</li>
+    <li>El precio unitario queda fijado de forma inmutable al generar la orden.</li>
+    <li>Los pagos se procesan vía Webpay Plus de Transbank; confirmado el pago, la orden pasa a <em>PAGADA</em> y se descuenta el stock definitivamente.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">4. Política de Garantías Ópticas y Postventa</h2>
+  <ul>
+    <li><strong>Garantía Legal (6x3 SERNAC):</strong> 6 meses desde la recepción; devolución, cambio o reparación gratuita por fallas de origen.</li>
+    <li><strong>Garantía de Tratamientos y Cristales:</strong> 6 a 12 meses frente a desprendimientos o craquelado no atribuibles a calor o químicos abrasivos.</li>
+    <li><strong>Garantía de Adaptación Visual:</strong> 30 a 60 días para revisión y ajuste de graduación sin costo.</li>
+  </ul>
+
+  <h2 class="h5 mt-4">5. Servicios Clínicos y Agendamiento</h2>
+  <ul>
+    <li>Bloques de evaluación de 15 a 30 minutos según complejidad refractiva.</li>
+    <li>Cancelación o reagendamiento con al menos 24 horas de anticipación.</li>
+  </ul>
+</div>
+{% endblock %}

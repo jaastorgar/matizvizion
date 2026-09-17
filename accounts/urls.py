@@ -20,3 +20,6 @@ urlpatterns += [
     path('mi-perfil/', _MiPerfilView.as_view(), name='mi_perfil_h'),
     path('mi_perfil/', _MiPerfilView.as_view(), name='mi_perfil_u'),
 ]
+
+from .views import ConsentimientosView as _ConsentView
+urlpatterns += [path('consentimientos/', _ConsentView.as_view(), name='consentimientos')]

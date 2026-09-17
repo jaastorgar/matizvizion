@@ -71,3 +71,10 @@ def mi_perfil(request):
 
 def metricas(request):
     return render(request, 'modules/admin/metricas.html')
+
+def terminos(request):
+    return render(request, 'modules/web/terminos.html')
+
+
+def privacidad(request):
+    return render(request, 'modules/web/privacidad.html')

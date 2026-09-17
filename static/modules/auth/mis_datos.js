@@ -80,4 +80,31 @@
       }
     });
   });
+// ---- Tarjeta de consentimientos (Ley 21.719) ----
+(function(){
+  var grid = document.querySelector('.mv-md-grid');
+  if (!grid) return;
+  var card = document.createElement('div');
+  card.className = 'mv-md-card mv-consent-card';
+  card.innerHTML =
+    '<h3><i class="bi bi-shield-lock"></i> Consentimientos</h3>' +
+    '<div class="mv-md-row"><span class="k">Datos de salud visual</span><span class="v" id="md-salud-status">—</span></div>' +
+    '<div class="mv-md-row"><span class="k">Ofertas y promociones</span><span class="v"><div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch" id="md-marketing"></div></span></div>' +
+    '<div class="mv-md-note"><i class="bi bi-info-circle"></i> Revisa nuestros <a href="/terminos/" target="_blank" rel="noopener">términos</a> y <a href="/privacidad/" target="_blank" rel="noopener">política de privacidad</a>.</div>';
+  grid.appendChild(card);
+  api.get('/accounts/consentimientos/').then(function(r){
+    if (!r.ok || !r.data) return;
+    var d = r.data;
+    var st = document.getElementById('md-salud-status');
+    st.textContent = d.consiente_salud ? ('Autorizado' + (d.consiente_salud_en ? ' el ' + String(d.consiente_salud_en).slice(0,10) : '')) : 'No autorizado';
+    var sw = document.getElementById('md-marketing');
+    sw.checked = !!d.consiente_marketing;
+    sw.addEventListener('change', function(){
+      api.patch('/accounts/consentimientos/', { body: { consiente_marketing: sw.checked } }).then(function(rr){
+        if (rr.ok) toast(rr.data.consiente_marketing ? 'Te enviaremos ofertas y promociones.' : 'Dejaste de recibir ofertas y promociones.', 'success');
+        else { sw.checked = !sw.checked; toast('No se pudo actualizar.', 'error'); }
+      });
+    });
+  });
+})();
 })();

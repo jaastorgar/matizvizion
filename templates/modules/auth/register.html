@@ -33,7 +33,28 @@
       <div class="mv-reg-field"><label>Repetir contraseña <b>*</b></label><input id="reg-pass2" type="password" required /></div>
     </div>
     <div class="mv-reg-err" id="reg-err"></div>
-    <button class="btn btn-cta w-100 mt-3" type="submit">Registrarme</button>
+    <div class="mv-consent-block mt-3 mb-3">
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="reg-terminos">
+    <label class="form-check-label small" for="reg-terminos">
+      Acepto los <a href="/terminos/" target="_blank" rel="noopener">términos del servicio</a> y la
+      <a href="/privacidad/" target="_blank" rel="noopener">política de privacidad</a> <span class="text-danger">*</span>
+    </label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="reg-salud">
+    <label class="form-check-label small" for="reg-salud">
+      Autorizo el almacenamiento y tratamiento de mis datos de salud visual y recetas
+      (obligatorio para compra con graduación y citas).
+    </label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="reg-marketing">
+    <label class="form-check-label small" for="reg-marketing">
+      Deseo recibir ofertas y promociones (opcional).
+    </label>
+  </div>
+</div><button class="btn btn-cta w-100 mt-3" type="submit">Registrarme</button>
     <p class="text-center mt-3" style="color:var(--lead-muted,#6B7280);">¿Ya tienes cuenta? <a href="{% url 'web:login' %}">Inicia sesión</a></p>
   </form>
 </div>

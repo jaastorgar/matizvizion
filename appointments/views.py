@@ -36,6 +36,14 @@ class CitaMedicaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.R
     serializer_class = CitaMedicaSerializer
     permission_classes = [IsAuthenticated]
 
+
+    def perform_create(self, serializer):
+        from accounts.consent import requiere_salud, ERROR_CONSENTIMIENTO_SALUD
+        if not requiere_salud(self.request.user):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'code': ERROR_CONSENTIMIENTO_SALUD, 'detail': 'Debes autorizar el tratamiento de tus datos de salud visual para agendar una cita.'})
+        serializer.save(cliente=self.request.user)
+
     def get_queryset(self):
         qs = CitaMedica.objects.select_related('cliente', 'bloque__tecnologo__sucursal')
         if self.request.user.role == 'CLIENTE':

@@ -43,9 +43,13 @@
       region: selReg.value,
       comuna: selCom.value
     };
-    if (!data.email || !data.rut || !data.telefono || !data.direccion || !data.region || !data.comuna) { err('Completa todos los campos obligatorios (*).'); return; }
+  if (!document.getElementById('reg-terminos').checked) { err('Debes aceptar los términos y la política de privacidad para registrarte.'); return; }
+  if (!data.email || !data.rut || !data.telefono || !data.direccion || !data.region || !data.comuna) { err('Completa todos los campos obligatorios (*).'); return; }
     if (data.password !== document.getElementById('reg-pass2').value) { err('Las contraseñas no coinciden.'); return; }
-    api.post('/accounts/register/', { body: data }).then(function (r){
+    data.acepta_terminos = document.getElementById('reg-terminos').checked;
+data.consiente_salud = document.getElementById('reg-salud').checked;
+data.consiente_marketing = document.getElementById('reg-marketing').checked;
+api.post('/accounts/register/', { body: data }).then(function (r){
       if (r.ok) { toast('¡Cuenta creada! Inicia sesión.', 'success'); setTimeout(function(){ location.href = '/login/'; }, 700); }
       else {
         var msgs = [];

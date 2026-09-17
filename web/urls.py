@@ -26,3 +26,8 @@ urlpatterns = [
     path('recuperar/', views.recuperar, name='recuperar'),
     path('reset-password/', views.reset_password, name='reset_password'),
 ]
+
+urlpatterns += [
+    path('terminos/', views.terminos, name='terminos'),
+    path('privacidad/', views.privacidad, name='privacidad'),
+]
