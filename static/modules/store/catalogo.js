@@ -25,10 +25,12 @@ function errMsg(r) {
   if (r.data && r.data.detail) return r.data.detail;
   return 'No se pudo actualizar el carrito.';
 }
-function addBtnHtml(id, agotado) {
+function addBtnHtml(id, agotado, configurable) {
   var inner = agotado
     ? '<button class="btn btn-secondary w-100" disabled>Agotado</button>'
-    : '<button class="btn btn-cta w-100 btn-add" data-id="' + id + '">+ Agregar</button>';
+    : (configurable
+        ? '<button class="btn btn-cta w-100 btn-add-config" data-id="' + id + '"><i class="bi bi-bullseye"></i> Elegir lentes</button>'
+        : '<button class="btn btn-cta w-100 btn-add" data-id="' + id + '">+ Agregar</button>');
   return '<div class="mv-add-slot" data-id="' + id + '">' + inner + '</div>';
 }
 function qtySlotHtml(id, itemId, qty, stock) {
@@ -56,14 +58,15 @@ function cardHtml(p, members) {
   var stock = Number(p.stock) || 0;
   var agotado = stock <= 0;
   var inCart = cartMap[p.id];
-  var slot = (!agotado && inCart && inCart.cantidad > 0) ? qtySlotHtml(p.id, inCart.item_id, inCart.cantidad, stock) : addBtnHtml(p.id, agotado);
+  var slot = (!agotado && inCart && inCart.cantidad > 0) ? qtySlotHtml(p.id, inCart.item_id, inCart.cantidad, stock) : addBtnHtml(p.id, agotado, p.configurable_lente);
+  var cfgBadge = (inCart && inCart.tipo_lente) ? '<div class="mv-lente-cfg"><i class="bi bi-bullseye"></i> ' + esc(inCart.tipo_lente_display || inCart.tipo_lente) + ' · ' + esc(inCart.uso_lente_display || inCart.uso_lente) + '</div>' : '';
   var desc = p.descripcion ? esc(p.descripcion) : 'Producto de óptica de alta calidad.';
   var stockBadge = agotado ? '<span class="stock-badge text-danger fw-bold">Agotado</span>' : '<span class="stock-badge">Stock: ' + stock + '</span>';
   return '<div class="col-sm-6 col-lg-4"><div class="mv-product-card">' +
     mediaHtml(p) +
     '<div class="mv-product-body">' +
     '<span class="mv-product-cat">' + esc(p.categoria_nombre || '') + '</span>' +
-    '<h3 class="mv-product-name">' + esc(p.nombre) + '</h3>' +
+    '<h3 class="mv-product-name">' + esc(p.nombre) + '</h3>' + cfgBadge +
     swatchesHtml(p, members) +
     '<p class="mv-product-desc">' + desc + '</p>' +
     '<div class="mv-product-foot"><span class="mv-product-price">' + formatPrice(p.precio) + '</span>' + stockBadge + '<button type="button" class="mv-wa-card-btn" data-wa="' + p.id + '" title="Consultar por WhatsApp"><i class="bi bi-whatsapp"></i></button></div>' +
@@ -101,13 +104,13 @@ function applyFilters() {
     return true;
   }));
 }
-function doAdd(btn) {
+function doAdd(btn, cfg) {
   if (!MV.auth.isAuthenticated()) { MV.ensureGuest().then(function (ok) { if (ok) { doAdd(btn); } }); return; }
   var id = btn.getAttribute('data-id');
   btn.disabled = true; btn.textContent = '…';
-  api.post('/orders/carrito/', { body: { producto: Number(id), cantidad: 1 } }).then(function (r) {
+  api.post('/orders/carrito/', { body: { producto: Number(id), cantidad: 1, tipo_lente: (cfg && cfg.tipo) || '', uso_lente: (cfg && cfg.uso) || '' } }).then(function (r) {
     if (r.ok) {
-      cartMap[id] = { item_id: r.data.id, cantidad: r.data.cantidad };
+      cartMap[id] = { item_id: r.data.id, cantidad: r.data.cantidad, tipo_lente: r.data.tipo_lente, tipo_lente_display: r.data.tipo_lente_display, uso_lente_display: r.data.uso_lente_display };
       var slot = btn.closest('.mv-add-slot');
       slot.outerHTML = qtySlotHtml(id, r.data.id, r.data.cantidad, stockOf(id));
       toast('Producto agregado al carrito.', 'success'); badge();
@@ -170,6 +173,7 @@ grid.addEventListener('click', function (e) {
     }
     return;
   }
+  var ac = e.target.closest('.btn-add-config'); if (ac && !ac.disabled) { openLenteModal(ac); return; }
   var a = e.target.closest('.btn-add'); if (a && !a.disabled) { doAdd(a); return; }
   var i = e.target.closest('.mv-q-inc'); if (i && !i.disabled) { doInc(i); return; }
   var d = e.target.closest('.mv-q-dec'); if (d && !d.disabled) { doDec(d); return; }
@@ -182,7 +186,7 @@ function loadCartMap() {
   if (!auth.isAuthenticated()) return Promise.resolve({});
   return api.get('/orders/carrito/').then(function (r) {
     var m = {};
-    if (r.ok && Array.isArray(r.data)) r.data.forEach(function (it) { m[it.producto] = { item_id: it.id, cantidad: it.cantidad }; });
+    if (r.ok && Array.isArray(r.data)) r.data.forEach(function (it) { m[it.producto] = { item_id: it.id, cantidad: it.cantidad, tipo_lente: it.tipo_lente, tipo_lente_display: it.tipo_lente_display, uso_lente_display: it.uso_lente_display }; });
     return m;
   });
 }
@@ -216,5 +220,88 @@ Promise.all([api.get('/store/productos/'), api.get('/store/categorias/'), loadCa
     window.open(waLink('Hola Matiz Visión! Quiero asesoría óptica personalizada.'), '_blank', 'noopener');
   });
   document.body.appendChild(b);
+})();
+
+// ---- Configurador optico: tipo de lente + distancia de uso (Guia Tecnica 2026) ----
+var LENTE_TIPOS = [
+  { v: 'MONOFOCAL', t: 'Monofocal (foco único)', d: 'Un solo poder en todo el lente. Miopía, astigmatismo, hipermetropía o lectura exclusiva.', usos: ['LEJOS','CERCA'], def: 'LEJOS' },
+  { v: 'BIFOCAL', t: 'Bifocal (doble foco)', d: 'Zona superior para lejos y segmento inferior para cerca, con línea visible.', usos: ['LEJOS_CERCA'], def: 'LEJOS_CERCA' },
+  { v: 'PROGRESIVO', t: 'Progresivo / multifocal', d: 'Visión continua lejos-intermedia-cerca sin cortes estéticos visibles.', usos: ['LEJOS_CERCA'], def: 'LEJOS_CERCA' },
+  { v: 'OCUPACIONAL', t: 'Ocupacional / degresivo', d: 'Optimiza intermedia (40 cm–2 m) y cerca; pasillos hasta 60% más amplios. Ideal pantallas.', usos: ['INTERMEDIA','CERCA'], def: 'INTERMEDIA' }
+];
+var LENTE_USOS = [
+  { v: 'LEJOS', t: 'Visión lejos' },
+  { v: 'CERCA', t: 'Visión cerca (lectura)' },
+  { v: 'LEJOS_CERCA', t: 'Lejos y cerca' },
+  { v: 'INTERMEDIA', t: 'Intermedia (pantallas 40 cm–2 m)' }
+];
+function openLenteModal(btn) {
+  if (document.getElementById('mv-lente-ov')) return;
+  var ov = document.createElement('div'); ov.id = 'mv-lente-ov'; ov.className = 'mv-lente-ov';
+  ov.innerHTML =
+    '<div class="mv-lente-card" role="dialog" aria-modal="true">' +
+    '<button type="button" class="mv-lente-x" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>' +
+    '<span class="mv-lente-eyebrow"><i class="bi bi-bullseye"></i> Configurador óptico</span>' +
+    '<h3>Elige el diseño de tus lentes</h3>' +
+    '<div class="mv-lente-label">1 · Diseño focal</div>' +
+    '<div class="mv-lente-opts" id="mv-lente-tipos">' + LENTE_TIPOS.map(function (t, i) {
+      return '<label class="mv-lente-opt"><input type="radio" name="mv-tipo" value="' + t.v + '"' + (i === 0 ? ' checked' : '') + ' /><span><strong>' + t.t + '</strong><small>' + t.d + '</small></span></label>';
+    }).join('') + '</div>' +
+    '<div class="mv-lente-label">2 · Distancia de uso</div>' +
+    '<div class="mv-lente-opts" id="mv-lente-usos">' + LENTE_USOS.map(function (u) {
+      return '<label class="mv-lente-opt compact"><input type="radio" name="mv-uso" value="' + u.v + '" /><span>' + u.t + '</span></label>';
+    }).join('') + '</div>' +
+    '<div class="mv-lente-hint" id="mv-lente-hint"></div>' +
+    '<div class="mv-lente-foot"><button type="button" class="btn btn-outline-mv btn-sm" id="mv-lente-cancel">Cancelar</button>' +
+    '<button type="button" class="btn btn-cta" id="mv-lente-ok"><i class="bi bi-cart-plus"></i> Agregar al carrito</button></div></div>';
+  document.body.appendChild(ov);
+  function tipoSel() { return LENTE_TIPOS.filter(function (x) { return x.v === ov.querySelector('input[name=mv-tipo]:checked').value; })[0]; }
+  function syncUsos() {
+    var t = tipoSel();
+    ov.querySelectorAll('input[name=mv-uso]').forEach(function (r) {
+      var ok = t.usos.indexOf(r.value) !== -1;
+      r.disabled = !ok;
+      r.closest('.mv-lente-opt').style.opacity = ok ? '1' : '.45';
+      if (ok && r.value === t.def) r.checked = true;
+      if (!ok && r.checked) r.checked = false;
+    });
+    if (!ov.querySelector('input[name=mv-uso]:checked')) {
+      var d = ov.querySelector('input[name=mv-uso][value="' + t.def + '"]'); if (d) d.checked = true;
+    }
+    ov.querySelector('#mv-lente-hint').innerHTML = '<i class="bi bi-info-circle"></i> ' + t.d;
+  }
+  ov.querySelectorAll('input[name=mv-tipo]').forEach(function (r) { r.addEventListener('change', syncUsos); });
+  syncUsos();
+  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+  ov.querySelector('.mv-lente-x').addEventListener('click', close);
+  ov.querySelector('#mv-lente-cancel').addEventListener('click', close);
+  ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+  ov.querySelector('#mv-lente-ok').addEventListener('click', function () {
+    var uso = ov.querySelector('input[name=mv-uso]:checked');
+    if (!uso) { toast('Elige la distancia de uso.', 'error'); return; }
+    close();
+    doAdd(btn, { tipo: tipoSel().v, uso: uso.value });
+  });
+}
+(function () {
+  if (document.getElementById('mv-lente-css')) return;
+  var s = document.createElement('style'); s.id = 'mv-lente-css';
+  s.textContent = '.mv-lente-cfg{font-size:.75rem;color:var(--green-dark);background:rgba(16,185,129,.1);border-radius:8px;padding:.15rem .5rem;display:inline-flex;align-items:center;gap:.3rem;margin:.1rem 0 .4rem;}' +
+    '.mv-lente-ov{position:fixed;inset:0;z-index:2100;display:flex;align-items:center;justify-content:center;background:rgba(17,24,39,.55);backdrop-filter:blur(3px);padding:1rem;}' +
+    '.mv-lente-card{width:100%;max-width:560px;max-height:90vh;overflow:auto;background:var(--white);border-radius:16px;padding:1.6rem;box-shadow:0 30px 70px rgba(17,24,39,.4);position:relative;}' +
+    '.mv-lente-x{position:absolute;top:.8rem;right:.8rem;border:none;background:transparent;font-size:1.1rem;cursor:pointer;color:var(--lead-muted,#6B7280);}' +
+    '.mv-lente-eyebrow{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--green-dark);display:flex;gap:.4rem;align-items:center;}' +
+    '.mv-lente-card h3{font-family:var(--font-head);font-weight:800;margin:.3rem 0 1rem;}' +
+    '.mv-lente-label{font-size:.78rem;font-weight:700;color:var(--lead-muted,#6B7280);margin:.6rem 0 .4rem;}' +
+    '.mv-lente-opts{display:flex;flex-direction:column;gap:.5rem;}' +
+    '.mv-lente-opt{display:flex;gap:.6rem;border:1px solid var(--border-color);border-radius:12px;padding:.6rem .8rem;cursor:pointer;}' +
+    '.mv-lente-opt:has(input:checked){border-color:var(--green-primary);box-shadow:0 0 0 3px rgba(16,185,129,.15);}' +
+    '.mv-lente-opt input{margin-top:.2rem;accent-color:var(--green-primary);}' +
+    '.mv-lente-opt span{display:flex;flex-direction:column;}' +
+    '.mv-lente-opt.compact span{flex-direction:row;}' +
+    '.mv-lente-opt small{color:var(--lead-muted,#6B7280);}' +
+    '.mv-lente-hint{font-size:.8rem;color:var(--lead-muted,#6B7280);background:var(--lead-light);border-radius:10px;padding:.5rem .7rem;margin:.8rem 0;}' +
+    '.mv-lente-foot{display:flex;justify-content:flex-end;gap:.6rem;}';
+  document.head.appendChild(s);
 })();
 })();

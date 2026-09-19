@@ -33,10 +33,10 @@
       cols: [['nombre','Nombre'],['sku','SKU'],['precio','Precio'],['stock','Stock'],['color','Color'],['activo','Activo']],
       fields: [ {n:'nombre',l:'Nombre',t:'text'}, {n:'categoria',l:'Categoría',t:'select',src:'/admin/categorias/'},
         {n:'precio',l:'Precio',t:'number'}, {n:'stock',l:'Stock',t:'number'}, {n:'stock_minimo',l:'Stock mínimo',t:'number'},
-        {n:'activo',l:'Activo',t:'check'}, {n:'destacado',l:'Destacado',t:'check'}, {n:'grupo',l:'Grupo (colores)',t:'text'}, {n:'color',l:'Color',t:'text'}, {n:'descripcion',l:'Descripción',t:'text'}, {n:'imagen',l:'Imagen del producto',t:'file'} ] },
+        {n:'activo',l:'Activo',t:'check'}, {n:'destacado',l:'Destacado',t:'check'}, {n:'grupo',l:'Grupo (colores)',t:'text'}, {n:'color',l:'Color',t:'text'}, {n:'configurable_lente',l:'Configurable como lente',t:'check'}, {n:'descripcion',l:'Descripción',t:'text'}, {n:'imagen',l:'Imagen del producto',t:'file'} ] },
     { key: 'categorias', label: 'Categorías', icon: 'bi-tags', ep: '/admin/categorias/',
       cols: [['nombre','Nombre'],['slug','Slug'],['orden','Orden']],
-      fields: [ {n:'nombre',l:'Nombre',t:'text'}, {n:'orden',l:'Orden',t:'number'}, {n:'grupo',l:'Grupo (colores)',t:'text'}, {n:'color',l:'Color',t:'text'}, {n:'descripcion',l:'Descripción',t:'text'} ] },
+      fields: [ {n:'nombre',l:'Nombre',t:'text'}, {n:'orden',l:'Orden',t:'number'}, {n:'grupo',l:'Grupo (colores)',t:'text'}, {n:'color',l:'Color',t:'text'}, {n:'configurable_lente',l:'Configurable como lente',t:'check'}, {n:'descripcion',l:'Descripción',t:'text'} ] },
     { key: 'tecnologos', label: 'Tecnólogos', icon: 'bi-person-badge', ep: '/admin/tecnologos/',
       cols: [['nombre','Nombre'],['especialidad','Especialidad'],['sucursal','Sucursal'],['activo','Activo']],
       fields: [ {n:'nombre',l:'Nombre',t:'text'}, {n:'rut',l:'RUT',t:'text'}, {n:'especialidad',l:'Especialidad',t:'text'},
@@ -161,7 +161,7 @@
       body.querySelectorAll('.del').forEach(function (b){ b.addEventListener('click', function (){
         confirmBox(current.delMsg || '¿Eliminar este registro?').then(function (ok){
           if (!ok) return;
-          api['delete'](current.ep + b.getAttribute('data-id') + '/').then(function (r){ if (r.ok) { toast('Eliminado.', 'success'); renderList(); } else toast('No se pudo eliminar.', 'error'); });
+          api['delete'](current.ep + b.getAttribute('data-id') + '/').then(function (r){ if (r.ok) { toast('Eliminado.', 'success'); renderList(); } else toast((r.data && r.data.error) || 'No se pudo eliminar.', 'error'); });
         });
       }); });
     });

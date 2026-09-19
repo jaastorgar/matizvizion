@@ -36,7 +36,7 @@ function render(items) {
   TOTAL = items.reduce(function (a, it) { return a + (Number(it.precio_unitario) * Number(it.cantidad)); }, 0);
   var rows = items.map(function (it) {
     return '<div class="mv-summary-item">' +
-      '<div><div class="name">' + esc(it.producto_nombre) + '</div><div class="meta">Cantidad: ' + it.cantidad + '</div></div>' +
+      '<div><div class="name">' + esc(it.producto_nombre) + '</div><div class="meta">Cantidad: ' + it.cantidad + (it.tipo_lente ? ' · <i class="bi bi-bullseye"></i> ' + esc(it.tipo_lente_display || '') + ' / ' + esc(it.uso_lente_display || '') : '') + '</div></div>' +
       '<div class="price">' + money(it.precio_unitario * it.cantidad) + '</div></div>';
   }).join('');
   container.innerHTML =

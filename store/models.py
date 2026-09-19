@@ -53,6 +53,7 @@ class Producto(models.Model):
     grupo = models.CharField('Grupo/Familia (colores)', max_length=60, blank=True, default='', db_index=True,
         help_text='Productos con el mismo grupo se muestran como una sola tarjeta con selector de color.')
     color = models.CharField('Color (etiqueta)', max_length=60, blank=True, default='')
+    configurable_lente = models.BooleanField('Configurable como lente (tipo y distancia)', default=False, help_text='Si se activa, el catalogo ofrece elegir diseno focal y distancia de uso.')
     creado_en = models.DateTimeField('Creado', auto_now_add=True)
     actualizado_en = models.DateTimeField('Actualizado', auto_now=True)
 

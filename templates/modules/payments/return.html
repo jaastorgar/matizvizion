@@ -3,7 +3,7 @@
 {% block title %}Resultado del pago — Óptica Matiz Visión{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'modules/orders/orders.css' %}" />{% endblock %}
 {% block content %}
-<div id="return-data" data-token="{{ token_ws }}"></div>
+<div id="return-data" data-token="{{ token_ws }}" data-codigo="{{ orden_codigo }}"></div>
 <div id="return-container">
   <div class="mv-result"><div class="icon"><i class="bi bi-hourglass-split"></i></div><h1>Procesando tu pago…</h1><p class="text-secondary">Confirmando la transacción con Transbank.</p></div>
 </div>
@@ -62,5 +62,46 @@
     setTimeout(tryInject, 1500);
     setTimeout(tryInject, 3000);
   })();
+</script>
+<script>
+// mv-return-smart: "Ver mis pedidos" con sesion -> /mis-compras/; sin sesion -> seguimiento publico del pedido
+(function () {
+  function codigo() {
+    var d = document.getElementById('return-data');
+    return d ? (d.getAttribute('data-codigo') || '') : '';
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('a,button');
+    if (!el) return;
+    var txt = (el.textContent || '').trim();
+    if (txt.indexOf('Ver mis pedidos') !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var target = '/mis-compras/';
+    function fallback() {
+      var c = codigo();
+      if (c) { location.href = '/seguir/?codigo=' + encodeURIComponent(c); }
+      else { location.href = '/login/?next=' + encodeURIComponent(target); }
+    }
+    if (window.MV && MV.me) { MV.me().then(function (u) { if (u) { location.href = target; } else { fallback(); } }); }
+    else { fallback(); }
+  }, true);
+  function chip() {
+    var c = codigo();
+    if (!c) return;
+    var card = document.querySelector('#return-container .mv-result') || document.querySelector('#return-container');
+    if (!card || card.querySelector('.mv-return-code')) return;
+    if (!/Pago exitoso/i.test(card.textContent || '')) return;
+    var el = document.createElement('div');
+    el.className = 'mv-return-code small text-secondary mt-2';
+    el.innerHTML = 'Pedido: <code>' + c + '</code> · Guardalo para seguimiento sin iniciar sesion.';
+    card.appendChild(el);
+  }
+  if ('MutationObserver' in window) {
+    var mo = new MutationObserver(function () { chip(); });
+    mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+  setTimeout(chip, 800); setTimeout(chip, 2000);
+})();
 </script>
 {% endblock %}

@@ -20,7 +20,7 @@ class ProductoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'sku', 'nombre', 'descripcion', 'precio', 'stock', 'stock_minimo',
             'en_stock', 'stock_bajo', 'imagen', 'imagen_url', 'categoria',
-            'categoria_nombre', 'destacado', 'grupo', 'color',
+            'categoria_nombre', 'destacado', 'grupo', 'color', 'configurable_lente',
         ]
         read_only_fields = fields
 

@@ -119,7 +119,8 @@ var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
     body.innerHTML = pend.map(function (d){
       return '<div class="mv-dev-card" data-devcard="' + d.id + '">' +
         '<div class="mv-dev-head"><div><strong>' + esc(d.orden_codigo || ('#' + d.orden)) + '</strong> · ' + esc(d.cliente_email || '') +
-        '<div class="mv-dev-motivo"><i class="bi bi-chat-left-text"></i> ' + esc(d.motivo || '') + '</div></div>' +
+        '<div class="mv-dev-motivo"><i class="bi bi-chat-left-text"></i> ' + esc(d.motivo || '') + '</div>' +
+        '<div class="mv-dev-motivo"><i class="bi bi-box-seam"></i> ' + (d.items_detalle || []).map(function (it){ var q = (it.cantidad_devuelta != null ? it.cantidad_devuelta : it.cantidad); return esc(it.nombre) + ' ×' + q + (q !== it.cantidad ? ' de ' + it.cantidad : ''); }).join(', ') + '</div></div>' +
         '<div class="mv-dev-actions"><button class="btn btn-cta btn-sm" data-dev-open="' + d.id + '"><i class="bi bi-shield-check"></i> Resolver con garantía</button>' +
         '<button class="btn btn-outline-mv btn-sm" data-dev-rech="' + d.id + '"><i class="bi bi-x-lg"></i> Rechazar</button></div></div>' +
         '<div class="mv-res-detail" id="res-detail-' + d.id + '" hidden></div></div>';

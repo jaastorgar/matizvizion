@@ -21,8 +21,19 @@ def checkout(request):
 
 @csrf_exempt
 def pago_retorno(request):
-    token_ws = request.GET.get('token_ws') or request.POST.get('token_ws') or ''
-    return render(request, 'modules/payments/return.html', {'token_ws': token_ws})
+    token_ws = request.GET.get('token_ws', '')
+    orden_codigo = ''
+    try:
+        from payments.models import TransaccionWebpay
+        tx = TransaccionWebpay.objects.select_related('orden').filter(token=token_ws).first()
+        if tx is not None and tx.orden_id:
+            orden_codigo = tx.orden.codigo or ''
+    except Exception:
+        orden_codigo = ''
+    return render(request, 'modules/payments/return.html', {
+        'token_ws': token_ws,
+        'orden_codigo': orden_codigo,
+    })
 
 def reserva(request):
     return render(request, 'modules/appointments/reserva.html')

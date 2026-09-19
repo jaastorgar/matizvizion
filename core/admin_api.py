@@ -34,7 +34,7 @@ class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
         fields = ['id', 'sku', 'nombre', 'descripcion', 'precio', 'stock', 'stock_minimo',
-                  'activo', 'destacado', 'categoria', 'imagen', 'imagen_url',
+                  'activo', 'destacado', 'categoria', 'imagen', 'imagen_url', 'grupo', 'color', 'configurable_lente',
                   'creado_en', 'actualizado_en']
         read_only_fields = ['id', 'sku', 'creado_en', 'actualizado_en']
 
@@ -109,6 +109,15 @@ class CategoriaViewSet(AdminMixin, viewsets.ModelViewSet):
 class ProductoViewSet(AdminMixin, viewsets.ModelViewSet):
     queryset = Producto.objects.select_related('categoria').all()
     serializer_class = ProductoSerializer
+    def destroy(self, request, *args, **kwargs):
+        from django.db.models import ProtectedError, RestrictedError
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except (ProtectedError, RestrictedError):
+            return Response(
+                {'error': 'No se puede eliminar: este producto aparece en ordenes historicas. Editalo y desmarca Visible en catalogo para ocultarlo sin perder el historial.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
     def _aplicar_imagen(self, producto, data_url):
         """Decodifica un data-URL base64 y lo guarda en media/productos/."""

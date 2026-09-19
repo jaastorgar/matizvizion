@@ -1,13 +1,14 @@
 (function () {
   'use strict';
+(function(){var s=document.createElement('style');s.textContent='.mv-pill:empty,.mv-order-pill:empty{display:none!important;}';document.head.appendChild(s);})();
   var MV = window.MV; if (!MV || !MV.me) return;
   var api = MV.api, toast = MV.toast, esc = MV.escape;
   var money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format;
   function fecha(iso){ if(!iso) return '—'; var s=String(iso); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m){ return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); } try{ return new Date(s).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return s; } }
-  var TXT = { PAGADA:'Pagada', EN_PREPARACION:'En preparación', LISTO_PARA_RETIRO:'Listo para retiro', ENVIADA:'Enviada', ENTREGADA:'Entregada', DEVUELTA:'Devuelta' };
+  var TXT = { PAGADA: '', EN_PREPARACION: '', LISTO_PARA_RETIRO: '', ENVIADA: '', ENTREGADA: '', DEVUELTA: '' };
   var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
   var RES_TXT = { devolucion:'Devolución', cambio:'Cambio', reparacion:'Reparación', rehacer:'Re-hacer' };
-  var ESTADO_PILL = { PENDIENTE:{c:'pend', t:'En revisión'}, APROBADA:{c:'ok', t:'Aprobada'}, RECHAZADA:{c:'no', t:'Rechazada'} };
+  var ESTADO_PILL = { PENDIENTE:{c:'pend', t:''}, APROBADA:{c:'ok', t:'Aprobada'}, RECHAZADA:{c:'no', t:'Rechazada'} };
 
   // ---------- Fichas de garantia ----------
   function garCard(g, idx){
@@ -44,7 +45,7 @@
       return '<span class="mv-dev-pill ' + e.c + '" title="' + esc(prods) + '"><i class="bi bi-arrow-return-left"></i> ' + esc(e.t) + res + '</span>';
     }).join('');
     var detalle = sols.map(function (s){
-      var prods = (s.items_detalle || []).map(function (it){ return esc(it.nombre) + ' ×' + it.cantidad; }).join(' · ');
+      var prods = (s.items_detalle || []).map(function (it){ var q = (it.cantidad_devuelta != null ? it.cantidad_devuelta : it.cantidad); return esc(it.nombre) + ' ×' + q + (q !== it.cantidad ? ' de ' + it.cantidad : ''); }).join(' · ');
       return prods ? '<div class="mv-dev-pill-detail">' + prods + '</div>' : '';
     }).join('');
     return '<div class="mv-dev-status"><div class="mv-dev-status-kicker"><i class="bi bi-clipboard2-check"></i> Devoluciones de esta compra</div><div class="mv-dev-pills">' + pills + '</div>' + detalle + '</div>';
@@ -53,7 +54,7 @@
   // ---------- Tarjeta de compra ----------
   function card(o, gmap, devByOrden){
     var lines = (o.items || []).map(function (it){
-      return '<div class="mv-track-line"><span>' + esc(it.producto_nombre) + ' <span class="mv-track-sku">' + esc(it.producto_sku || '') + '</span> × ' + it.cantidad + '</span><span>' + money(it.subtotal != null ? it.subtotal : (Number(it.precio_unitario) * Number(it.cantidad))) + '</span></div>';
+      return '<div class="mv-track-line"><span>' + esc(it.producto_nombre) + ' <span class="mv-track-sku">' + esc(it.producto_sku || '') + '</span>' + (it.tipo_lente ? ' <small class="text-muted">(' + esc(it.tipo_lente_display || '') + ' · ' + esc(it.uso_lente_display || '') + ')</small>' : '') + ' × ' + it.cantidad + '</span><span>' + money(it.subtotal != null ? it.subtotal : (Number(it.precio_unitario) * Number(it.cantidad))) + '</span></div>';
     }).join('');
     var puedeDev = (o.estado === 'ENTREGADA' || o.estado === 'ENVIADA');
     var devBtn = puedeDev ? '<button class="btn btn-outline-mv btn-sm ms-2" data-dev="' + o.id + '"><i class="bi bi-arrow-return-left"></i> Devolución por garantía</button>' : '';
@@ -68,13 +69,21 @@
   }
 
   // ---------- Modal de devolucion con selector de productos ----------
-  function openDevModal(orden, blocked){
+  function openDevModal(orden, blocked, maxQty){
     var ov = document.createElement('div'); ov.className = 'mv-modal-ov';
+  if (!document.getElementById('mv-devqty-css')) {
+    var stq = document.createElement('style'); stq.id = 'mv-devqty-css';
+    stq.textContent = '.mv-dev-qty{display:inline-flex;align-items:center;gap:.4rem;margin-left:auto;}' +
+      '.mv-dev-qty button{width:26px;height:26px;border:1px solid var(--border-color);background:var(--white);border-radius:8px;cursor:pointer;font-size:.95rem;line-height:1;}' +
+      '.mv-dev-qty .mv-dev-q-num{min-width:20px;text-align:center;font-weight:700;}';
+    document.head.appendChild(stq);
+  }
     var items = (orden.items || []);
     var rows = items.map(function (it, i){
       var sku = (it.producto_sku || '').toUpperCase();
       var b = blocked[sku];
-      var dis = b ? ' disabled' : '';
+      var maxq = (maxQty && maxQty[sku] != null) ? maxQty[sku] : it.cantidad;
+    var dis = (b || maxq <= 0) ? ' disabled' : '';
       var tag = b ? '<span class="mv-dev-item-tag ' + (b.cls) + '">' + esc(b.label) + '</span>' : '';
       return '<label class="mv-dev-item' + (b ? ' locked' : '') + '" style="animation-delay:' + (i * 0.05) + 's" data-sku="' + esc(sku) + '">' +
         '<span class="mv-dev-check"><i class="bi bi-check-lg"></i></span>' +
@@ -113,13 +122,30 @@
       submit.disabled = !(any && motivo.value.trim().length >= 3);
     }
     cbs.forEach(function (cb){ cb.addEventListener('change', refresh); });
+  ov.querySelectorAll('.mv-dev-q-dec').forEach(function (b){
+    b.addEventListener('click', function (e){
+      e.preventDefault(); e.stopPropagation();
+      var num = ov.querySelector('.mv-dev-q-num[data-sku="' + b.getAttribute('data-sku') + '"]');
+      var v = parseInt(num.textContent, 10) || 1;
+      if (v > 1) num.textContent = String(v - 1);
+    });
+  });
+  ov.querySelectorAll('.mv-dev-q-inc').forEach(function (b){
+    b.addEventListener('click', function (e){
+      e.preventDefault(); e.stopPropagation();
+      var num = ov.querySelector('.mv-dev-q-num[data-sku="' + b.getAttribute('data-sku') + '"]');
+      var v = parseInt(num.textContent, 10) || 1;
+      var mx = parseInt(b.getAttribute('data-max'), 10) || v;
+      if (v < mx) num.textContent = String(v + 1);
+    });
+  });
     motivo.addEventListener('input', refresh);
     function close(){ ov.classList.remove('in'); setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 200); }
     ov.querySelector('.mv-modal-x').addEventListener('click', close);
     ov.querySelector('.mv-modal-cancel').addEventListener('click', close);
     ov.addEventListener('click', function (e){ if (e.target === ov) close(); });
     submit.addEventListener('click', function (){
-      var sel = cbs.filter(function (cb){ return cb.checked; }).map(function (cb){ return cb.value; });
+      var sel = cbs.filter(function (cb){ return cb.checked; }).map(function (cb){ var sku = cb.value; var qel = ov.querySelector('.mv-dev-q-num[data-sku="' + sku + '"]'); var q = qel ? parseInt(qel.textContent, 10) : 1; return { sku: sku, cantidad: (q || 1) }; });
       var mot = motivo.value.trim();
       if (!sel.length || mot.length < 3) { card.classList.add('shake'); setTimeout(function(){ card.classList.remove('shake'); }, 420); return; }
       submit.disabled = true; submit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando…';
@@ -131,19 +157,19 @@
     refresh();
   }
 
-  function wireDevolucion(ordenesMap, blockedByOrden){
+  function wireDevolucion(ordenesMap, blockedByOrden, maxQtyByOrden){
     document.getElementById('mc-list').addEventListener('click', function (e){
       var b = e.target.closest('button[data-dev]'); if (!b) return;
       var id = b.getAttribute('data-dev');
-      openDevModal(ordenesMap[id], blockedByOrden[id] || {});
+      openDevModal(ordenesMap[id], blockedByOrden[id] || {}, maxQtyByOrden[id] || {});
     });
   }
 
-  function render(list, gmap, devByOrden, blockedByOrden, ordenesMap){
+  function render(list, gmap, devByOrden, blockedByOrden, ordenesMap, maxQtyByOrden){
     var box = document.getElementById('mc-list');
     if (!list.length) { box.innerHTML = '<div class="mv-empty"><span class="ico"><i class="bi bi-bag"></i></span>Aún no tienes compras.<br><a class="btn btn-cta btn-sm mt-3" href="/catalogo/">Ir al catálogo</a></div>'; return; }
     box.innerHTML = list.map(function (o){ return card(o, gmap, devByOrden); }).join('');
-    wireDevolucion(ordenesMap, blockedByOrden);
+    wireDevolucion(ordenesMap, blockedByOrden, maxQtyByOrden);
   }
 
   function bootstrap(){
@@ -152,17 +178,34 @@
       var garr = (res[1].ok && Array.isArray(res[1].data)) ? res[1].data : [];
       var devs = (res[2].ok && Array.isArray(res[2].data)) ? res[2].data : [];
       var gmap = {}; garr.forEach(function (g){ gmap[g.codigo] = g; });
-      var devByOrden = {}, blockedByOrden = {}, ordenesMap = {};
+      var devByOrden = {}, blockedByOrden = {}, ordenesMap = {}, maxQtyByOrden = {}, usedQty = {}, pendFlag = {};
       list.forEach(function (o){ ordenesMap[o.id] = o; });
-      devs.forEach(function (s){
-        (devByOrden[s.orden] = devByOrden[s.orden] || []).push(s);
-        if (s.estado === 'PENDIENTE' || s.estado === 'APROBADA') {
-          var blk = (blockedByOrden[s.orden] = blockedByOrden[s.orden] || {});
-          var meta = s.estado === 'PENDIENTE' ? {cls:'pend', label:'En revisión'} : {cls:'ok', label:'Devuelto'};
-          (s.items_detalle || []).forEach(function (it){ blk[(it.sku || '').toUpperCase()] = meta; });
-        }
+      list.forEach(function (o){
+    (o.items || []).forEach(function (it){ usedQty[o.id + '|' + (it.producto_sku || '').toUpperCase() + '|line'] = it.cantidad; });
+  });
+  devs.forEach(function (s){
+    (devByOrden[s.orden] = devByOrden[s.orden] || []).push(s);
+    if (s.estado === 'PENDIENTE' || (s.estado === 'APROBADA' && s.resolucion === 'devolucion')) {
+      (s.items_detalle || []).forEach(function (it){
+        var k = s.orden + '|' + (it.sku || '').toUpperCase();
+        usedQty[k] = (usedQty[k] || 0) + (it.cantidad_devuelta != null ? it.cantidad_devuelta : it.cantidad);
+        if (s.estado === 'PENDIENTE') pendFlag[k] = true;
       });
-      render(list, gmap, devByOrden, blockedByOrden, ordenesMap);
+    }
+  });
+  list.forEach(function (o){
+    var blk = {}, mx = {};
+    (o.items || []).forEach(function (it){
+      var sku = (it.producto_sku || '').toUpperCase();
+      var k = o.id + '|' + sku;
+      var remaining = (it.cantidad || 0) - (usedQty[k] || 0);
+      mx[sku] = Math.max(0, remaining);
+      if (remaining <= 0) blk[sku] = pendFlag[k] ? {cls:'pend', label:'En revisión'} : {cls:'ok', label:'Devuelto'};
+    });
+    blockedByOrden[o.id] = blk;
+    maxQtyByOrden[o.id] = mx;
+  });
+  render(list, gmap, devByOrden, blockedByOrden, ordenesMap, maxQtyByOrden);
     });
   }
 

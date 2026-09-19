@@ -7,20 +7,38 @@ class ItemCarritoSerializer(serializers.ModelSerializer):
     producto_sku = serializers.ReadOnlyField(source='producto.sku')
     precio_unitario = serializers.ReadOnlyField(source='producto.precio')
     subtotal = serializers.ReadOnlyField()
+    tipo_lente_display = serializers.ReadOnlyField(source='get_tipo_lente_display')
+    uso_lente_display = serializers.ReadOnlyField(source='get_uso_lente_display')
 
     class Meta:
         model = ItemCarrito
-        fields = ['id', 'producto', 'producto_nombre', 'producto_sku', 'precio_unitario', 'cantidad', 'subtotal']
+        fields = ['id', 'producto', 'producto_nombre', 'producto_sku', 'precio_unitario', 'cantidad', 'subtotal', 'tipo_lente', 'uso_lente', 'tipo_lente_display', 'uso_lente_display']
 
+
+    MATRIZ_USO_LENTE = {
+        'MONOFOCAL': ['LEJOS', 'CERCA'],
+        'BIFOCAL': ['LEJOS_CERCA'],
+        'PROGRESIVO': ['LEJOS_CERCA'],
+        'OCUPACIONAL': ['INTERMEDIA', 'CERCA'],
+    }
+
+    def validate(self, attrs):
+        tipo = attrs.get('tipo_lente', getattr(self.instance, 'tipo_lente', ''))
+        uso = attrs.get('uso_lente', getattr(self.instance, 'uso_lente', ''))
+        if tipo and uso and tipo in self.MATRIZ_USO_LENTE and uso not in self.MATRIZ_USO_LENTE[tipo]:
+            raise serializers.ValidationError({'uso_lente': 'Combinacion no valida para ese tipo de lente.'})
+        return attrs
 
 class ItemOrdenSerializer(serializers.ModelSerializer):
     producto_nombre = serializers.ReadOnlyField(source='producto.nombre')
     producto_sku = serializers.ReadOnlyField(source='producto.sku')
     subtotal = serializers.ReadOnlyField()
+    tipo_lente_display = serializers.ReadOnlyField(source='get_tipo_lente_display')
+    uso_lente_display = serializers.ReadOnlyField(source='get_uso_lente_display')
 
     class Meta:
         model = ItemOrden
-        fields = ['id', 'producto', 'producto_nombre', 'producto_sku', 'precio_unitario', 'cantidad', 'subtotal']
+        fields = ['id', 'producto', 'producto_nombre', 'producto_sku', 'precio_unitario', 'cantidad', 'subtotal', 'tipo_lente', 'uso_lente', 'tipo_lente_display', 'uso_lente_display']
 
 
 class HistorialEstadoSerializer(serializers.ModelSerializer):

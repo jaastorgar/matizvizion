@@ -25,7 +25,7 @@
     else if (st === 'FALLIDA') banner = '<div class="mv-track-banner fail">El pago de este pedido no pudo completarse.</div>';
     var tl = (st === 'CANCELADA' || st === 'FALLIDA') ? '' : timelineHtml(o);
     var lines = (o.items || []).map(function (it){
-      return '<div class="mv-track-line"><span>' + esc(it.producto_nombre) + ' <span class="mv-track-sku">' + esc(it.producto_sku || '') + '</span> × ' + it.cantidad + '</span><span>' + money(it.subtotal != null ? it.subtotal : (Number(it.precio_unitario) * Number(it.cantidad))) + '</span></div>';
+      return '<div class="mv-track-line"><span>' + esc(it.producto_nombre) + ' <span class="mv-track-sku">' + esc(it.producto_sku || '') + '</span>' + (it.tipo_lente ? ' <small class="text-muted">(' + esc(it.tipo_lente_display || '') + ' · ' + esc(it.uso_lente_display || '') + ')</small>' : '') + ' × ' + it.cantidad + '</span><span>' + money(it.subtotal != null ? it.subtotal : (Number(it.precio_unitario) * Number(it.cantidad))) + '</span></div>';
     }).join('');
     return '<div class="mv-track-card">' +
       '<div class="mv-track-head"><div><span class="mv-track-code">' + esc(o.codigo || ('#' + o.id)) + '</span> <span class="mv-track-date">· ' + fecha(o.creado_en) + '</span></div><span class="mv-badge ' + st + '">' + esc(TXT[st] || st) + '</span></div>' +

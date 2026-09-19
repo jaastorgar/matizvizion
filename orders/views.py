@@ -97,12 +97,10 @@ class OrdenViewSet(
         ).prefetch_related('items__producto').first()
         if not carrito or not carrito.items.exists():
             raise ValidationError({'carrito': 'El carrito esta vacio.'})
-
         items = list(carrito.items.select_related('producto').all())
         cantidades = defaultdict(int)
         for item in items:
             cantidades[item.producto_id] += item.cantidad
-
         productos = {
             p.pk: p
             for p in Producto.objects.select_for_update().filter(pk__in=cantidades.keys())
@@ -115,35 +113,34 @@ class OrdenViewSet(
                 raise ValidationError({'cantidad': 'La cantidad debe ser mayor que cero.'})
             if prod.stock < cant:
                 raise ValidationError({'stock': f'Stock insuficiente para {prod.nombre}.'})
-
         total = sum(
             (productos[pid].precio * c for pid, c in cantidades.items()),
             Decimal('0'),
         )
-        # El save() del modelo autogenera el codigo de pedido (MV-AAAA-XXXXX)
         modo_pago = (request.data.get('modo_pago') or 'COMPLETO').upper()
         if modo_pago not in ('COMPLETO', 'ABONO'):
-            raise ValidationError({'modo_pago': 'Modalidad de pago inválida.'})
+            raise ValidationError({'modo_pago': 'Modalidad de pago invalida.'})
         monto_abonado = Decimal('0')
         if modo_pago == 'ABONO':
             monto_abonado = (total / 2).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
         orden = Orden.objects.create(
             cliente=request.user, total=total, estado=Orden.Estado.PENDIENTE,
-            modo_pago=modo_pago, monto_abonado=monto_abonado
+            modo_pago=modo_pago, monto_abonado=monto_abonado,
         )
         HistorialEstado.objects.create(
             orden=orden, estado_anterior='', estado_nuevo=Orden.Estado.PENDIENTE, usuario=request.user
         )
-        for pid, cant in cantidades.items():
-            prod = productos[pid]
+        # Cada linea de la orden conserva la configuracion optica elegida en el catalogo
+        for item in items:
+            prod = productos[item.producto_id]
             ItemOrden.objects.create(
-                orden=orden, producto=prod, precio_unitario=prod.precio, cantidad=cant
+                orden=orden, producto=prod, precio_unitario=prod.precio,
+                cantidad=item.cantidad, tipo_lente=item.tipo_lente, uso_lente=item.uso_lente,
             )
-            prod.stock = F('stock') - cant
+            prod.stock = F('stock') - item.cantidad
             prod.save(update_fields=['stock'])
         carrito.items.all().delete()
         return Response(self.get_serializer(orden).data, status=status.HTTP_201_CREATED)
-
 
 class OperacionOrdenViewSet(
     mixins.ListModelMixin,
@@ -228,3 +225,5 @@ class TrackOrdenView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         return Response(SeguimientoPublicoSerializer(orden).data)
+
+

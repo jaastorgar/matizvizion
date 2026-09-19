@@ -18,6 +18,20 @@ class EstadoOrden(models.TextChoices):
     DEVUELTA = 'DEVUELTA', 'Devuelta'
 
 
+class TipoLente(models.TextChoices):
+    MONOFOCAL = 'MONOFOCAL', 'Monofocal (foco unico)'
+    BIFOCAL = 'BIFOCAL', 'Bifocal (doble foco)'
+    PROGRESIVO = 'PROGRESIVO', 'Progresivo / multifocal'
+    OCUPACIONAL = 'OCUPACIONAL', 'Ocupacional / degresivo'
+
+
+class UsoLente(models.TextChoices):
+    LEJOS = 'LEJOS', 'Vision lejos'
+    CERCA = 'CERCA', 'Vision cerca (lectura)'
+    LEJOS_CERCA = 'LEJOS_CERCA', 'Lejos y cerca'
+    INTERMEDIA = 'INTERMEDIA', 'Intermedia (pantallas 40 cm - 2 m)'
+
+
 class Carrito(models.Model):
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='carritos')
     creado_en = models.DateTimeField(auto_now_add=True)
@@ -41,6 +55,8 @@ class ItemCarrito(models.Model):
     carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE, related_name='items')
     producto = models.ForeignKey('store.Producto', on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField(default=1)
+    tipo_lente = models.CharField('Tipo de lente', max_length=16, choices=TipoLente.choices, blank=True, default='')
+    uso_lente = models.CharField('Uso / distancia', max_length=16, choices=UsoLente.choices, blank=True, default='')
 
     class Meta:
         verbose_name = 'Item de carrito'
@@ -156,6 +172,8 @@ class ItemOrden(models.Model):
     producto = models.ForeignKey('store.Producto', on_delete=models.PROTECT)
     precio_unitario = models.DecimalField('Precio unitario', max_digits=10, decimal_places=2)
     cantidad = models.PositiveIntegerField()
+    tipo_lente = models.CharField('Tipo de lente', max_length=16, choices=TipoLente.choices, blank=True, default='')
+    uso_lente = models.CharField('Uso / distancia', max_length=16, choices=UsoLente.choices, blank=True, default='')
 
     class Meta:
         verbose_name = 'Item de orden'
@@ -222,6 +240,11 @@ class SolicitudDevolucion(models.Model):
     garantia_aplicada = models.CharField('Garantia aplicada (codigo de politica)', max_length=40, blank=True, null=True)
     motivo_rechazo = models.TextField('Motivo de rechazo (vendedor)', blank=True, null=True)
     reembolso_procesado = models.BooleanField('Reembolso procesado (manual)', default=False)
+    cantidades = models.JSONField(
+        'Cantidades devueltas por linea (item_id -> cantidad)',
+        default=dict, blank=True,
+        help_text='Vacio = devolucion de la linea completa (legado).',
+    )
     creado_en = models.DateTimeField(auto_now_add=True)
     resuelto_en = models.DateTimeField(null=True, blank=True)
     resuelto_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='devoluciones_resueltas')
@@ -234,12 +257,20 @@ class SolicitudDevolucion(models.Model):
     def __str__(self):
         return f"Devolucion #{self.id} orden {self.orden_id} [{self.estado}]"
 
+    def cantidad_de(self, item):
+        """Cantidad devuelta de una linea (parcial si existe en cantidades)."""
+        try:
+            return int(self.cantidades.get(str(item.id), item.cantidad))
+        except Exception:
+            return item.cantidad
+
     def revertir_stock_items(self):
-        """Repone al inventario SOLO los productos de esta solicitud (lineas completas)."""
+        """Repone al inventario SOLO los productos/cantidades de esta solicitud."""
         from django.db.models import F
         from store.models import Producto
         for it in self.items.select_related('producto').all():
-            Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + it.cantidad)
+            qty = self.cantidad_de(it)
+            Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + qty)
 
 
 class PoliticaGarantia(models.Model):
