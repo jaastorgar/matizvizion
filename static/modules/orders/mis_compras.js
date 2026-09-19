@@ -61,7 +61,7 @@
     var gar = garantiasHtml(gmap[o.codigo] || { garantias: [], pendiente_entrega: false });
     var devs = devPills(devByOrden[o.id] || []);
     return '<div class="mv-track-card" data-orden="' + o.id + '">' +
-      '<div class="mv-track-head"><div><span class="mv-track-code">' + esc(o.codigo || ('#' + o.id)) + '</span> <span class="mv-track-date">· ' + fecha(o.creado_en) + '</span></div><span class="mv-badge ' + o.estado + '">' + esc(TXT[o.estado] || o.estado) + '</span></div>' +
+      '<div class="mv-track-head"><div><span class="mv-track-code">' + esc(o.codigo || ('#' + o.id)) + '</span> <span class="mv-track-date">· ' + fecha(o.creado_en) + '</span></div></div>' +
       '<div class="mv-track-body">' + lines +
         '<div class="mv-track-total"><span>Total</span><span>' + money(o.total) + '</span></div>' + (o.modo_pago === 'ABONO' ? '<div class="mv-track-line"><span><i class="bi bi-credit-card"></i> Abono pagado online</span><span>' + money(o.monto_abonado) + '</span></div>' + (o.saldo_cancelado ? '<div class="mv-track-line"><span><i class="bi bi-check-circle"></i> Saldo cancelado en tienda</span><span>' + money(0) + '</span></div>' : '<div class="mv-track-line text-danger"><span><i class="bi bi-cash-coin"></i> Saldo pendiente en tienda</span><span>' + money(o.saldo_pendiente) + '</span></div>') : '') + gar + devs +
         '<div class="text-end mt-2"><a class="btn btn-outline-mv btn-sm" href="/seguimiento/?orden=' + encodeURIComponent(o.codigo || '') + '"><i class="bi bi-geo-alt"></i> Ver seguimiento</a>' + devBtn + '</div>' +
@@ -90,6 +90,7 @@
         '<input type="checkbox" class="mv-dev-cb" value="' + esc(sku) + '"' + dis + ' />' +
         '<span class="mv-dev-item-info"><span class="mv-dev-item-name">' + esc(it.producto_nombre) + '</span>' +
         '<span class="mv-dev-item-meta">' + esc(sku || '—') + ' · ×' + it.cantidad + ' · ' + money(it.subtotal != null ? it.subtotal : (Number(it.precio_unitario) * Number(it.cantidad))) + '</span></span>' +
+        ((maxq > 1 && !dis) ? '<span class="mv-dev-qty"><button type="button" class="mv-dev-q-dec" data-sku="' + esc(sku) + '">−</button><span class="mv-dev-q-num" data-sku="' + esc(sku) + '">' + maxq + '</span><button type="button" class="mv-dev-q-inc" data-sku="' + esc(sku) + '" data-max="' + maxq + '">+</button></span>' : '') +
         tag +
       '</label>';
     }).join('');
