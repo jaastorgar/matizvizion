@@ -1,6 +1,11 @@
 (function () {
   'use strict';
-  var MV = window.MV; if (!MV || !MV.api) { console.error('dashboard.js: MV no disponible'); return; }
+  
+var ORDMAP = {};
+function normWa(tel){ var d = String(tel||'').replace(/\D/g,''); if (d.length===9) return '56'+d; if (d.length===11 && d.slice(0,2)==='56') return d; if (d.length===10 && d[0]==='0') return '56'+d.slice(1); return ''; }
+function openWa(o, extra){ var d = normWa(o.cliente_telefono); if (!d) { if (window.MV && MV.toast) MV.toast('El cliente no tiene telefono registrado; avisale por correo.', 'error'); return; } var items = (o.items||[]).map(function(it){ return it.producto_nombre+' x'+it.cantidad; }).join(', '); var msg = extra || ('Hola! Te escribimos de Optica Matiz Vision respecto a tu pedido '+(o.codigo||'')+'. '+(items?('Productos: '+items+'. '):'')); window.open('https://wa.me/'+d+'?text='+encodeURIComponent(msg),'_blank','noopener'); }
+function cancelQuiebre(o){ var prom = (typeof confirmBox==='function') ? confirmBox('¿Cancelar el pedido '+(o.codigo||'')+' por QUIEBRE DE STOCK? Se marcara CANCELADA (no repone stock) y deberas reembolsar por Webpay. Al confirmar se abrira WhatsApp para avisar al cliente.') : Promise.resolve(window.confirm('¿Cancelar el pedido '+(o.codigo||'')+' por quiebre de stock?')); prom.then(function(ok){ if(!ok) return; MV.api.post('/orders/operaciones/'+o.id+'/cancelar-quiebre/', { body:{ motivo:'Quiebre de stock: unidades no disponibles fisicamente.'} }).then(function(r){ if (r.ok) { if (MV.toast) MV.toast('Pedido cancelado. Abriendo WhatsApp para avisar al cliente...','success'); var items=(o.items||[]).map(function(it){ return it.producto_nombre+' x'+it.cantidad; }).join(', '); openWa(o, 'Hola! Te escribimos de Optica Matiz Vision: debimos CANCELAR tu pedido '+(o.codigo||'')+' por quiebre de stock de: '+items+'. El reembolso de $'+(o.total||0)+' se procesara por Webpay en 3-5 dias habiles. Lamentamos las molestias; puedes responder por este canal.'); setTimeout(function(){ location.reload(); }, 1500); } else { if (MV.toast) MV.toast((r.data && r.data.error) || 'No se pudo cancelar.','error'); } }); }); }
+var MV = window.MV; if (!MV || !MV.api) { console.error('dashboard.js: MV no disponible'); return; }
   var api = MV.api, auth = MV.auth, toast = MV.toast, esc = MV.escape, fmtRut = MV.formatRut || function (s) { return s; };
   var root = document.getElementById('dash-root');
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
@@ -97,6 +102,7 @@ var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
   }
 
   function renderPedidos(filterRut){
+ORDMAP = {}; (filterRut||[]).forEach(function(o){ ORDMAP[o.id]=o; });
     var body = document.getElementById('pedidos-body');
     var fr = norm(filterRut);
     var list = ORD.filter(function (o){ return !fr || norm(o.cliente_rut).indexOf(fr) !== -1 || norm(o.cliente_email).indexOf(fr) !== -1; });
@@ -105,7 +111,10 @@ var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
       var st = o.estado;
       var saldoBtn = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && Number(o.saldo_pendiente) > 0) ? '<button class="btn btn-outline-mv btn-sm me-1" data-saldo="' + o.id + '"><i class="bi bi-cash-coin"></i> Saldo ' + money(o.saldo_pendiente) + '</button>' : '';
     var nextDis = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && st === 'LISTO_PARA_RETIRO') ? ' disabled title="Registra el pago del saldo primero"' : '';
-    var acc = saldoBtn + (NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '"' + nextDis + '>' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>');
+    var telDig = normWa(o.cliente_telefono);
+    var waBtn = telDig ? '<button class="btn btn-outline-mv btn-sm me-1" data-wa="'+o.id+'" title="Avisar por WhatsApp"><i class="bi bi-whatsapp"></i></button>' : '';
+    var cancelBtn = (['PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO'].indexOf(st)!==-1) ? '<button class="btn btn-sm me-1" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;" data-cancela="'+o.id+'" title="Cancelar por quiebre de stock"><i class="bi bi-x-octagon"></i> Cancelar</button>' : '';
+    var acc = waBtn + cancelBtn + saldoBtn + (NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '"' + nextDis + '>' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>');
       return '<tr><td>' + esc(o.codigo || ('#' + o.id)) + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
     }).join('');
     body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Código</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -306,4 +315,13 @@ var BASE_TXT = { LEGAL:'Legal', FABRICANTE:'Técnica', CONFORT:'Confort' };
     }
     layout(); loadAll();
   });
+
+// Delegado global (capture) para botones WhatsApp y Cancelar del panel
+document.addEventListener('click', function (e) {
+  var el = (e.target && e.target.closest) ? e.target.closest('button[data-wa], button[data-cancela]') : null;
+  if (!el) return;
+  e.stopPropagation(); e.preventDefault();
+  if (el.hasAttribute('data-wa')) { var ow = ORDMAP[el.getAttribute('data-wa')]; if (ow) openWa(ow); return; }
+  var oc = ORDMAP[el.getAttribute('data-cancela')]; if (oc) cancelQuiebre(oc);
+}, true); // mv-panel-delegado
 })();

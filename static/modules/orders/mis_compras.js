@@ -59,11 +59,21 @@
     var puedeDev = (o.estado === 'ENTREGADA' || o.estado === 'ENVIADA');
     var devBtn = puedeDev ? '<button class="btn btn-outline-mv btn-sm ms-2" data-dev="' + o.id + '"><i class="bi bi-arrow-return-left"></i> Devolución por garantía</button>' : '';
     var gar = garantiasHtml(gmap[o.codigo] || { garantias: [], pendiente_entrega: false });
-    var devs = devPills(devByOrden[o.id] || []);
+    var solsDev = (devByOrden[o.id] || []).filter(function (s){ return s.estado === 'APROBADA' && s.resolucion === 'devolucion'; });
+  var refund = 0, refundLines = [];
+  solsDev.forEach(function (s){
+    (s.items_detalle || []).forEach(function (it){
+      var q = (it.cantidad_devuelta != null ? it.cantidad_devuelta : it.cantidad);
+      refund += q * (Number(it.precio) || 0);
+      refundLines.push(esc(it.nombre) + ' ×' + q);
+    });
+  });
+  var refundHtml = refund > 0 ? '<div class="mv-track-line text-success"><span><i class="bi bi-arrow-return-left"></i> Devolución aprobada (' + refundLines.join(', ') + ')</span><span>−' + money(refund) + '</span></div><div class="mv-track-line"><span><strong>Neto tras devoluciones</strong></span><span><strong>' + money(Math.max(0, Number(o.total) - refund)) + '</strong></span></div>' : '';
+  var devs = devPills(devByOrden[o.id] || []);
     return '<div class="mv-track-card" data-orden="' + o.id + '">' +
       '<div class="mv-track-head"><div><span class="mv-track-code">' + esc(o.codigo || ('#' + o.id)) + '</span> <span class="mv-track-date">· ' + fecha(o.creado_en) + '</span></div></div>' +
       '<div class="mv-track-body">' + lines +
-        '<div class="mv-track-total"><span>Total</span><span>' + money(o.total) + '</span></div>' + (o.modo_pago === 'ABONO' ? '<div class="mv-track-line"><span><i class="bi bi-credit-card"></i> Abono pagado online</span><span>' + money(o.monto_abonado) + '</span></div>' + (o.saldo_cancelado ? '<div class="mv-track-line"><span><i class="bi bi-check-circle"></i> Saldo cancelado en tienda</span><span>' + money(0) + '</span></div>' : '<div class="mv-track-line text-danger"><span><i class="bi bi-cash-coin"></i> Saldo pendiente en tienda</span><span>' + money(o.saldo_pendiente) + '</span></div>') : '') + gar + devs +
+        '<div class="mv-track-total"><span>Total</span><span>' + money(o.total) + '</span></div>' + refundHtml + (o.modo_pago === 'ABONO' ? '<div class="mv-track-line"><span><i class="bi bi-credit-card"></i> Abono pagado online</span><span>' + money(o.monto_abonado) + '</span></div>' + (o.saldo_cancelado ? '<div class="mv-track-line"><span><i class="bi bi-check-circle"></i> Saldo cancelado en tienda</span><span>' + money(0) + '</span></div>' : '<div class="mv-track-line text-danger"><span><i class="bi bi-cash-coin"></i> Saldo pendiente en tienda</span><span>' + money(o.saldo_pendiente) + '</span></div>') : '') + gar + devs +
         '<div class="text-end mt-2"><a class="btn btn-outline-mv btn-sm" href="/seguimiento/?orden=' + encodeURIComponent(o.codigo || '') + '"><i class="bi bi-geo-alt"></i> Ver seguimiento</a>' + devBtn + '</div>' +
       '</div></div>';
   }

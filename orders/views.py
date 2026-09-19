@@ -28,6 +28,8 @@ ESTADOS_COMPRA_CLIENTE = [
     Orden.Estado.LISTO_PARA_RETIRO,
     Orden.Estado.ENVIADA,
     Orden.Estado.ENTREGADA,
+    Orden.Estado.DEVUELTA,
+    Orden.Estado.CANCELADA,
 ]
 
 
@@ -199,6 +201,20 @@ class OperacionOrdenViewSet(
         orden.save(update_fields=['saldo_cancelado', 'saldo_cancelado_en', 'actualizado_en'])
         return Response(self.get_serializer(orden).data)
 
+
+    @action(detail=True, methods=['post'], url_path='cancelar-quiebre', permission_classes=[IsVendedorUser])
+    def cancelar_quiebre(self, request, pk=None):
+        orden = self.get_object()
+        if orden.estado not in ('PAGADA', 'EN_PREPARACION', 'LISTO_PARA_RETIRO'):
+            return Response({'error': 'Solo puedes cancelar ordenes pagadas o en preparacion.'}, status=status.HTTP_400_BAD_REQUEST)
+        motivo = (request.data.get('motivo') or 'Quiebre de stock').strip()
+        previo = orden.estado
+        with transaction.atomic():
+            orden.estado = 'CANCELADA'
+            orden.motivo_cancelacion = motivo
+            orden.save(update_fields=['estado', 'motivo_cancelacion'])
+            HistorialEstado.objects.create(orden=orden, estado_anterior=previo, estado_nuevo='CANCELADA', usuario=request.user)
+        return Response({'ok': True, 'codigo': orden.codigo})
 
 class TrackOrdenView(APIView):
     """

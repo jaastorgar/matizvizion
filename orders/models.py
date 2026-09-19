@@ -94,6 +94,7 @@ class Orden(models.Model):
     )
     total = models.DecimalField('Total', max_digits=10, decimal_places=2)
     estado = models.CharField('Estado', max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
+    motivo_cancelacion = models.TextField('Motivo de cancelacion', blank=True, default='')
     modo_pago = models.CharField(
         'Modalidad de pago', max_length=10,
         choices=[('COMPLETO', 'Pago completo'), ('ABONO', 'Abono 50% + saldo en tienda')],
