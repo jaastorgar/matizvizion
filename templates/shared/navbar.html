@@ -5,7 +5,9 @@
       <img src="{% static 'shared/img/logo.png' %}" alt="Matizvisión" style="height:42px;width:auto;" />
       <span>Matizvisión</span>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mvNav"><span class="navbar-toggler-icon"></span></button>
+    <button class="navbar-toggler mv-navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mvNav" aria-controls="mvNav" aria-expanded="false" aria-label="Abrir menú de navegación">
+      <span class="navbar-toggler-icon"></span>
+    </button>
     <div class="collapse navbar-collapse" id="mvNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item nav-catalogo d-none"><a class="nav-link" href="/catalogo/">Catálogo</a></li>
@@ -19,7 +21,7 @@
           <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" id="navUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-circle"></i> <span id="nav-user-name">Cuenta</span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUserMenu">
+          <ul class="dropdown-menu dropdown-menu-end mv-dropdown-menu" aria-labelledby="navUserMenu">
             <li class="nav-client d-none"><a class="dropdown-item" href="/mis-compras/"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
             <li class="nav-client d-none"><a class="dropdown-item" href="/mis-citas/"><i class="bi bi-heart-pulse me-2"></i>Mis Citas</a></li>
             <li class="nav-client d-none"><a class="dropdown-item" href="/mis-datos/"><i class="bi bi-pencil-square me-2"></i>Mis Datos</a></li>

@@ -1,0 +1,409 @@
+/* Óptica Matiz Visión — admin-responsive.css (Paso 6: Panel + CRUD + Inicio) */
+/* Capa ADITIVA: se carga DESPUÉS de dashboard.css y de los <style> inline.
+   Solo sobrescribe; nunca rompe la lógica JS. */
+
+/* ============================================
+   1) SIDEBAR → TABS SCROLLEABLES EN MÓVIL
+   ============================================ */
+@media (max-width: 860px) {
+  .mv-dash-wrap,
+  .mv-ad-wrap {
+    grid-template-columns: 1fr !important;
+    gap: .75rem !important;
+  }
+
+  .mv-dash-side,
+  .mv-ad-side {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: .5rem !important;
+    gap: .4rem;
+    position: sticky;
+    top: calc(72px + var(--safe-top, 0px));
+    z-index: 100;
+    background: var(--white);
+    border-radius: var(--radius) !important;
+    margin-bottom: .5rem;
+  }
+
+  .mv-dash-side::-webkit-scrollbar,
+  .mv-ad-side::-webkit-scrollbar { display: none; }
+
+  .mv-dash-side .mv-side-item,
+  .mv-ad-side button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: .55rem .9rem !important;
+    min-height: 44px !important;
+    border-radius: 999px !important;
+    font-size: .85rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: .35rem !important;
+  }
+
+  .mv-dash-side .mv-side-item.active,
+  .mv-ad-side button.active {
+    background: var(--green-dark) !important;
+    color: #fff !important;
+  }
+}
+
+/* ============================================
+   2) PANELES Y CARDS: padding fluido
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-dash-panel,
+  .mv-ad-panel {
+    padding: 1rem .9rem !important;
+    border-radius: 14px !important;
+  }
+
+  .mv-ad-shell,
+  .mv-in-shell {
+    padding: 1.25rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .mv-ad-head {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: .6rem !important;
+  }
+
+  .mv-ad-head #ad-new,
+  .mv-ad-head .btn-cta {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* ============================================
+   3) TABLAS: scroll horizontal + columna sticky
+   ============================================ */
+@media (max-width: 768px) {
+  .mv-ad-panel > table,
+  .mv-dash-panel > table,
+  .mv-ad-table,
+  .mv-dash-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+  }
+
+  .mv-ad-table thead th:first-child,
+  .mv-dash-table thead th:first-child,
+  .mv-ad-table tbody td:first-child,
+  .mv-dash-table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    background: var(--white);
+    z-index: 2;
+    min-width: 140px;
+    font-weight: 700;
+    box-shadow: 2px 0 4px rgba(0,0,0,.04);
+  }
+
+  .mv-ad-table th, .mv-ad-table td,
+  .mv-dash-table th, .mv-dash-table td {
+    white-space: nowrap;
+    font-size: .85rem;
+    padding: .55rem .6rem;
+  }
+
+  /* Columna de acciones siempre visible a la derecha */
+  .mv-ad-table thead th:last-child,
+  .mv-dash-table thead th:last-child,
+  .mv-ad-table tbody td:last-child,
+  .mv-dash-table tbody td:last-child {
+    position: sticky;
+    right: 0;
+    background: var(--white);
+    z-index: 2;
+    box-shadow: -2px 0 4px rgba(0,0,0,.04);
+  }
+
+  /* Acciones: botones con target 44px */
+  .mv-ad-actions button,
+  .mv-cita-actions button {
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: .4rem .6rem !important;
+    font-size: .82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* ============================================
+   4) MODAL CRUD: full-screen en móvil + safe-area
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-ad-modal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .mv-ad-modal-card {
+    max-width: none !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    padding: 1.25rem 1rem calc(1.25rem + var(--safe-bottom, 0px)) !important;
+  }
+
+  .mv-ad-field input,
+  .mv-ad-field select,
+  .mv-ad-field textarea {
+    font-size: 16px !important; /* evita zoom iOS */
+    min-height: 44px !important;
+    padding: .6rem .8rem !important;
+  }
+
+  .mv-ad-foot {
+    flex-direction: column-reverse;
+    gap: .5rem;
+  }
+
+  .mv-ad-foot button {
+    width: 100% !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+  }
+}
+
+/* ============================================
+   5) STATS / MÉTRICAS: grid adaptativo
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-ad-stats,
+  .mv-in-stats {
+    grid-template-columns: 1fr 1fr !important;
+    gap: .6rem !important;
+  }
+
+  .mv-ad-stat,
+  .mv-in-stat {
+    padding: .75rem .85rem !important;
+  }
+
+  .mv-ad-stat .n,
+  .mv-in-num {
+    font-size: 1.5rem !important;
+  }
+
+  .mv-ad-stat .l,
+  .mv-in-lbl {
+    font-size: .7rem !important;
+  }
+}
+
+/* ============================================
+   6) CARDS DE DEVOLUCIÓN (mesa de resolución)
+   ============================================ */
+@media (max-width: 768px) {
+  .mv-dev-card {
+    padding: .9rem .95rem !important;
+  }
+
+  .mv-dev-head {
+    flex-direction: column;
+    gap: .6rem !important;
+  }
+
+  .mv-dev-code {
+    font-size: .95rem !important;
+    word-break: break-all;
+  }
+
+  .mv-dev-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .mv-dev-actions button,
+  .mv-res-chip {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 44px !important;
+  }
+
+  .mv-res-gar-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ============================================
+   7) FILAS DE CITAS: apiladas en móvil
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-cita-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: .5rem !important;
+  }
+
+  .mv-cita-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .mv-cita-actions button {
+    flex: 1 1 auto;
+    min-height: 40px !important;
+  }
+}
+
+/* ============================================
+   8) INICIO STAFF: main CTA + grid
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-in-main {
+    padding: 1.3rem 1.2rem !important;
+  }
+
+  .mv-in-main h2 {
+    font-size: 1.25rem !important;
+  }
+
+  .mv-in-main p {
+    font-size: .88rem !important;
+  }
+
+  .mv-in-cta {
+    font-size: .9rem !important;
+    padding: .55rem 1rem !important;
+  }
+
+  .mv-in-quick {
+    flex-direction: column;
+  }
+
+  .mv-in-quick a {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+/* ============================================
+   9) TIPOGRAFÍA FLUIDA + CÓDIGOS LARGOS
+   ============================================ */
+.mv-ad-title,
+.mv-dash-panel h1 {
+  font-size: clamp(1.15rem, 3vw, 1.4rem) !important;
+}
+
+.mv-in-title {
+  font-size: clamp(1.6rem, 5vw, 3rem) !important;
+}
+
+.mv-dev-code,
+.mv-ad-table td:first-child,
+.mv-dash-table td:first-child {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* ============================================
+   10) HOVER SOLO CON PUNTERO (no touch)
+   ============================================ */
+@media (hover: none) {
+  .mv-dev-card:hover,
+  .mv-ad-stat:hover,
+  .mv-in-stat:hover,
+  .mv-in-main:hover {
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+  }
+
+  .mv-res-chip:hover:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   11) TABLA DE ÓPTICAS (Mis Ópticas en admin)
+   ============================================ */
+@media (max-width: 768px) {
+  .mv-ad-stats > .mv-ad-stat[data-opt] {
+    padding: .85rem !important;
+  }
+}
+
+/* ============================================
+   12) BOTÓN DE CANCELAR QUIEBRE (panel_quiebre.js)
+   ============================================ */
+@media (max-width: 575px) {
+  button[data-cancela] {
+    width: 100% !important;
+    margin-top: .35rem !important;
+  }
+}
+
+/* ============================================
+   13) MODAL DE CONFIRMACIÓN (confirmBox)
+   ============================================ */
+@media (max-width: 575px) {
+  .mv-ad-modal.open > .mv-ad-modal-card[style*="max-width:430px"] {
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 1.5rem 1.2rem calc(1.5rem + var(--safe-bottom, 0px)) !important;
+  }
+
+  .mv-ad-modal.open > .mv-ad-modal-card[style*="max-width:430px"] .mv-ad-foot {
+    flex-direction: column-reverse;
+  }
+
+  .mv-ad-modal.open > .mv-ad-modal-card[style*="max-width:430px"] .mv-ad-foot button {
+    width: 100% !important;
+    min-height: 48px !important;
+  }
+}
+/* ========== v2-chips-wrap: todas las pestanas visibles en movil ========== */
+@media (max-width: 860px) {
+  .mv-dash-side, .mv-ad-side {
+    flex-wrap: wrap;
+    overflow: visible;
+    position: static;
+    gap: .4rem;
+  }
+  .mv-dash-side .mv-side-item, .mv-ad-side button {
+    flex: 0 0 auto;
+  }
+}
+
+/* ========== v3-minwidth: fin del desborde horizontal en grid ========== */
+/* Los hijos de grid tienen min-width:auto por defecto: la tabla nowrap
+   estiraba la columna mas alla del viewport. Con min-width:0 la columna
+   cabe en la pantalla y la tabla scrollea dentro de su card. */
+.mv-dash-wrap > *, .mv-ad-wrap > * { min-width: 0 !important; }
+.mv-dash-panel, .mv-ad-panel, .mv-dash-side, .mv-ad-side {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+.mv-dash-table, .mv-ad-table {
+  display: block !important;
+  overflow-x: auto !important;
+  max-width: 100% !important;
+  -webkit-overflow-scrolling: touch;
+}
+.mv-dash-wrap, .mv-ad-wrap, .mv-ad-shell, .mv-in-shell { max-width: 100% !important; }
+body { overflow-x: clip !important; }
+.mv-ad-stats { min-width: 0; }
+.mv-ad-stat .n { word-break: break-word; }
+.mv-dev-head, .mv-dev-card { min-width: 0; max-width: 100%; }

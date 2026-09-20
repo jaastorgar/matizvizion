@@ -1,42 +1,434 @@
-/* Óptica Matiz Visión — home.css (landing) */
-@keyframes mvFadeUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
-.mv-hero { animation: mvFadeUp .7s ease both; }
-body.js-reveal .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
-body.js-reveal .reveal.in { opacity: 1; transform: none; }
-.mv-section-title { font-family: var(--font-head); font-weight: 800; color: var(--lead-dark); }
-.mv-section-sub { color: var(--lead-muted, #6B7280); max-width: 620px; }
-.mv-feat-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); overflow: hidden; transition: transform .14s ease, box-shadow .14s ease; }
-.mv-feat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 26px rgba(31,41,55,.13); }
-.mv-feat-emoji { font-size: 2.6rem; text-align: center; padding: 1.6rem 1rem; background: var(--lead-light); }
-.mv-feat-emoji i { font-size: 2.6rem; color: var(--green-dark); }
-.mv-feat-body { padding: 1rem; display: flex; flex-direction: column; flex: 1; }
-.mv-feat-cat { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--lead-muted, #6B7280); }
-.mv-feat-name { font-family: var(--font-head); font-weight: 600; color: var(--lead-dark); margin: .15rem 0 .5rem; min-height: 2.6rem; }
-.mv-feat-foot { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
-.mv-feat-price { color: var(--green-dark); font-weight: 800; font-size: 1.2rem; font-family: var(--font-head); }
-.mv-feat-stock { color: var(--lead-muted, #6B7280); font-size: .8rem; }
-.mv-feat-card .btn { margin-top: auto; }
-.mv-mv-card { border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); padding: 2rem; height: 100%; transition: transform .14s ease; }
-.mv-mv-card:hover { transform: translateY(-4px); }
-.mv-mv-ico { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; background: var(--green-primary); margin-bottom: 1rem; }
-.mv-mv-card.vision .mv-mv-ico { background: var(--green-dark); }
-.mv-mv-card h3 { font-family: var(--font-head); font-weight: 700; }
-.mv-testi-wrap { background: var(--lead-light); border-radius: var(--radius); padding: 2.5rem 1rem; }
-.mv-testi-card { max-width: 720px; margin: 0 auto; text-align: center; padding: 0 1rem; }
-.mv-testi-quote { font-size: 1.2rem; line-height: 1.6; color: var(--lead-dark); font-style: italic; position: relative; }
-.mv-testi-quote::before { content: '\201C'; font-size: 3rem; color: var(--green-primary); line-height: 0; vertical-align: -0.4em; margin-right: .1em; }
-.mv-stars i { color: #f59e0b; }
-.mv-testi-author { font-weight: 700; color: var(--lead-dark); }
-.mv-testi-loc { color: var(--lead-muted, #6B7280); font-size: .88rem; }
-.mv-testi-wrap .carousel-control-prev-icon, .mv-testi-wrap .carousel-control-next-icon { filter: invert(28%) sepia(95%) saturate(500%) hue-rotate(120deg); }
-.mv-testi-wrap .carousel-indicators [data-bs-target] { background-color: var(--green-primary); }
-.mv-cta-band { background: linear-gradient(135deg, var(--green-primary), var(--green-dark)); border-radius: var(--radius); color: #fff; padding: 3rem 1.5rem; text-align: center; }
-.mv-cta-band h2 { color: #fff; font-family: var(--font-head); font-weight: 800; }
-.mv-cta-band .btn-light { font-family: var(--font-head); font-weight: 600; border-radius: var(--radius); color: var(--green-dark); }
-.mv-cta-band .btn-outline-light { border-radius: var(--radius); font-weight: 600; }
-/* img-a-sangre: cuando el destacado tiene imagen, llena el area de la card */
-.mv-feat-emoji { position: relative; overflow: hidden; }
-.mv-feat-emoji:has(img) { height: 190px; padding: 0; background: var(--lead-light); }
-.mv-feat-emoji img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.3,1); }
-.mv-feat-emoji:has(img)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,24,39,.18), transparent 45%); pointer-events: none; }
-.mv-feat-card:hover .mv-feat-emoji img { transform: scale(1.07); }
+/* Óptica Matiz Visión — home.css (landing responsive) */
+
+/* ========== ANIMACIONES ========== */
+@keyframes mvFadeUp {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+.mv-hero {
+  animation: mvFadeUp 0.7s ease both;
+}
+
+body.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+body.js-reveal .reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ========== TIPOGRAFÍA DE SECCIONES ========== */
+.mv-section-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  color: var(--lead-dark);
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  line-height: 1.2;
+  margin-bottom: 0.5em;
+}
+
+.mv-section-sub {
+  color: var(--lead-muted);
+  max-width: 620px;
+  font-size: clamp(0.95rem, 1vw + 0.875rem, 1.125rem);
+  line-height: 1.6;
+  margin-bottom: 1.5em;
+}
+
+/* ========== HERO SECTION ========== */
+.mv-hero {
+  padding: clamp(2rem, 5vw, 4rem) 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .mv-hero {
+    text-align: left;
+  }
+}
+
+.mv-hero h1 {
+  font-size: clamp(2rem, 4vw + 1rem, 3.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.mv-hero p {
+  font-size: clamp(1rem, 1.5vw + 0.875rem, 1.25rem);
+  color: var(--lead-muted);
+  margin-bottom: 2rem;
+}
+
+.mv-hero .btn {
+  min-height: var(--touch-target);
+  padding: 0.75rem 2rem;
+  font-size: clamp(1rem, 1vw + 0.875rem, 1.125rem);
+}
+
+/* ========== FEATURED CARDS (productos destacados) ========== */
+.mv-feat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--white);
+  overflow: hidden;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+@media (hover: hover) {
+  .mv-feat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 26px rgba(31,41,55,0.13);
+  }
+}
+
+/* Imagen/emoji del producto destacado */
+.mv-feat-emoji {
+  font-size: clamp(2.5rem, 5vw, 3rem);
+  text-align: center;
+  padding: 1.75rem 1rem;
+  background: var(--lead-light);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mv-feat-emoji i {
+  font-size: clamp(2.5rem, 5vw, 3rem);
+  color: var(--green-dark);
+}
+
+.mv-feat-emoji:has(img) {
+  height: auto;
+  min-height: 180px;
+  padding: 0;
+}
+
+@media (min-width: 576px) {
+  .mv-feat-emoji:has(img) {
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 992px) {
+  .mv-feat-emoji:has(img) {
+    min-height: 220px;
+  }
+}
+
+.mv-feat-emoji img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.mv-feat-emoji:has(img)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(17,24,39,0.18), transparent 45%);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .mv-feat-card:hover .mv-feat-emoji img {
+    transform: scale(1.07);
+  }
+}
+
+/* Cuerpo de la tarjeta destacada */
+.mv-feat-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mv-feat-cat {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lead-muted);
+}
+
+.mv-feat-name {
+  font-family: var(--font-head);
+  font-weight: 600;
+  color: var(--lead-dark);
+  margin: 0.15rem 0 0.5rem;
+  min-height: 2.6rem;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.3;
+}
+
+.mv-feat-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.mv-feat-price {
+  color: var(--green-dark);
+  font-weight: 800;
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+  font-family: var(--font-head);
+}
+
+.mv-feat-stock {
+  color: var(--lead-muted);
+  font-size: 0.8rem;
+}
+
+.mv-feat-card .btn {
+  margin-top: auto;
+  min-height: var(--touch-target);
+}
+
+/* ========== MISSION CARDS (valores de la óptica) ========== */
+.mv-mv-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--white);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  height: 100%;
+  transition: transform 0.14s ease;
+}
+
+@media (hover: hover) {
+  .mv-mv-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.mv-mv-ico {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  background: var(--green-primary);
+  margin-bottom: 1rem;
+}
+
+.mv-mv-card.vision .mv-mv-ico {
+  background: var(--green-dark);
+}
+
+.mv-mv-card h3 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: clamp(1.125rem, 1.5vw + 1rem, 1.375rem);
+  margin-bottom: 0.75rem;
+}
+
+.mv-mv-card p {
+  color: var(--lead-muted);
+  font-size: clamp(0.875rem, 1vw + 0.8125rem, 1rem);
+  line-height: 1.6;
+}
+
+/* ========== TESTIMONIOS ========== */
+.mv-testi-wrap {
+  background: var(--lead-light);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 2vw, 1.5rem);
+}
+
+.mv-testi-card {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.mv-testi-quote {
+  font-size: clamp(1rem, 1.5vw + 0.875rem, 1.25rem);
+  line-height: 1.6;
+  color: var(--lead-dark);
+  font-style: italic;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.mv-testi-quote::before {
+  content: '\201C';
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  color: var(--green-primary);
+  line-height: 0;
+  vertical-align: -0.4em;
+  margin-right: 0.1em;
+}
+
+.mv-stars i {
+  color: #f59e0b;
+  font-size: clamp(1rem, 1.5vw + 0.875rem, 1.25rem);
+}
+
+.mv-testi-author {
+  font-weight: 700;
+  color: var(--lead-dark);
+  font-size: clamp(0.95rem, 1vw + 0.875rem, 1.125rem);
+  margin-top: 1rem;
+}
+
+.mv-testi-loc {
+  color: var(--lead-muted);
+  font-size: clamp(0.8rem, 0.5vw + 0.75rem, 0.9rem);
+  margin-top: 0.25rem;
+}
+
+.mv-testi-wrap .carousel-control-prev-icon,
+.mv-testi-wrap .carousel-control-next-icon {
+  filter: invert(28%) sepia(95%) saturate(500%) hue-rotate(120deg);
+  width: clamp(30px, 5vw, 40px);
+  height: clamp(30px, 5vw, 40px);
+}
+
+.mv-testi-wrap .carousel-indicators [data-bs-target] {
+  background-color: var(--green-primary);
+  width: clamp(30px, 5vw, 40px);
+  height: 3px;
+}
+
+/* ========== CTA BAND ========== */
+.mv-cta-band {
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  border-radius: var(--radius);
+  color: #fff;
+  padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 1.5rem);
+  text-align: center;
+  margin: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.mv-cta-band h2 {
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  margin-bottom: 1rem;
+}
+
+.mv-cta-band p {
+  font-size: clamp(1rem, 1.5vw + 0.875rem, 1.125rem);
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+.mv-cta-band .btn {
+  min-height: var(--touch-target);
+  padding: 0.75rem 2rem;
+  font-size: clamp(1rem, 1vw + 0.875rem, 1.125rem);
+}
+
+.mv-cta-band .btn-light {
+  font-family: var(--font-head);
+  font-weight: 600;
+  border-radius: var(--radius);
+  color: var(--green-dark);
+}
+
+.mv-cta-band .btn-outline-light {
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+/* ========== GRIDS RESPONSIVE ========== */
+/* Asumiendo que el HTML usa clases de Bootstrap como row/col, estos son ajustes adicionales */
+
+/* Featured products grid */
+@media (max-width: 575px) {
+  .row > .col-sm-6.col-lg-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  .row > .col-sm-6.col-lg-4 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+/* Mission cards grid */
+@media (max-width: 767px) {
+  .row > .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+}
+
+/* ========== ESPACIADO DE SECCIONES ========== */
+section {
+  padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+section:first-of-type {
+  padding-top: clamp(1rem, 3vw, 2rem);
+}
+
+/* ========== IMÁGENES RESPONSIVE ========== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ========== BOTONES EN MÓVIL ========== */
+@media (max-width: 575px) {
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn + .btn {
+    margin-left: 0 !important;
+  }
+}
+
+@media (min-width: 576px) {
+  .btn {
+    width: auto;
+    margin-bottom: 0;
+  }
+}
+
+/* ========== WHATSAPP FLOTANTE (safe-area) ========== */
+.mv-wa-float {
+  right: calc(18px + var(--safe-right));
+  bottom: calc(18px + var(--safe-bottom));
+}
+
+/* ========== TOUCH TARGETS ========== */
+@media (hover: none) and (pointer: coarse) {
+  .mv-testi-wrap .carousel-control-prev,
+  .mv-testi-wrap .carousel-control-next {
+    width: 15%;
+    min-width: 60px;
+  }
+  
+  .carousel-indicators {
+    margin-bottom: 0;
+    padding-bottom: calc(10px + var(--safe-bottom));
+  }
+}

@@ -34,3 +34,22 @@
 .mv-empty { text-align: center; color: var(--lead-muted, #6B7280); padding: 2.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius); }
 .mv-empty .ico { font-size: 2rem; display: block; margin-bottom: .5rem; }
 .mv-note { font-size: .82rem; color: var(--lead-muted, #6B7280); }
+/* ========== Responsive (Paso 5) ========== */
+/* resp-step5 */
+.mv-id-card { flex-wrap: wrap; }
+.mv-avatar { width: clamp(52px, 12vw, 64px); height: clamp(52px, 12vw, 64px); font-size: clamp(1.1rem, 3vw, 1.4rem); }
+.mv-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.mv-tabs::-webkit-scrollbar { display: none; }
+.mv-tabs .nav-link { min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; font-size: .92rem; }
+@media (min-width: 992px) { .mv-tabs { flex-wrap: wrap; overflow-x: visible; } }
+.mv-order-head { padding: .8rem .9rem; }
+.mv-order-head .oid { font-size: clamp(.95rem, 2.5vw, 1.05rem); word-break: break-all; }
+.mv-order-line { flex-wrap: wrap; font-size: clamp(.85rem, 2vw, .92rem); }
+.mv-order-line > span:first-child { min-width: 0; word-break: break-word; }
+.mv-order-total { font-size: clamp(1rem, 2.5vw, 1.1rem); }
+.mv-cita-row { padding: .8rem .9rem; }
+.mv-cita-when { font-size: clamp(.92rem, 2.5vw, 1rem); }
+@media (max-width: 575px) {
+  .mv-order-body { padding: .5rem .9rem .9rem; }
+  .mv-badge { font-size: .7rem; }
+}

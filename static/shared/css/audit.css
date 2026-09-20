@@ -1,0 +1,155 @@
+/* Óptica Matiz Visión — audit.css (Paso 8: Auditoría final de responsividad) */
+/* Capa GLOBAL que se aplica en TODAS las páginas vía base.html */
+
+/* ========== 1) CONTRASTE WCAG AA (mínimo 4.5:1 para texto normal) ========== */
+/* El gris #6B7280 sobre blanco tiene ratio 4.6:1 ✓ */
+/* El gris #9CA3AF sobre blanco tiene ratio 3.0:1 ✗ (no usar para texto pequeño) */
+.text-muted,
+small,
+.mv-note,
+.mv-empty,
+.mv-field-error {
+  color: #6B7280 !important; /* 4.6:1 sobre blanco */
+}
+
+/* ========== 2) TOUCH TARGETS GLOBALES (44×44px mínimo en móvil) ========== */
+@media (max-width: 768px) {
+  /* Botones */
+  button,
+  .btn,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Links */
+  a.nav-link,
+  a.dropdown-item,
+  a.btn {
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+  
+  /* Inputs y selects */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Sin zoom iOS */
+  }
+  
+  /* Checkboxes y radios */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+  }
+  
+  .form-check {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 1.75rem !important;
+  }
+  
+  .form-check-input {
+    margin-top: 0 !important;
+  }
+}
+
+/* ========== 3) SAFE-AREA GLOBAL (notch/home indicator iOS) ========== */
+/* Navbar sticky */
+.mv-navbar.sticky-top,
+.navbar.sticky-top {
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+/* Footer fijo */
+footer.fixed-bottom,
+.mv-footer.fixed-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+/* Toasts */
+.mv-toast {
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
+  right: calc(1rem + env(safe-area-inset-right, 0px)) !important;
+}
+
+/* Modales full-screen en móvil */
+@media (max-width: 575px) {
+  .modal-content,
+  [role="dialog"] {
+    border-radius: 0 !important;
+    min-height: 100vh !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+}
+
+/* ========== 4) FOCUS VISIBLE GLOBAL (accesibilidad teclado) ========== */
+:focus-visible {
+  outline: 2px solid var(--green-primary, #10B981) !important;
+  outline-offset: 2px !important;
+}
+
+:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+/* ========== 5) IMÁGENES RESPONSIVE GLOBAL ========== */
+img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* ========== 6) OVERFLOW-X GLOBAL (sin desborde horizontal) ========== */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* ========== 7) TIPOGRAFÍA FLUIDA GLOBAL ========== */
+body {
+  font-size: clamp(15px, 0.5vw + 14px, 17px) !important;
+  line-height: 1.6 !important;
+}
+
+h1 { font-size: clamp(1.75rem, 2vw + 1.25rem, 2.5rem) !important; }
+h2 { font-size: clamp(1.5rem, 1.5vw + 1.125rem, 2rem) !important; }
+h3 { font-size: clamp(1.25rem, 1vw + 1rem, 1.5rem) !important; }
+h4 { font-size: clamp(1.125rem, 0.75vw + 0.9375rem, 1.25rem) !important; }
+
+/* ========== 8) HOVER SOLO CON PUNTERO (no touch) ========== */
+@media (hover: none) and (pointer: coarse) {
+  /* Desactiva transform en hover para evitar efectos fantasma */
+  *:hover {
+    transform: none !important;
+  }
+}
+
+/* ========== 9) SCROLL SUAVE GLOBAL ========== */
+html {
+  scroll-behavior: smooth !important;
+}
+
+/* ========== 10) PRINT STYLES (oculta elementos interactivos) ========== */
+@media print {
+  .navbar,
+  .mv-wa-float,
+  button,
+  .btn,
+  .mv-toast,
+  .modal {
+    display: none !important;
+  }
+  
+  body {
+    font-size: 12pt !important;
+    color: #000 !important;
+  }
+}

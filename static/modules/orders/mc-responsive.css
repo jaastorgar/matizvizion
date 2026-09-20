@@ -1,0 +1,226 @@
+/* Óptica Matiz Visión — mc-responsive.css (Paso 4: Mis Compras responsive) */
+/* Capa ADITIVA: solo sobrescribe; no rompe seguimiento.css */
+
+/* ========== TARJETAS DE COMPRA ========== */
+.mv-track-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: #fff;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.mv-track-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  padding: .9rem 1rem;
+  background: var(--lead-light);
+}
+
+.mv-track-code {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  color: var(--lead-dark);
+}
+
+.mv-track-date { color: var(--lead-muted); font-size: .85rem; }
+
+.mv-track-head .mv-badge {
+  font-size: .72rem;
+  padding: .3rem .65rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.mv-track-body { padding: 1rem; }
+
+.mv-track-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .5rem 0;
+  font-size: clamp(.88rem, 2vw, .95rem);
+  flex-wrap: wrap;
+}
+
+.mv-track-line > span:first-child { min-width: 0; word-break: break-word; }
+.mv-track-sku { color: var(--lead-muted); font-size: .78rem; }
+
+.mv-track-total {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+  border-top: 2px solid var(--lead-dark);
+  margin-top: .5rem;
+  padding-top: .75rem;
+}
+
+/* ========== CERTIFICADOS DE GARANTÍA ========== */
+.mv-gar-grid { display: grid; gap: .9rem; grid-template-columns: 1fr; }
+@media (min-width: 576px)  { .mv-gar-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1200px) { .mv-gar-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.mv-gar-card {
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--green-primary);
+  border-radius: 10px;
+  padding: .9rem;
+  background: #fff;
+}
+
+.mv-gar-name { font-weight: 700; font-size: .95rem; line-height: 1.3; }
+.mv-gar-status { font-size: .78rem; }
+
+.mv-gar-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  font-size: .78rem;
+  color: var(--lead-muted);
+  flex-wrap: wrap;
+}
+
+.mv-gar-cov {
+  list-style: none;
+  padding: 0;
+  margin: .6rem 0 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .3rem;
+  font-size: .8rem;
+}
+@media (min-width: 576px) { .mv-gar-cov { grid-template-columns: 1fr 1fr; } }
+
+/* ========== PILLS DE DEVOLUCIÓN ========== */
+.mv-dev-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+.mv-dev-pill {
+  font-size: .75rem;
+  border-radius: 999px;
+  padding: .3rem .65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-weight: 600;
+}
+.mv-dev-pill-detail { font-size: .8rem; color: var(--lead-muted); margin-top: .35rem; }
+
+/* ========== BOTONES DE ACCIÓN (Ver seguimiento / Devolución) ========== */
+.mv-track-body .text-end {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 575px) {
+  .mv-track-body .text-end { flex-direction: column; }
+  .mv-track-body .text-end .btn { width: 100%; margin-left: 0 !important; min-height: 44px; }
+}
+
+/* ========== MODAL DE DEVOLUCIÓN: full-screen en móvil ========== */
+.mv-modal-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17,24,39,.55);
+  backdrop-filter: blur(3px);
+  padding: 1rem;
+  padding-top: calc(1rem + var(--safe-top));
+  padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
+.mv-modal-card {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.4rem;
+  position: relative;
+}
+
+@media (max-width: 575px) {
+  .mv-modal-ov { padding: 0; align-items: stretch; }
+  .mv-modal-card {
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    padding: 1.25rem 1rem calc(1.25rem + var(--safe-bottom));
+  }
+}
+
+.mv-modal-x {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  font-size: 1.05rem;
+  color: var(--lead-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mv-modal-title { font-size: clamp(1.2rem, 4vw, 1.5rem); }
+
+/* Items seleccionables del modal */
+.mv-dev-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: .75rem .85rem;
+  min-height: 44px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.mv-dev-item input { width: 20px; height: 20px; accent-color: var(--green-primary); margin-top: .15rem; }
+.mv-dev-item-name { font-weight: 600; font-size: .95rem; }
+.mv-dev-item-meta { font-size: .8rem; color: var(--lead-muted); word-break: break-word; }
+
+.mv-dev-motivo {
+  width: 100%;
+  min-height: 88px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: .65rem .8rem;
+  font-size: .92rem;
+}
+
+/* Stepper de cantidad del modal: touch targets reales */
+.mv-dev-qty button { width: 44px !important; height: 44px !important; }
+@media (min-width: 768px) { .mv-dev-qty button { width: 32px !important; height: 32px !important; } }
+
+/* Pie del modal: botones apilados en móvil */
+.mv-modal-foot {
+  display: flex;
+  gap: .6rem;
+  justify-content: flex-end;
+  margin-top: 1.1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 575px) {
+  .mv-modal-foot { flex-direction: column-reverse; }
+  .mv-modal-foot button { width: 100%; min-height: 48px; }
+}

@@ -1,11 +1,42 @@
 {% extends 'shared/base.html' %}
 {% load static %}
 {% block title %}Panel de operaciones — Óptica Matiz Visión{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/admin/dashboard.css' %}" />{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'modules/admin/dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'modules/admin/admin-responsive.css' %}" />
+
+<style id="mv-admin-resp-inline">
+@media (max-width: 860px){
+  body{overflow-x:hidden !important;}
+  .mv-dash-wrap,.mv-ad-wrap{grid-template-columns:1fr !important;gap:.75rem !important;}
+  .mv-dash-side,.mv-ad-side{display:flex !important;flex-direction:row !important;flex-wrap:wrap !important;gap:.4rem !important;padding:.6rem !important;position:static !important;overflow:visible !important;}
+  .mv-dash-side .mv-side-item,.mv-ad-side button{flex:0 0 auto !important;width:auto !important;display:inline-flex !important;align-items:center !important;gap:.35rem !important;padding:.55rem .9rem !important;min-height:44px !important;border-radius:999px !important;font-size:.85rem !important;white-space:nowrap !important;}
+  .mv-dash-side .mv-side-item.active,.mv-ad-side button.active{background:var(--green-dark) !important;color:#fff !important;}
+  .mv-dash-panel,.mv-ad-panel{padding:1rem .9rem !important;}
+  .mv-dash-table,.mv-ad-table{display:block !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch !important;width:100% !important;}
+  .mv-dash-table th,.mv-dash-table td,.mv-ad-table th,.mv-ad-table td{white-space:nowrap !important;font-size:.85rem !important;}
+  .mv-ad-actions button,.mv-cita-actions button{min-width:40px !important;min-height:40px !important;}
+  .mv-ad-head{flex-direction:column;align-items:stretch !important;gap:.6rem !important;}
+  .mv-ad-head .btn{width:100%;min-height:44px;}
+  .mv-ad-modal{padding:0 !important;align-items:stretch !important;}
+  .mv-ad-modal-card{max-width:none !important;height:100% !important;max-height:none !important;border-radius:0 !important;padding:1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom,0px)) !important;}
+  .mv-ad-field input,.mv-ad-field select,.mv-ad-field textarea{font-size:16px !important;min-height:44px !important;}
+  .mv-ad-foot{flex-direction:column-reverse !important;}
+  .mv-ad-foot button{width:100% !important;min-height:48px !important;margin:0 !important;}
+  .mv-ad-stats,.mv-in-stats{grid-template-columns:1fr 1fr !important;}
+  .mv-dev-card{padding:.9rem !important;}
+  .mv-dev-actions{flex-direction:column !important;width:100%;}
+  .mv-dev-actions .btn{width:100% !important;min-height:44px !important;}
+  .mv-cita-row{flex-direction:column !important;align-items:flex-start !important;}
+}
+</style>
+{% endblock %}
 {% block content %}
 <div id="dash-root">
   <div class="mv-empty">Cargando panel…</div>
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'modules/admin/dashboard.js' %}"></script>
-<script src="/static/modules/admin/panel_quiebre.js"></script>{% endblock %}
+{% block extra_js %}
+<script src="{% static 'modules/admin/dashboard.js' %}"></script>
+<script src="/static/modules/admin/panel_quiebre.js"></script>
+{% endblock %}

@@ -1,0 +1,161 @@
+/* Óptica Matiz Visión — citas-responsive.css (Paso 7: Reserva + Mis Citas) */
+/* Capa ADITIVA: se carga DESPUÉS de los estilos inline y de perfil.css */
+
+/* ========== TOUCH TARGETS 44px MÍNIMO ========== */
+.mv-chip,
+.mv-day-chip,
+.mv-field select,
+.mv-field input[type="date"],
+.mv-reserva-submit,
+.mv-selected-box {
+  min-height: 44px !important;
+}
+
+/* ========== INPUTS 16px (sin zoom automático iOS) ========== */
+.mv-field select,
+.mv-field input[type="date"],
+#mv-consent-ov input,
+#mv-consent-ov select {
+  font-size: 16px !important;
+}
+
+/* ========== CHIPS DE HORA: padding aumentado en móvil ========== */
+@media (max-width: 575px) {
+  .mv-chip {
+    padding: .6rem 1.2rem !important;
+    font-size: .95rem !important;
+  }
+  .mv-day-chip {
+    min-width: 68px !important;
+    padding: .6rem .6rem !important;
+  }
+  .mv-day-chip .mv-day-num {
+    font-size: 1.3rem !important;
+  }
+}
+
+/* ========== BOTÓN CONFIRMAR STICKY EN MÓVIL ========== */
+@media (max-width: 768px) {
+  .mv-reserva-submit {
+    position: sticky !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 100 !important;
+    box-shadow: 0 8px 24px rgba(6, 95, 70, .35) !important;
+    padding: .95rem 1rem !important;
+    font-size: 1.05rem !important;
+  }
+  .mv-reserva-card {
+    padding-bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ========== MODAL CONSENTIMIENTO: full-screen en móvil ========== */
+@media (max-width: 575px) {
+  #mv-consent-ov > div {
+    max-width: none !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    padding: 1.5rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  #mv-consent-ov .form-check {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+  #mv-consent-ov .form-check-input {
+    width: 1.4em !important;
+    height: 1.4em !important;
+  }
+  #mv-consent-ov button {
+    min-height: 48px !important;
+    width: 100% !important;
+  }
+  #mv-consent-ov > div > div:last-child {
+    flex-direction: column-reverse !important;
+    gap: .5rem !important;
+  }
+}
+
+/* ========== MIS CITAS: filas apiladas en móvil ========== */
+@media (max-width: 575px) {
+  .mv-cita-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: .6rem !important;
+    padding: .9rem !important;
+  }
+  .mv-cita-row > div:first-child {
+    width: 100%;
+  }
+  .mv-cita-row > div:last-child {
+    width: 100%;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: .5rem !important;
+  }
+  .mv-cita-row .mv-badge {
+    align-self: flex-start;
+    font-size: .75rem;
+  }
+  .mv-cita-row .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center;
+  }
+  .mv-cita-when {
+    font-size: 1rem !important;
+  }
+  .mv-cita-meta {
+    font-size: .88rem !important;
+  }
+}
+
+/* ========== HEADER DE MIS CITAS: apilado en móvil ========== */
+@media (max-width: 575px) {
+  .d-flex.justify-content-between.mb-3 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: .6rem !important;
+  }
+  .d-flex.justify-content-between.mb-3 .btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+/* ========== HOVER SOLO CON PUNTERO ========== */
+@media (hover: none) and (pointer: coarse) {
+  .mv-chip:hover,
+  .mv-day-chip:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ========== TIPOGRAFÍA FLUIDA EN SHELL ========== */
+.mv-reserva-title {
+  font-size: clamp(1.6rem, 5vw, 3rem) !important;
+}
+
+.mv-reserva-sub {
+  font-size: clamp(.92rem, 2vw, 1.02rem) !important;
+}
+
+/* ========== DÍAS PRÓXIMOS: scroll suave en móvil ========== */
+.mv-days {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.mv-days::-webkit-scrollbar { height: 4px; }
+.mv-days::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+/* ========== CHIPS PAST (horarios vencidos): legibles en móvil ========== */
+.mv-chip.past,
+.mv-chip:disabled {
+  font-size: .85rem !important;
+  padding: .5rem .9rem !important;
+}

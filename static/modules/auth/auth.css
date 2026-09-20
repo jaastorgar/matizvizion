@@ -1,16 +1,16 @@
 /* =========================================================
-   Óptica Matiz Visión — auth.css (login / registro)
-   Usa los tokens oficiales de ui_ux_matiz_vision.html
+   Óptica Matiz Visión — auth.css (login / registro / recuperación)
+   Responsive Paso 5
    ========================================================= */
 
 .mv-auth-wrap {
-  min-height: 60vh;
+  min-height: calc(100vh - 160px);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--lead-light);
   border-radius: var(--radius);
-  padding: 2rem 1rem;
+  padding: clamp(1.25rem, 4vw, 2rem) clamp(.75rem, 3vw, 1rem);
 }
 
 .mv-auth-card {
@@ -18,13 +18,13 @@
   max-width: 440px;
   background: var(--white);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  border-radius: clamp(12px, 3vw, 16px);
   box-shadow: var(--shadow);
-  padding: 2rem;
+  padding: clamp(1.5rem, 5vw, 2rem);
 }
 
 .mv-auth-card h1 {
-  font-size: 1.5rem;
+  font-size: clamp(1.35rem, 4vw, 1.5rem);
   margin-bottom: 0.25rem;
 }
 
@@ -37,6 +37,9 @@
 .mv-auth-card .form-control {
   border-color: var(--border-color);
   border-radius: 10px;
+  min-height: 44px;
+  font-size: 16px; /* evita el zoom automático de iOS al enfocar */
+  padding: 0.5rem 0.75rem;
 }
 
 .mv-auth-card .form-control:focus {
@@ -44,7 +47,11 @@
   box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.18);
 }
 
-/* Contenedor de errores (por campo y general) */
+.mv-auth-card .btn { min-height: 48px; font-size: 1rem; }
+
+.mv-auth-card a { display: inline-flex; align-items: center; min-height: 32px; }
+
+/* Errores por campo y generales */
 .mv-field-error {
   color: var(--danger);
   font-size: 0.8rem;
@@ -69,4 +76,11 @@
   margin-top: 1rem;
   font-size: 0.9rem;
   color: var(--lead-muted, #6B7280);
+}
+
+.mv-auth-switch a { font-weight: 600; }
+
+@media (max-width: 575px) {
+  .mv-auth-wrap { min-height: auto; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .mv-auth-card { max-width: 100%; }
 }
