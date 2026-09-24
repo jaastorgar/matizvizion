@@ -65,7 +65,7 @@
 @media (min-width: 992px) {
   .mv-catalog-filters {
     position: sticky;
-    top: calc(84px + var(--safe-top));
+    top: calc(120px + var(--safe-top));
     max-height: calc(100vh - 100px);
     overflow-y: auto;
   }

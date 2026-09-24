@@ -101,11 +101,9 @@ footer.fixed-bottom,
   outline: none !important;
 }
 
-/* ========== 5) IMÁGENES RESPONSIVE GLOBAL ========== */
-img {
-  max-width: 100% !important;
-  height: auto !important;
-}
+/* ========== 5) IMAGENES RESPONSIVE GLOBAL (sin !important: respeta alturas inline de logos) ========== */
+img { max-width: 100%; height: auto; }
+.mv-navbar .navbar-brand img, .mv-footer img { width: auto; }
 
 /* ========== 6) OVERFLOW-X GLOBAL (sin desborde horizontal) ========== */
 html, body {

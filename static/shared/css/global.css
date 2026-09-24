@@ -118,3 +118,31 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* Tablas responsive */
 .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* ========== footer-logo-centrado ========== */
+.mv-footer .container,
+.mv-footer .container-fluid {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+.mv-footer img {
+  display: block !important;
+  margin: 0 auto .75rem !important;
+}
+
+/* ========== logo-xl-legible ========== */
+.mv-footer img {
+  height: 120px !important;
+  width: auto !important;
+  max-width: 60vw;
+}
+.mv-navbar {
+  padding-top: .25rem !important;
+  padding-bottom: .25rem !important;
+}
+@media (max-width: 576px) {
+  .mv-navbar .navbar-brand img { height: 76px !important; }
+  .mv-footer img { height: 96px !important; }
+}
