@@ -202,3 +202,39 @@
   .mv-secure-note + #pay-btn,
   .mv-secure-note + .btn { margin-top: 1rem; }
 }
+/* ========== checkout-espaciado ========== */
+/* Radios de modalidad: radio separado del texto y titulo/descripcion en lineas distintas */
+.form-check {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: .65rem !important;
+  margin-bottom: .9rem !important;
+  min-height: 44px;
+  padding-left: 0 !important;
+}
+.form-check-input {
+  flex: 0 0 auto !important;
+  margin-top: .32rem !important;
+  margin-left: 0 !important;
+  width: 1.15em;
+  height: 1.15em;
+}
+.form-check-label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .18rem !important;
+  line-height: 1.45;
+  cursor: pointer;
+}
+.form-check-label strong { font-size: 1.02rem; }
+.form-check-label small,
+.form-check-label .text-muted { display: block; }
+
+/* Aire entre bloques del checkout */
+.mv-summary-card { margin-bottom: 1.25rem; padding: 1.25rem 1.35rem; }
+.mv-summary-item { padding: .85rem 0; }
+.mv-summary-total { padding-top: 1.1rem; margin-top: .6rem; }
+.mv-secure-note { margin: 1.1rem 0; }
+#pay-btn { margin-top: .4rem; min-height: 52px; font-size: 1.05rem; }
+.mv-summary-card h5,
+.mv-summary-card .h5 { margin-bottom: .9rem; }

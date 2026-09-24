@@ -1,7 +1,36 @@
 {% extends 'shared/base.html' %}
 {% load static %}
 {% block title %}Checkout — Óptica Matiz Visión{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/orders/orders.css' %}" />{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'modules/orders/orders.css' %}" />
+<style id="checkout-espaciado">
+/* Separacion de modalidad de pago: cubre cualquier estructura */
+input[type="radio"] {
+  width: 1.15em; height: 1.15em;
+  margin-right: .6rem;
+  vertical-align: -.12em;
+}
+label:has(> input[type="radio"]),
+.form-check:has(input[type="radio"]) {
+  margin-bottom: .95rem;
+  min-height: 44px;
+}
+/* La descripcion SIEMPRE en su propia linea, alineada bajo el titulo */
+label small, label .text-muted,
+input[type="radio"] ~ small,
+input[type="radio"] ~ .text-muted {
+  display: block;
+  padding-left: 1.75rem;
+  margin-top: .18rem;
+  line-height: 1.45;
+}
+/* Si usa Bootstrap form-check, el label ya queda indentado: sin doble sangria */
+.form-check-label small, .form-check-label .text-muted { padding-left: 0; }
+/* Ritmo vertical entre bloques */
+.mv-summary-card { margin-bottom: 1.25rem; }
+.mv-secure-note { margin: 1.1rem 0; }
+#pay-btn { min-height: 52px; font-size: 1.05rem; }
+</style>
+{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-7">
