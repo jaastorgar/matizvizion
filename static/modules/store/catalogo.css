@@ -686,3 +686,71 @@
   min-height: 44px;
   padding: 0.625rem 1.25rem;
 }
+
+/* ========== mv-cart-sticky: boton fijo abajo con total ========== */
+.mv-cart-sticky {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 1040;
+  display: none; /* oculto por defecto; se muestra con .visible */
+  align-items: center;
+  gap: .75rem;
+  background: var(--green-dark, #065F46);
+  color: #fff;
+  padding: .75rem 1rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(6, 95, 70, .45);
+  text-decoration: none;
+  font-family: var(--font-head);
+  font-weight: 700;
+  animation: mvCartStickyIn .35s cubic-bezier(.2,.8,.2,1) both;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.mv-cart-sticky.visible { display: flex; }
+.mv-cart-sticky:hover,
+.mv-cart-sticky:active {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(6, 95, 70, .55);
+}
+.mv-cart-sticky-info {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  background: rgba(255,255,255,.18);
+  border-radius: 999px;
+  padding: .35rem .7rem;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+.mv-cart-sticky-count { font-weight: 800; }
+.mv-cart-sticky-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  line-height: 1.15;
+}
+.mv-cart-sticky-label {
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  opacity: .85;
+}
+.mv-cart-sticky-total {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.mv-cart-sticky > .bi-arrow-right {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+@keyframes mvCartStickyIn {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+/* En desktop se oculta: el badge del navbar ya informa */
+@media (min-width: 992px) {
+  .mv-cart-sticky { display: none !important; }
+}

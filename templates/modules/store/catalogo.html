@@ -1,7 +1,19 @@
 {% extends 'shared/base.html' %}
 {% load static %}
 
-{% block title %}Catálogo — Óptica Matiz Visión{% endblock %}
+{% block title %}Catálogo — Óptica Matiz Visión
+<a href="/carrito/" class="mv-cart-sticky" id="mv-cart-sticky" hidden>
+  <span class="mv-cart-sticky-info">
+    <i class="bi bi-cart3"></i>
+    <span class="mv-cart-sticky-count" id="mv-cart-sticky-count">0</span>
+  </span>
+  <span class="mv-cart-sticky-text">
+    <span class="mv-cart-sticky-label">Ir al carrito</span>
+    <span class="mv-cart-sticky-total" id="mv-cart-sticky-total">$0</span>
+  </span>
+  <i class="bi bi-arrow-right"></i>
+</a>
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'modules/store/catalogo.css' %}" />

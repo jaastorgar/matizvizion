@@ -304,4 +304,97 @@ function openLenteModal(btn) {
     '.mv-lente-foot{display:flex;justify-content:flex-end;gap:.6rem;}';
   document.head.appendChild(s);
 })();
+
+// ---- Botón sticky "Ir al carrito" con total en vivo ----
+(function () {
+  var stickyEl = document.getElementById('mv-cart-sticky');
+  var countEl  = document.getElementById('mv-cart-sticky-count');
+  var totalEl  = document.getElementById('mv-cart-sticky-total');
+  if (!stickyEl || !countEl || !totalEl) return;
+
+  function updateCartSticky() {
+    var items = 0, total = 0;
+    for (var pid in cartMap) {
+      if (!cartMap.hasOwnProperty(pid)) continue;
+      var it = cartMap[pid];
+      var p  = ALL.find(function (x) { return String(x.id) === String(pid); });
+      if (!p || !it || !it.cantidad) continue;
+      items += Number(it.cantidad);
+      total += Number(it.cantidad) * (Number(p.precio) || 0);
+    }
+    countEl.textContent = items;
+    totalEl.textContent = formatPrice(total);
+    if (items > 0) {
+      stickyEl.removeAttribute('hidden');
+      stickyEl.classList.add('visible');
+    } else {
+      stickyEl.setAttribute('hidden', '');
+      stickyEl.classList.remove('visible');
+    }
+  }
+  window.MV_updateCartSticky = updateCartSticky;
+
+  // Wrap de badge() existente para sincronizar el sticky también
+  var _origBadge = window.badge || function () { if (MV.refreshCartBadge) MV.refreshCartBadge(); };
+  window.badge = function () {
+    _origBadge();
+    updateCartSticky();
+  };
 })();
+})();
+
+
+// ---- v2: pill sticky "Ir al carrito" + total (autocontenida, fetch propio, EOF) ----
+(function () {
+  if (document.getElementById('mv-cart-pill')) return;
+  var MVv2 = window.MV; if (!MVv2 || !MVv2.api) { console.error('[mv-cart-pill] MV.api no disponible'); return; }
+  var st = document.createElement('style'); st.id = 'mv-cart-pill-css';
+  st.textContent = '.mv-cart-pill{position:fixed;left:50%;transform:translateX(-50%) translateY(160%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:1045;display:flex;align-items:center;gap:.75rem;background:#065F46;color:#fff;padding:.65rem 1.15rem;border-radius:999px;box-shadow:0 14px 34px rgba(6,95,70,.45);text-decoration:none;font-weight:700;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s ease;opacity:0;pointer-events:none;max-width:min(480px,calc(100vw - 24px));}' +
+    '.mv-cart-pill.visible{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto;}' +
+    '.mv-cart-pill:hover{color:#fff;}' +
+    '.mv-cart-pill .mcp-count{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;min-width:28px;height:28px;padding:0 .5rem;background:#fff;color:#065F46;border-radius:999px;font-size:.9rem;font-weight:800;flex:0 0 auto;}' +
+    '.mv-cart-pill .mcp-text{display:flex;flex-direction:column;line-height:1.15;}' +
+    '.mv-cart-pill .mcp-label{font-size:.72rem;font-weight:600;opacity:.85;}' +
+    '.mv-cart-pill .mcp-total{font-size:1.05rem;font-weight:800;}' +
+    '.mv-cart-pill .bi-arrow-right{font-size:1.05rem;flex:0 0 auto;}' +
+    '.mv-wa-float{transition:bottom .3s ease;}' +
+    'body.mv-cart-pill-on .mv-wa-float{bottom:calc(88px + env(safe-area-inset-bottom,0px));}';
+  document.head.appendChild(st);
+  var a = document.createElement('a');
+  a.id = 'mv-cart-pill'; a.className = 'mv-cart-pill'; a.href = '/carrito/';
+  a.setAttribute('aria-label', 'Ir al carrito');
+  a.innerHTML = '<span class="mcp-count"><i class="bi bi-cart3"></i><span id="mcp-count">0</span></span>' +
+    '<span class="mcp-text"><span class="mcp-label">Ir al carrito</span><span class="mcp-total" id="mcp-total">$0</span></span>' +
+    '<i class="bi bi-arrow-right"></i>';
+  document.body.appendChild(a);
+  var cEl = document.getElementById('mcp-count');
+  var tEl = document.getElementById('mcp-total');
+  var fmt = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  function paint(items, total) {
+    cEl.textContent = items;
+    tEl.textContent = fmt.format(total);
+    var on = items > 0;
+    a.classList.toggle('visible', on);
+    document.body.classList.toggle('mv-cart-pill-on', on);
+    console.log('[mv-cart-pill] items=' + items + ' total=' + total + ' visible=' + on);
+  }
+  function compute() {
+    if (!MVv2.auth || !MVv2.auth.isAuthenticated()) { paint(0, 0); return; }
+    MVv2.api.get('/orders/carrito/').then(function (r) {
+      var list = (r.ok && Array.isArray(r.data)) ? r.data : [];
+      var items = 0, total = 0;
+      list.forEach(function (it) {
+        items += Number(it.cantidad) || 0;
+        total += Number(it.subtotal != null ? it.subtotal : ((Number(it.precio_unitario) || 0) * (Number(it.cantidad) || 0)));
+      });
+      paint(items, total);
+    });
+  }
+  var orig = MVv2.refreshCartBadge;
+  MVv2.refreshCartBadge = function () { if (orig) orig(); compute(); };
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.mv-q-inc,.mv-q-dec,.btn-add,.btn-add-config')) setTimeout(compute, 350);
+  }, true);
+  compute();
+})();
+
