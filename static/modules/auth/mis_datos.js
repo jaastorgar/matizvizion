@@ -80,31 +80,120 @@
       }
     });
   });
-// ---- Tarjeta de consentimientos (Ley 21.719) ----
-(function(){
-  var grid = document.querySelector('.mv-md-grid');
-  if (!grid) return;
-  var card = document.createElement('div');
-  card.className = 'mv-md-card mv-consent-card';
-  card.innerHTML =
-    '<h3><i class="bi bi-shield-lock"></i> Consentimientos</h3>' +
-    '<div class="mv-md-row"><span class="k">Datos de salud visual</span><span class="v" id="md-salud-status">—</span></div>' +
-    '<div class="mv-md-row"><span class="k">Ofertas y promociones</span><span class="v"><div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch" id="md-marketing"></div></span></div>' +
-    '<div class="mv-md-note"><i class="bi bi-info-circle"></i> Revisa nuestros <a href="/terminos/" target="_blank" rel="noopener">términos</a> y <a href="/privacidad/" target="_blank" rel="noopener">política de privacidad</a>.</div>';
-  grid.appendChild(card);
-  api.get('/accounts/consentimientos/').then(function(r){
+
+  // ---- Consentimientos y Portabilidad (Ley 21.719) ----
+  var btnExport = document.getElementById('btn-export-data');
+  if (btnExport) {
+    btnExport.addEventListener('click', function () {
+      btnExport.disabled = true;
+      btnExport.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando archivo…';
+      api.get('/accounts/exportar-datos/').then(function (r) {
+        btnExport.disabled = false;
+        btnExport.innerHTML = '<i class="bi bi-download"></i> Descargar copia de mis datos (Portabilidad - Ley 21.719)';
+        if (r.ok && r.data) {
+          var blob = new Blob([JSON.stringify(r.data, null, 2)], { type: 'application/json' });
+          var u = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = u;
+          a.download = 'mis_datos_matizvision.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(u);
+          toast('Tus datos se descargaron correctamente.', 'success');
+        } else {
+          toast('No se pudo generar la exportación.', 'error');
+        }
+      });
+    });
+  }
+
+  api.get('/accounts/consentimientos/').then(function (r) {
     if (!r.ok || !r.data) return;
     var d = r.data;
     var st = document.getElementById('md-salud-status');
-    st.textContent = d.consiente_salud ? ('Autorizado' + (d.consiente_salud_en ? ' el ' + String(d.consiente_salud_en).slice(0,10) : '')) : 'No autorizado';
+    if (st) {
+      st.textContent = d.consiente_salud
+        ? ('Autorizado' + (d.consiente_salud_en ? ' el ' + String(d.consiente_salud_en).slice(0,10) : ''))
+        : 'No autorizado';
+    }
     var sw = document.getElementById('md-marketing');
-    sw.checked = !!d.consiente_marketing;
-    sw.addEventListener('change', function(){
-      api.patch('/accounts/consentimientos/', { body: { consiente_marketing: sw.checked } }).then(function(rr){
-        if (rr.ok) toast(rr.data.consiente_marketing ? 'Te enviaremos ofertas y promociones.' : 'Dejaste de recibir ofertas y promociones.', 'success');
-        else { sw.checked = !sw.checked; toast('No se pudo actualizar.', 'error'); }
+    if (sw) {
+      sw.checked = !!d.consiente_marketing;
+      sw.addEventListener('change', function () {
+        api.patch('/accounts/consentimientos/', { body: { consiente_marketing: sw.checked } }).then(function (rr) {
+          if (rr.ok) {
+            toast(rr.data.consiente_marketing ? 'Te enviaremos ofertas y promociones.' : 'Dejaste de recibir ofertas y promociones.', 'success');
+          } else {
+            sw.checked = !sw.checked;
+            toast('No se pudo actualizar.', 'error');
+          }
+        });
+      });
+    }
+  });
+
+  // ---- Derecho de Supresión ("Derecho al Olvido" - Ley 21.719) ----
+  var modalSupresion = document.getElementById('modal-supresion');
+  var btnOpenSupresion = document.getElementById('btn-open-supresion');
+  var btnCloseSupresion = document.getElementById('btn-close-supresion');
+  var btnCancelSupresion = document.getElementById('btn-cancelar-supresion');
+  var inputConfirm = document.getElementById('input-confirmar-supresion');
+  var btnEjecutarSupresion = document.getElementById('btn-ejecutar-supresion');
+
+  function openModalSupresion() {
+    if (!modalSupresion) return;
+    if (inputConfirm) inputConfirm.value = '';
+    if (btnEjecutarSupresion) {
+      btnEjecutarSupresion.disabled = true;
+      btnEjecutarSupresion.innerHTML = '<i class="bi bi-trash3-fill"></i> Confirmar y suprimir cuenta';
+    }
+    modalSupresion.style.display = 'flex';
+  }
+
+  function closeModalSupresion() {
+    if (!modalSupresion) return;
+    modalSupresion.style.display = 'none';
+  }
+
+  if (btnOpenSupresion) btnOpenSupresion.addEventListener('click', openModalSupresion);
+  if (btnCloseSupresion) btnCloseSupresion.addEventListener('click', closeModalSupresion);
+  if (btnCancelSupresion) btnCancelSupresion.addEventListener('click', closeModalSupresion);
+
+  if (modalSupresion) {
+    modalSupresion.addEventListener('click', function (e) {
+      if (e.target === modalSupresion) closeModalSupresion();
+    });
+  }
+
+  if (inputConfirm && btnEjecutarSupresion) {
+    inputConfirm.addEventListener('input', function () {
+      btnEjecutarSupresion.disabled = inputConfirm.value.trim().toUpperCase() !== 'ELIMINAR';
+    });
+
+    btnEjecutarSupresion.addEventListener('click', function () {
+      btnEjecutarSupresion.disabled = true;
+      btnEjecutarSupresion.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando solicitud…';
+      api.post('/accounts/solicitar-supresion/', { body: { motivo: 'Solicitud del titular desde panel Mis Datos' } }).then(function (r) {
+        if (r.ok && r.data) {
+          toast(r.data.mensaje || 'Cuenta suprimida exitosamente.', 'success');
+          setTimeout(function () {
+            if (window.MV && window.MV.clearAuth) {
+              window.MV.clearAuth();
+            } else {
+              localStorage.removeItem('mv_access_token');
+              localStorage.removeItem('mv_refresh_token');
+              localStorage.removeItem('mv_user');
+            }
+            window.location.href = '/';
+          }, 3500);
+        } else {
+          btnEjecutarSupresion.disabled = false;
+          btnEjecutarSupresion.innerHTML = '<i class="bi bi-trash3-fill"></i> Confirmar y suprimir cuenta';
+          var msg = (r.data && (r.data.detail || r.data.error || r.data.mensaje)) || 'No se pudo procesar la solicitud.';
+          toast(msg, 'error');
+        }
       });
     });
-  });
-})();
+  }
 })();

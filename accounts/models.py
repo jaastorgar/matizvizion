@@ -209,3 +209,74 @@ def _perfil_mail(sender, instance, created, **kwargs):
         from django.db import transaction
         from core.notifications import notify_datos_actualizados
         transaction.on_commit(lambda: notify_datos_actualizados(instance.user))
+
+
+class ConsentimientoLog(models.Model):
+    """
+    Registro histórico inmutable de consentimientos (Ley N° 21.719 / Principio de Responsabilidad).
+    Audita cuándo, desde qué IP/dispositivo y para qué versión el titular otorgó o revocó
+    cada categoría de consentimiento.
+    """
+    class Tipo(models.TextChoices):
+        TERMINOS = 'TERMINOS', 'Términos y Privacidad'
+        SALUD = 'SALUD', 'Tratamiento de Datos de Salud'
+        MARKETING = 'MARKETING', 'Comunicaciones y Marketing'
+
+    class Accion(models.TextChoices):
+        OTORGADO = 'OTORGADO', 'Consentimiento Otorgado'
+        REVOCADO = 'REVOCADO', 'Consentimiento Revocado'
+
+    usuario = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='logs_consentimiento'
+    )
+    email_snapshot = models.EmailField('Email registrado al momento', blank=True, default='')
+    tipo = models.CharField('Tipo de consentimiento', max_length=20, choices=Tipo.choices)
+    accion = models.CharField('Acción realizada', max_length=15, choices=Accion.choices)
+    version = models.CharField('Versión de política', max_length=20, blank=True, default='')
+    ip_address = models.GenericIPAddressField('Dirección IP', null=True, blank=True)
+    user_agent = models.CharField('Navegador / User-Agent', max_length=500, blank=True, default='')
+    creado_en = models.DateTimeField('Fecha y hora del evento', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Log de consentimiento'
+        verbose_name_plural = 'Logs de consentimiento'
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        email = self.email_snapshot or (self.usuario.email if self.usuario else 'Anónimo')
+        return f"{self.creado_en.strftime('%Y-%m-%d %H:%M')} | {email} | {self.tipo} | {self.accion}"
+
+
+class SolicitudSupresion(models.Model):
+    """
+    Auditoría formal de ejercicio del Derecho de Supresión ("Derecho al Olvido" - Ley N° 21.719).
+    Registra la baja y anonimización de la cuenta, dejando constancia del resguardo legal
+    obligatorio de antecedentes clínicos (Ley 20.584) y tributarios (SII).
+    """
+    usuario = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='solicitudes_supresion'
+    )
+    email_original = models.EmailField('Email original del titular')
+    rut_asociado = models.CharField('RUT asociado', max_length=12, blank=True, default='')
+    ip_address = models.GenericIPAddressField('Dirección IP', null=True, blank=True)
+    user_agent = models.CharField('User-Agent', max_length=500, blank=True, default='')
+    motivo = models.TextField('Motivo declarado por el usuario', blank=True, default='')
+    detalle_resguardo = models.TextField(
+        'Detalle de resguardo legal aplicado',
+        default=(
+            'Cuenta desactivada y datos de contacto/marketing anonimizados. '
+            'Prescripciones ópticas retenidas por 15 años (Ley 20.584 / D.S. 41 MINSAL) '
+            'y registros tributarios retenidos por 6 años (SII) en archivo pasivo legal.'
+        )
+    )
+    creado_en = models.DateTimeField('Fecha de solicitud', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Solicitud de supresión de datos'
+        verbose_name_plural = 'Solicitudes de supresión de datos'
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f"Supresión {self.email_original} ({self.creado_en.strftime('%Y-%m-%d %H:%M')})"

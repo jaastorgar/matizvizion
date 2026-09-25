@@ -3,6 +3,15 @@ from django.conf import settings
 from django.utils import timezone
 
 
+import os
+import uuid
+
+def receta_upload_path(instance, filename):
+    ext = os.path.splitext(filename)[1].lower()
+    token = uuid.uuid4().hex
+    return f"recetas/{instance.cliente_id or 'anon'}/{token[:4]}/{token}{ext}"
+
+
 class Receta(models.Model):
     class Tipo(models.TextChoices):
         OPTICA = 'OPTICA', 'Receta de lentes (optica)'
@@ -16,7 +25,7 @@ class Receta(models.Model):
 
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='recetas')
     tipo = models.CharField(max_length=20, choices=Tipo.choices, default=Tipo.OPTICA)
-    archivo = models.FileField(upload_to='recetas/%Y/%m/')
+    archivo = models.FileField(upload_to=receta_upload_path)
     nombre = models.CharField(max_length=120, blank=True, default='')
     detalle = models.TextField(blank=True, default='')
     vigencia_hasta = models.DateField(null=True, blank=True)

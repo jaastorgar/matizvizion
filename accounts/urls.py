@@ -21,5 +21,13 @@ urlpatterns += [
     path('mi_perfil/', _MiPerfilView.as_view(), name='mi_perfil_u'),
 ]
 
-from .views import ConsentimientosView as _ConsentView
-urlpatterns += [path('consentimientos/', _ConsentView.as_view(), name='consentimientos')]
+from .views import (
+    ConsentimientosView as _ConsentView,
+    ExportarDatosPersonalesView,
+    SolicitudSupresionView,
+)
+urlpatterns += [
+    path('consentimientos/', _ConsentView.as_view(), name='consentimientos'),
+    path('exportar-datos/', ExportarDatosPersonalesView.as_view(), name='exportar_datos'),
+    path('solicitar-supresion/', SolicitudSupresionView.as_view(), name='solicitar_supresion'),
+]

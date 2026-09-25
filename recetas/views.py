@@ -57,6 +57,12 @@ class RecetaViewSet(viewsets.ModelViewSet):
         cliente = serializer.validated_data.get('cliente') or user
         if not es_staff(user):
             cliente = user
+            from accounts.consent import requiere_salud, ERROR_CONSENTIMIENTO_SALUD
+            if not requiere_salud(user):
+                raise drf_serializers.ValidationError({
+                    'code': ERROR_CONSENTIMIENTO_SALUD,
+                    'detail': 'Debes autorizar el tratamiento de tus datos de salud visual para subir una receta.'
+                })
         extra = {}
         if not serializer.validated_data.get('archivo') and data.get('archivo_base64'):
             raw = data['archivo_base64']

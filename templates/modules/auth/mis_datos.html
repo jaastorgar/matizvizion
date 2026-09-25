@@ -33,6 +33,20 @@
   .mv-md-err { display:none; margin-top:1rem; background:rgba(220,38,38,.08); border:1px solid rgba(220,38,38,.3); color:#b91c1c; border-radius:10px; padding:.7rem .9rem; font-size:.88rem; }
   .mv-md-foot { display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.3rem; }
 
+  /* Modales y zona de privacidad */
+  .mv-modal-ov { position: fixed; inset: 0; z-index: 2050; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(17,24,39,.55); backdrop-filter: blur(3px); }
+  .mv-modal-card { position: relative; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; background: var(--white); border-radius: 20px; padding: 1.8rem 1.7rem; box-shadow: 0 30px 70px rgba(17,24,39,.4); }
+  .mv-modal-x { position: absolute; top: .9rem; right: .9rem; width: 34px; height: 34px; border: none; background: var(--lead-light); border-radius: 50%; color: var(--lead-muted, #6B7280); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .mv-modal-x:hover { background: rgba(220,38,38,.12); color: #b91c1c; }
+  .mv-modal-eyebrow { display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: .26rem .7rem; border-radius: 999px; margin-bottom: .7rem; }
+  .mv-modal-title { font-family: var(--font-head); font-weight: 800; color: var(--lead-dark); font-size: 1.35rem; letter-spacing: -.02em; margin: 0; }
+  .mv-modal-sub { color: var(--lead-muted, #6B7280); font-size: .9rem; margin: .4rem 0 1rem; line-height: 1.5; }
+  .mv-modal-foot { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.3rem; }
+  .mv-modal-cancel { border: 1px solid var(--border-color); background: var(--white); color: var(--lead-muted, #6B7280); border-radius: 11px; padding: .6rem 1.1rem; font-weight: 700; cursor: pointer; }
+  .mv-card-danger { border-color: rgba(220,38,38,.25); background: #fffdfd; }
+  .mv-card-danger h3 { color: #b91c1c; }
+  .mv-card-danger h3 i { color: #dc2626; }
+
   /* resp-step5 */
   @media (max-width: 575px) {
     .mv-md-hero { padding: 1.6rem 1.25rem 3rem; border-radius: 16px; }
@@ -63,31 +77,93 @@
 </div>
 
 <div class="mv-md-grid">
-  <div class="mv-md-card">
-    <h3><i class="bi bi-fingerprint"></i> Identidad</h3>
-    <div class="mv-md-row"><span class="k"><i class="bi bi-envelope"></i> Correo</span><span class="v" id="md-id-email">—</span></div>
-    <div class="mv-md-row"><span class="k"><i class="bi bi-person-vcard"></i> RUT</span><span class="v" id="md-id-rut">—</span></div>
-    <div class="mv-md-note"><i class="bi bi-info-circle"></i> El RUT y el correo no se pueden modificar por seguridad. Si necesitas corregirlos, contacta a soporte.</div>
+  <!-- Columna Izquierda: Identidad y Consentimientos -->
+  <div style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div class="mv-md-card">
+      <h3><i class="bi bi-fingerprint"></i> Identidad</h3>
+      <div class="mv-md-row"><span class="k"><i class="bi bi-envelope"></i> Correo</span><span class="v" id="md-id-email">—</span></div>
+      <div class="mv-md-row"><span class="k"><i class="bi bi-person-vcard"></i> RUT</span><span class="v" id="md-id-rut">—</span></div>
+      <div class="mv-md-note"><i class="bi bi-info-circle"></i> El RUT y el correo no se pueden modificar por seguridad. Si necesitas corregirlos, contacta a soporte.</div>
+    </div>
+
+    <div class="mv-md-card">
+      <h3><i class="bi bi-shield-lock"></i> Consentimientos (Ley 21.719)</h3>
+      <div class="mv-md-row"><span class="k">Datos de salud visual</span><span class="v" id="md-salud-status">—</span></div>
+      <div class="mv-md-row"><span class="k">Ofertas y promociones</span><span class="v"><div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch" id="md-marketing"></div></span></div>
+      <div class="mv-md-note"><i class="bi bi-info-circle"></i> Conforme a la Ley 21.719, puedes consultar o modificar tus preferencias en cualquier momento. Revisa nuestros <a href="/terminos/" target="_blank" rel="noopener">términos</a> y <a href="/privacidad/" target="_blank" rel="noopener">privacidad</a>.</div>
+      <div class="mt-3 pt-2" style="border-top:1px dashed var(--border-color);">
+        <button type="button" class="btn btn-outline-mv btn-sm w-100" id="btn-export-data"><i class="bi bi-download"></i> Descargar copia de mis datos (Portabilidad - Ley 21.719)</button>
+      </div>
+    </div>
   </div>
 
-  <div class="mv-md-card">
-    <h3><i class="bi bi-pencil-square"></i> Datos de contacto y ubicación</h3>
-    <form id="md-form" novalidate>
-      <div class="mv-md-formgrid">
-        <div class="mv-md-field"><label>Nombre</label><input id="md-first" type="text" /></div>
-        <div class="mv-md-field"><label>Apellido</label><input id="md-last" type="text" /></div>
-        <div class="mv-md-field"><label>Teléfono de contacto</label><input id="md-telefono" type="tel" placeholder="+56912345678" /></div>
-        <div class="mv-md-field"><label>Dirección</label><input id="md-direccion" type="text" /></div>
-        <div class="mv-md-field"><label>Región</label><select id="md-region"><option value="">Selecciona…</option></select></div>
-        <div class="mv-md-field"><label>Comuna</label><select id="md-comuna" disabled><option value="">Selecciona región…</option></select></div>
-      </div>
-      <div class="mv-md-err" id="md-err"></div>
-      <div class="mv-md-foot">
-        <button class="btn btn-outline-mv" type="button" id="md-discard"><i class="bi bi-arrow-counterclockwise"></i> Descartar</button>
-        <button class="btn btn-cta" type="submit" id="md-save"><i class="bi bi-check-lg"></i> Guardar cambios</button>
-      </div>
-    </form>
+  <!-- Columna Derecha: Datos de contacto y Zona de Supresión -->
+  <div style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div class="mv-md-card">
+      <h3><i class="bi bi-pencil-square"></i> Datos de contacto y ubicación</h3>
+      <form id="md-form" novalidate>
+        <div class="mv-md-formgrid">
+          <div class="mv-md-field"><label>Nombre</label><input id="md-first" type="text" /></div>
+          <div class="mv-md-field"><label>Apellido</label><input id="md-last" type="text" /></div>
+          <div class="mv-md-field"><label>Teléfono de contacto</label><input id="md-telefono" type="tel" placeholder="+56912345678" /></div>
+          <div class="mv-md-field"><label>Dirección</label><input id="md-direccion" type="text" /></div>
+          <div class="mv-md-field"><label>Región</label><select id="md-region"><option value="">Selecciona…</option></select></div>
+          <div class="mv-md-field"><label>Comuna</label><select id="md-comuna" disabled><option value="">Selecciona región…</option></select></div>
+        </div>
+        <div class="mv-md-err" id="md-err"></div>
+        <div class="mv-md-foot">
+          <button class="btn btn-outline-mv" type="button" id="md-discard"><i class="bi bi-arrow-counterclockwise"></i> Descartar</button>
+          <button class="btn btn-cta" type="submit" id="md-save"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="mv-md-card mv-card-danger">
+      <h3><i class="bi bi-shield-x"></i> Privacidad y Supresión ("Derecho al Olvido")</h3>
+      <p style="font-size:.86rem; color:var(--lead-muted,#6B7280); line-height:1.45; margin-bottom:.8rem;">
+        Conforme a la Ley N° 21.719, puedes solicitar la baja definitiva de tu cuenta y la anonimización de tus datos de contacto y preferencias comerciales.
+      </p>
+      <button type="button" class="btn btn-outline-danger btn-sm w-100" id="btn-open-supresion">
+        <i class="bi bi-trash3"></i> Solicitar supresión de cuenta y datos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmación Supresión de Datos (Ley N° 21.719) -->
+<div class="mv-modal-ov" id="modal-supresion" style="display:none;">
+  <div class="mv-modal-card">
+    <button type="button" class="mv-modal-x" id="btn-close-supresion" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+    <span class="mv-modal-eyebrow" style="background:rgba(220,38,38,.1); color:#b91c1c;">
+      <i class="bi bi-exclamation-triangle-fill"></i> Acción Irreversible
+    </span>
+    <h3 class="mv-modal-title">Solicitud de Supresión de Cuenta</h3>
+    <p class="mv-modal-sub">
+      Al solicitar la supresión, tu cuenta se desactivará de inmediato y se anonimizarán tus datos personales de contacto, dirección y preferencias publicitarias.
+    </p>
+
+    <div class="alert alert-warning py-2 px-3 mb-3" style="font-size:.82rem; border-radius:10px; line-height:1.45;">
+      <b><i class="bi bi-shield-lock-fill"></i> Resguardo Legal Obligatorio en Chile:</b>
+      <ul class="mb-0 mt-1 ps-3">
+        <li><b>Ley 20.584 y D.S. 41 MINSAL:</b> Las recetas y prescripciones ópticas deben conservarse por un plazo mínimo de <b>15 años</b> bajo custodia médica confidencial para trazabilidad de tu salud visual.</li>
+        <li><b>Código Tributario (SII):</b> Las boletas y facturas emitidas deben conservarse por <b>6 años</b> para fines tributarios.</li>
+      </ul>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold" style="font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--lead-muted);">
+        Para confirmar, escribe <span class="text-danger">ELIMINAR</span>:
+      </label>
+      <input type="text" class="form-control" id="input-confirmar-supresion" placeholder="ELIMINAR" autocomplete="off" />
+    </div>
+
+    <div class="mv-modal-foot">
+      <button type="button" class="mv-modal-cancel" id="btn-cancelar-supresion">Cancelar</button>
+      <button type="button" class="btn btn-danger fw-bold" id="btn-ejecutar-supresion" disabled>
+        <i class="bi bi-trash3-fill"></i> Confirmar y suprimir cuenta
+      </button>
+    </div>
   </div>
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'modules/auth/mis_datos.js' %}?v=2"></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/mis_datos.js' %}?v=3"></script>{% endblock %}

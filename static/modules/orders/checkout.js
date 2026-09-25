@@ -39,6 +39,26 @@ function render(items) {
       '<div><div class="name">' + esc(it.producto_nombre) + '</div><div class="meta">Cantidad: ' + it.cantidad + (it.tipo_lente ? ' · <i class="bi bi-bullseye"></i> ' + esc(it.tipo_lente_display || '') + ' / ' + esc(it.uso_lente_display || '') : '') + '</div></div>' +
       '<div class="price">' + money(it.precio_unitario * it.cantidad) + '</div></div>';
   }).join('');
+  var tieneLentes = items.some(function (it) { return !!it.tipo_lente; });
+  var consentHtml =
+    '<div class="mv-summary-card p-4 mt-3">' +
+      '<div class="mv-summary-eyebrow mb-2"><i class="bi bi-shield-check"></i> Autorizaciones y Privacidad (Ley 21.719)</div>' +
+      '<div class="form-check mb-2" style="font-size:.9rem;">' +
+        '<input class="form-check-input" type="checkbox" id="chk-terminos" style="cursor:pointer;" />' +
+        '<label class="form-check-label text-secondary" for="chk-terminos" style="cursor:pointer;">' +
+          'He leído y acepto los <a href="/terminos/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Política de Privacidad</a>.*' +
+        '</label>' +
+      '</div>' +
+      (tieneLentes ? (
+        '<div class="form-check mb-1" style="font-size:.9rem;">' +
+          '<input class="form-check-input" type="checkbox" id="chk-salud" style="cursor:pointer;" />' +
+          '<label class="form-check-label text-secondary" for="chk-salud" style="cursor:pointer;">' +
+            'Autorizo expresamente el tratamiento de mis <strong>datos de salud visual</strong> para la confección personalizada y adaptación óptica de mis lentes (Ley 21.719 y Ley 20.584).*' +
+          '</label>' +
+        '</div>'
+      ) : '') +
+    '</div>';
+
   container.innerHTML =
     '<div class="mv-summary-card p-4">' + rows +
       '<div class="mv-summary-total"><span>Total compra</span><span>' + money(TOTAL) + '</span></div></div>' +
@@ -47,6 +67,7 @@ function render(items) {
       '<label class="mv-pay-opt"><input type="radio" name="modo_pago" value="COMPLETO" checked /><span><strong>Pago completo</strong><small>Pagas todo ahora con Webpay.</small></span></label>' +
       '<label class="mv-pay-opt"><input type="radio" name="modo_pago" value="ABONO" /><span><strong>Abono 50% ahora</strong><small>Pagas la mitad hoy y el saldo al retirar en tienda.</small></span></label>' +
       '<div id="pay-breakdown" class="mt-3">' + breakdownHtml() + '</div></div>' +
+    consentHtml +
     '<div class="mv-secure-note my-3"><i class="bi bi-lock-fill"></i> Serás redirigido de forma segura a la pasarela Webpay Plus de Transbank.</div>' +
     '<div id="checkout-error" class="mv-result error" style="display:none;margin:0 0 1rem;padding:1rem;"></div>' +
     '<button id="pay-btn" class="btn btn-cta w-100 btn-lg">' + payLabel() + ' <i class="bi bi-credit-card-2-front-fill"></i></button>' +
@@ -66,9 +87,28 @@ function showError(msg) {
   toast(msg, 'error');
 }
 function pay() {
+  var chkTerminos = document.getElementById('chk-terminos');
+  if (chkTerminos && !chkTerminos.checked) {
+    showError('Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar.');
+    return;
+  }
+  var chkSalud = document.getElementById('chk-salud');
+  if (chkSalud && !chkSalud.checked) {
+    showError('Debes autorizar el tratamiento de tus datos de salud visual para adquirir lentes personalizados.');
+    return;
+  }
+
   var btn = document.getElementById('pay-btn');
-  btn.disabled = true; btn.textContent = 'Creando orden…';
-  api.post('/orders/ordenes/', { body: { modo_pago: modoPago } }).then(function (rOrden) {
+  btn.disabled = true; btn.textContent = 'Procesando…';
+
+  var sealConsent = Promise.resolve();
+  if (chkSalud && chkSalud.checked) {
+    sealConsent = api.patch('/accounts/consentimientos/', { body: { consiente_salud: true } });
+  }
+
+  sealConsent.then(function () {
+    return api.post('/orders/ordenes/', { body: { modo_pago: modoPago } });
+  }).then(function (rOrden) {
     if (!rOrden.ok) {
       var m = (rOrden.data && (rOrden.data.error || rOrden.data.detail)) || 'No se pudo crear la orden.';
       showError(m); btn.disabled = false; btn.textContent = payLabel(); return;

@@ -141,12 +141,14 @@ class RegistroClienteSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
             role='CLIENTE'
         )
-        from .consent import sellar_terminos, sellar_salud
+        from .consent import sellar_terminos, sellar_salud, actualizar_marketing
+        request = self.context.get('request')
         if acepta_terminos:
-            sellar_terminos(user)
+            sellar_terminos(user, request=request)
         if consiente_salud:
-            sellar_salud(user)
-        user.consiente_marketing = bool(consiente_marketing)
+            sellar_salud(user, request=request)
+        if consiente_marketing:
+            actualizar_marketing(user, True, request=request)
         user.save()
         PerfilCliente.objects.create(
             user=user, rut=rut, telefono=telefono,

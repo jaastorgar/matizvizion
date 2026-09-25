@@ -33,3 +33,33 @@ class PerfilVendedorAdmin(admin.ModelAdmin):
     list_display = ('user', 'codigo_vendedor', 'sucursal')
     search_fields = ('user__email', 'codigo_vendedor')
     list_filter = ('sucursal',)
+
+
+@admin.register(models.ConsentimientoLog)
+class ConsentimientoLogAdmin(admin.ModelAdmin):
+    list_display = ('creado_en', 'usuario', 'email_snapshot', 'tipo', 'accion', 'version', 'ip_address')
+    list_filter = ('tipo', 'accion', 'version', 'creado_en')
+    search_fields = ('usuario__email', 'email_snapshot', 'ip_address')
+    readonly_fields = ('creado_en', 'usuario', 'email_snapshot', 'tipo', 'accion', 'version', 'ip_address', 'user_agent')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(models.SolicitudSupresion)
+class SolicitudSupresionAdmin(admin.ModelAdmin):
+    list_display = ('creado_en', 'email_original', 'rut_asociado', 'ip_address')
+    search_fields = ('email_original', 'rut_asociado', 'ip_address')
+    readonly_fields = (
+        'creado_en', 'usuario', 'email_original', 'rut_asociado',
+        'ip_address', 'user_agent', 'motivo', 'detalle_resguardo'
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

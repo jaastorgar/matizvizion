@@ -25,16 +25,20 @@ logger = logging.getLogger(__name__)
 
 
 TBK_BASE = {
-    'Integration': 'https://webpay3gint.transbank.cl',
-    'TEST':        'https://webpay3gint.transbank.cl',
-    'Production':  'https://webpay3g.transbank.cl',
+    'integration': 'https://webpay3gint.transbank.cl',
+    'integracion': 'https://webpay3gint.transbank.cl',
+    'test':        'https://webpay3gint.transbank.cl',
+    'production':  'https://webpay3g.transbank.cl',
+    'produccion':  'https://webpay3g.transbank.cl',
+    'prod':        'https://webpay3g.transbank.cl',
 }
 TBK_PATH = '/rswebpaytransaction/api/webpay/v1.3/transactions'
 
 
 def _tbk_base():
-    env = config('WEBPAY_ENVIRONMENT', default='Integration')
-    return TBK_BASE.get(env, TBK_BASE['Integration'])
+    env = str(config('WEBPAY_ENVIRONMENT', default='integration')).strip().lower()
+    return TBK_BASE.get(env, TBK_BASE['integration'])
+
 
 
 def _tbk_headers():

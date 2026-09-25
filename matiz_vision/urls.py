@@ -34,8 +34,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-# media-recetas
-from django.conf import settings as dj_settings
-from django.conf.urls.static import static
-if dj_settings.DEBUG:
-    urlpatterns += static(dj_settings.MEDIA_URL, document_root=dj_settings.MEDIA_ROOT)
