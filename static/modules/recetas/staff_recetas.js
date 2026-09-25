@@ -5,6 +5,12 @@ var api = MV.api, toast = MV.toast, esc = MV.escape || function (s) { return s; 
 var list = document.getElementById('rs-list');
 var qInput = document.getElementById('rs-q');
 var qInfo = document.getElementById('rs-qinfo');
+/* guard-recetas-staff */
+if (MV.me) { MV.me().then(function (u) {
+  if (!u) { location.replace('/login/?next=/recetas-staff/'); return; }
+  var isStaff = (u.role === 'VENDEDOR' || u.role === 'ADMIN' || u.is_superuser);
+  if (!isStaff) { location.replace('/inicio/'); return; }
+}); }
 var currentQ = '';
 
 function fmtFecha(iso) { if (!iso) return '—'; var d = new Date(iso); return d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); }

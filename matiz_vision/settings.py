@@ -192,3 +192,7 @@ SECURE_HSTS_SECONDS = int(_os.getenv('SECURE_HSTS_SECONDS', '0'))
 # Umbral GLOBAL de respaldo: un producto se considera "stock bajo" si su
 # stock_minimo (por producto, cuando lo agreguemos) o este valor, lo que aplique.
 STOCK_ALERT_THRESHOLD = int(config('STOCK_ALERT_THRESHOLD', default='5'))
+
+# login-recetas
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'

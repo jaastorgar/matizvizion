@@ -20,15 +20,13 @@ def es_staff(user):
                 (getattr(user, 'role', '') in ('VENDEDOR', 'ADMIN') or user.is_staff or user.is_superuser))
 
 
-class MisRecetasPage(LoginRequiredMixin, TemplateView):
+class MisRecetasPage(TemplateView):
     template_name = 'modules/recetas/mis_recetas.html'
 
 
-class RecetasStaffPage(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class RecetasStaffPage(TemplateView):
     template_name = 'modules/recetas/staff_recetas.html'
 
-    def test_func(self):
-        return es_staff(self.request.user)
 
 
 class RecetaViewSet(viewsets.ModelViewSet):

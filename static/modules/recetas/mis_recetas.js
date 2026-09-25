@@ -6,6 +6,10 @@ var list = document.getElementById('rec-list');
 var form = document.getElementById('rec-form');
 var fileInput = document.getElementById('rec-file');
 var drop = document.getElementById('rec-drop');
+/* guard-recetas */
+if (MV.me) { MV.me().then(function (u) {
+  if (!u) { location.replace('/login/?next=/mis-recetas/'); return; }
+}); }
 var consentOk = true;
 
 function fmtFecha(iso) { if (!iso) return '—'; var d = new Date(iso); return d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }); }
