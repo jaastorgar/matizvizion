@@ -42,5 +42,159 @@
 {% endblock %}
 
 {% block extra_js %}
+
+
+
+
+
+
+<style id="mv-login-alert-css">
+#mv-login-alert {
+  display: none; align-items: flex-start; gap: .6rem;
+  background: rgba(220, 38, 38, .10);
+  border: 1.5px solid rgba(220, 38, 38, .45);
+  color: #b91c1c; border-radius: 12px;
+  padding: .8rem 1rem; font-size: .92rem; font-weight: 600;
+  margin: 0 0 1rem; line-height: 1.45;
+}
+#mv-login-alert.on { display: flex; }
+#mv-login-alert i { font-size: 1.1rem; flex: 0 0 auto; margin-top: .1rem; }
+#mv-login-alert span { flex: 1 1 auto; }
+#mv-login-alert .mv-la-x {
+  border: none; background: transparent; color: #b91c1c;
+  font-size: 1.25rem; line-height: 1; cursor: pointer;
+  padding: .2rem .35rem; min-width: 32px; min-height: 32px;
+}
+@keyframes mvLoginShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+.mv-auth-card.mv-shake { animation: mvLoginShake .45s ease; }
+</style>
+<script id="mv-login-hook-v5">
+(function () {
+  var LOGIN_RE = /login/i;
+  var K_FAIL = 'mv_login_fail', K_PEND = 'mv_login_pending';
+  function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+  function alertShow(msg, email) {
+    ready(function () {
+      var el = document.getElementById('mv-login-alert');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'mv-login-alert';
+        el.setAttribute('role', 'alert');
+        var form = document.getElementById('login-form');
+        var err = document.getElementById('login-error');
+        if (err && err.parentNode) err.parentNode.insertBefore(el, err);
+        else if (form && form.parentNode) form.parentNode.insertBefore(el, form);
+        else document.body.appendChild(el);
+      }
+      el.innerHTML = '<i class="bi bi-exclamation-octagon-fill"></i><span></span><button type="button" class="mv-la-x" aria-label="Cerrar">&times;</button>';
+      el.querySelector('span').textContent = msg;
+      el.classList.add('on');
+      el.querySelector('.mv-la-x').addEventListener('click', function () { el.classList.remove('on'); });
+      var card = document.querySelector('.mv-auth-card');
+      if (card) { card.classList.remove('mv-shake'); void card.offsetWidth; card.classList.add('mv-shake'); }
+      if (email) { var em = document.getElementById('login-email'); if (em && !em.value) em.value = email; }
+      var pw = document.getElementById('login-password');
+      if (pw && !pw.value) pw.focus();
+    });
+  }
+  function alertHide() { var el = document.getElementById('mv-login-alert'); if (el) el.classList.remove('on'); }
+  function extract(data) {
+    if (!data) return null;
+    if (typeof data === 'string') return data;
+    if (typeof data.detail === 'string') return data.detail;
+    if (data.error) return data.error;
+    if (data.non_field_errors && data.non_field_errors.length) return data.non_field_errors[0];
+    return null;
+  }
+  function fail(data, email) {
+    var msg = extract(data) || 'Correo o contraseña incorrectos. Revisa tus datos e intenta nuevamente.';
+    try { sessionStorage.setItem(K_FAIL, JSON.stringify({ msg: msg, email: email || '', t: Date.now() })); } catch (e) {}
+    console.log('[mv-login-v5] fallo capturado:', msg);
+    setTimeout(function () { alertShow(msg, email); }, 60);
+  }
+  /* Via 1: fetch */
+  if (window.fetch) {
+    var of = window.fetch;
+    window.fetch = function (input) {
+      var url = typeof input === 'string' ? input : ((input && input.url) || '');
+      var p = of.apply(this, arguments);
+      if (LOGIN_RE.test(url)) {
+        p.then(function (resp) {
+          if (resp && !resp.ok) resp.clone().json().then(function (d) { fail(d, pendingEmail()); }, function () { fail(null, pendingEmail()); });
+          if (resp && resp.ok) clearKeys();
+        }, function () {});
+      }
+      return p;
+    };
+  }
+  /* Via 2: XHR */
+  if (window.XMLHttpRequest) {
+    var op = XMLHttpRequest.prototype.open, sp = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function (m, u) { this.__mvUrl = u; return op.apply(this, arguments); };
+    XMLHttpRequest.prototype.send = function () {
+      var x = this;
+      if (LOGIN_RE.test(String(x.__mvUrl))) {
+        x.addEventListener('loadend', function () {
+          if (x.status >= 400) { try { fail(JSON.parse(x.responseText), pendingEmail()); } catch (e) { fail(null, pendingEmail()); } }
+          else if (x.status >= 200 && x.status < 300) clearKeys();
+        });
+      }
+      return sp.apply(this, arguments);
+    };
+  }
+  /* Via 3: MV.api.post */
+  function hookMV() {
+    var MV = window.MV; if (!MV || !MV.api || MV.__mvLoginWrapped) return;
+    MV.__mvLoginWrapped = true;
+    var orig = MV.api.post;
+    MV.api.post = function (url, opts) {
+      var r = orig.call(MV.api, url, opts);
+      if (LOGIN_RE.test(String(url))) {
+        Promise.resolve(r).then(function (res) {
+          if (res && res.ok === false) fail(res.data, pendingEmail());
+          else if (res && res.ok) clearKeys();
+        });
+      }
+      return r;
+    };
+  }
+  if (window.MV) hookMV(); else document.addEventListener('DOMContentLoaded', hookMV);
+  /* Pending en submit + sin reload nativo */
+  function pendingEmail() {
+    try { var s = JSON.parse(sessionStorage.getItem(K_FAIL) || 'null'); if (s && s.email) return s.email; } catch (e) {}
+    var em = document.getElementById('login-email');
+    return em ? em.value.trim() : '';
+  }
+  function clearKeys() { try { sessionStorage.removeItem(K_FAIL); sessionStorage.removeItem(K_PEND); } catch (e) {} }
+  document.addEventListener('submit', function (e) {
+    if (e.target && e.target.id === 'login-form') {
+      e.preventDefault();
+      var em = document.getElementById('login-email');
+      try { sessionStorage.setItem(K_PEND, JSON.stringify({ email: em ? em.value.trim() : '', t: Date.now() })); } catch (err) {}
+      alertHide();
+    }
+  }, true);
+  document.addEventListener('input', function (e) {
+    if (e.target && (e.target.id === 'login-email' || e.target.id === 'login-password')) alertHide();
+  }, true);
+  /* RESTAURAR mensaje si la pagina se recargo tras el fallo */
+  try {
+    var f = JSON.parse(sessionStorage.getItem(K_FAIL) || 'null');
+    var pd = JSON.parse(sessionStorage.getItem(K_PEND) || 'null');
+    if (f && (Date.now() - f.t) < 20000) {
+      sessionStorage.removeItem(K_FAIL);
+      alertShow(f.msg, f.email);
+    } else if (pd && (Date.now() - pd.t) < 20000 && !f) {
+      sessionStorage.removeItem(K_PEND);
+      alertShow('Correo o contraseña incorrectos. Revisa tus datos e intenta nuevamente.', pd.email);
+    }
+  } catch (e) {}
+})();
+</script>
 <script src="{% static 'modules/auth/auth.js' %}"></script>
 {% endblock %}
