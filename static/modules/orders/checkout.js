@@ -28,7 +28,8 @@ function breakdownHtml() {
 function payLabel() {
   return modoPago === 'ABONO' ? ('Abonar ' + money(abono()) + ' con Webpay Plus') : ('Pagar ' + money(TOTAL) + ' con Webpay Plus');
 }
-function render(items) {
+function render(items, userConsents) {
+  userConsents = userConsents || {};
   if (!items.length) {
     container.innerHTML = '<div class="mv-empty"><p>No hay productos para pagar.</p><a class="btn btn-cta" href="/catalogo/">Ir al catálogo</a></div>';
     return;
@@ -40,24 +41,34 @@ function render(items) {
       '<div class="price">' + money(it.precio_unitario * it.cantidad) + '</div></div>';
   }).join('');
   var tieneLentes = items.some(function (it) { return !!it.tipo_lente; });
-  var consentHtml =
-    '<div class="mv-summary-card p-4 mt-3">' +
-      '<div class="mv-summary-eyebrow mb-2"><i class="bi bi-shield-check"></i> Autorizaciones y Privacidad (Ley 21.719)</div>' +
-      '<div class="form-check mb-2" style="font-size:.9rem;">' +
-        '<input class="form-check-input" type="checkbox" id="chk-terminos" style="cursor:pointer;" />' +
-        '<label class="form-check-label text-secondary" for="chk-terminos" style="cursor:pointer;">' +
-          'He leído y acepto los <a href="/terminos/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Política de Privacidad</a>.*' +
-        '</label>' +
-      '</div>' +
-      (tieneLentes ? (
-        '<div class="form-check mb-1" style="font-size:.9rem;">' +
-          '<input class="form-check-input" type="checkbox" id="chk-salud" style="cursor:pointer;" />' +
-          '<label class="form-check-label text-secondary" for="chk-salud" style="cursor:pointer;">' +
-            'Autorizo expresamente el tratamiento de mis <strong>datos de salud visual</strong> para la confección personalizada y adaptación óptica de mis lentes (Ley 21.719 y Ley 20.584).*' +
-          '</label>' +
-        '</div>'
-      ) : '') +
-    '</div>';
+
+  // Solo solicitamos consentimientos que NO hayan sido otorgados previamente
+  var needsTerminos = !userConsents.acepta_terminos;
+  var needsSalud = tieneLentes && !userConsents.consiente_salud;
+
+  var consentHtml = '';
+  if (needsTerminos || needsSalud) {
+    consentHtml =
+      '<div class="mv-summary-card p-4 mt-3">' +
+        '<div class="mv-summary-eyebrow mb-2"><i class="bi bi-shield-check"></i> Autorizaciones y Privacidad (Ley 21.719)</div>' +
+        (needsTerminos ? (
+          '<div class="form-check mb-2" style="font-size:.9rem;">' +
+            '<input class="form-check-input" type="checkbox" id="chk-terminos" style="cursor:pointer;" />' +
+            '<label class="form-check-label text-secondary" for="chk-terminos" style="cursor:pointer;">' +
+              'He leído y acepto los <a href="/terminos/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener" class="text-decoration-underline text-dark fw-bold">Política de Privacidad</a>.*' +
+            '</label>' +
+          '</div>'
+        ) : '') +
+        (needsSalud ? (
+          '<div class="form-check mb-1" style="font-size:.9rem;">' +
+            '<input class="form-check-input" type="checkbox" id="chk-salud" style="cursor:pointer;" />' +
+            '<label class="form-check-label text-secondary" for="chk-salud" style="cursor:pointer;">' +
+              'Autorizo expresamente el tratamiento de mis <strong>datos de salud visual</strong> para la confección personalizada y adaptación óptica de mis lentes (Ley 21.719 y Ley 20.584).*' +
+            '</label>' +
+          '</div>'
+        ) : '') +
+      '</div>';
+  }
 
   container.innerHTML =
     '<div class="mv-summary-card p-4">' + rows +
@@ -101,12 +112,15 @@ function pay() {
   var btn = document.getElementById('pay-btn');
   btn.disabled = true; btn.textContent = 'Procesando…';
 
-  var sealConsent = Promise.resolve();
+  var sealPromises = [];
+  if (chkTerminos && chkTerminos.checked) {
+    sealPromises.push(api.patch('/accounts/consentimientos/', { body: { acepta_terminos: true } }));
+  }
   if (chkSalud && chkSalud.checked) {
-    sealConsent = api.patch('/accounts/consentimientos/', { body: { consiente_salud: true } });
+    sealPromises.push(api.patch('/accounts/consentimientos/', { body: { consiente_salud: true } }));
   }
 
-  sealConsent.then(function () {
+  Promise.all(sealPromises).then(function () {
     return api.post('/orders/ordenes/', { body: { modo_pago: modoPago } });
   }).then(function (rOrden) {
     if (!rOrden.ok) {
@@ -126,9 +140,20 @@ function pay() {
   });
 }
 function load() {
-  api.get('/orders/carrito/').then(function (r) {
-    if (!r.ok || !Array.isArray(r.data)) { container.innerHTML = '<div class="mv-empty">No se pudo cargar el resumen.</div>'; return; }
-    render(r.data);
+  Promise.all([
+    api.get('/orders/carrito/'),
+    api.get('/accounts/consentimientos/')
+  ]).then(function (results) {
+    var rCart = results[0];
+    var rConsent = results[1];
+    if (!rCart.ok || !Array.isArray(rCart.data)) {
+      container.innerHTML = '<div class="mv-empty">No se pudo cargar el resumen.</div>';
+      return;
+    }
+    var userConsents = (rConsent && rConsent.ok && rConsent.data) ? rConsent.data : {};
+    render(rCart.data, userConsents);
+  }).catch(function () {
+    container.innerHTML = '<div class="mv-empty">Error al cargar el resumen de compra.</div>';
   });
 }
 if (!auth.isAuthenticated()) { window.location.href = '/login/?next=/checkout/'; return; }
