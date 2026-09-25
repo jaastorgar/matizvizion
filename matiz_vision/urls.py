@@ -1,4 +1,5 @@
 from django.contrib import admin
+from accounts.auth_login import LoginView
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
@@ -10,7 +11,7 @@ urlpatterns = [
     path('api/admin/', include(admin_router.urls)),
     path('admin/', admin.site.urls),
     # Endpoints JWT Auth (Login nativo de SimpleJWT)
-    path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/', LoginView.as_view(), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # Endpoints de Registro y Perfil
     path('api/accounts/', include('accounts.urls')),

@@ -111,8 +111,16 @@
     if (data.non_field_errors && data.non_field_errors.length) return data.non_field_errors[0];
     return null;
   }
+  function friendly(msg) {
+    var m = (msg || '').toLowerCase();
+    var gens = ['no se encontro una cuenta', 'no active account', 'credenciales provistas', 'given credentials'];
+    for (var i = 0; i < gens.length; i++) {
+      if (m.indexOf(gens[i]) !== -1) return 'Correo o contraseña incorrectos. Revisa tus datos e intenta nuevamente.';
+    }
+    return msg;
+  }
   function fail(data, email) {
-    var msg = extract(data) || 'Correo o contraseña incorrectos. Revisa tus datos e intenta nuevamente.';
+    var msg = friendly(extract(data)) || 'Correo o contraseña incorrectos. Revisa tus datos e intenta nuevamente.';
     try { sessionStorage.setItem(K_FAIL, JSON.stringify({ msg: msg, email: email || '', t: Date.now() })); } catch (e) {}
     console.log('[mv-login-v5] fallo capturado:', msg);
     setTimeout(function () { alertShow(msg, email); }, 60);
