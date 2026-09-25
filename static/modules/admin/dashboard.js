@@ -112,7 +112,7 @@ ORDMAP = {}; (filterRut||[]).forEach(function(o){ ORDMAP[o.id]=o; });
       var saldoBtn = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && Number(o.saldo_pendiente) > 0) ? '<button class="btn btn-outline-mv btn-sm me-1" data-saldo="' + o.id + '"><i class="bi bi-cash-coin"></i> Saldo ' + money(o.saldo_pendiente) + '</button>' : '';
     var nextDis = (o.modo_pago === 'ABONO' && !o.saldo_cancelado && st === 'LISTO_PARA_RETIRO') ? ' disabled title="Registra el pago del saldo primero"' : '';
     var telDig = normWa(o.cliente_telefono);
-    var waBtn = telDig ? '<button class="btn btn-outline-mv btn-sm me-1" data-wa="'+o.id+'" title="Avisar por WhatsApp"><i class="bi bi-whatsapp"></i></button>' : '';
+    var waBtn = '<button class="btn btn-outline-mv btn-sm me-1" data-wa="'+o.id+'" title="Avisar por WhatsApp"><i class="bi bi-whatsapp"></i></button>';
     var cancelBtn = (['PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO'].indexOf(st)!==-1) ? '<button class="btn btn-sm me-1" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;" data-cancela="'+o.id+'" title="Cancelar por quiebre de stock"><i class="bi bi-x-octagon"></i> Cancelar</button>' : '';
     var acc = waBtn + cancelBtn + saldoBtn + (NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '"' + nextDis + '>' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>');
       return '<tr><td>' + esc(o.codigo || ('#' + o.id)) + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
