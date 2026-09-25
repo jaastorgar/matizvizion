@@ -62,6 +62,11 @@ function cardHtml(p, members) {
   var cfgBadge = (inCart && inCart.tipo_lente) ? '<div class="mv-lente-cfg"><i class="bi bi-bullseye"></i> ' + esc(inCart.tipo_lente_display || inCart.tipo_lente) + ' · ' + esc(inCart.uso_lente_display || inCart.uso_lente) + '</div>' : '';
   var desc = p.descripcion ? esc(p.descripcion) : 'Producto de óptica de alta calidad.';
   var stockBadge = agotado ? '<span class="stock-badge text-danger fw-bold">Agotado</span>' : '<span class="stock-badge">Stock: ' + stock + '</span>';
+  var catName = (p.categoria_nombre || '').toLowerCase();
+  var isArmazon = catName.indexOf('armaz') !== -1 || catName.indexOf('sol') !== -1 || !!p.imagen_tryon_url || !!p.configurable_lente;
+  var tryonBtn = isArmazon
+    ? '<button type="button" class="mv-btn-tryon" data-tryon="' + p.id + '"><i class="bi bi-camera-video-fill"></i> Probar en mi rostro</button>'
+    : '';
   return '<div class="col-sm-6 col-lg-4"><div class="mv-product-card">' +
     mediaHtml(p) +
     '<div class="mv-product-body">' +
@@ -70,6 +75,7 @@ function cardHtml(p, members) {
     swatchesHtml(p, members) +
     '<p class="mv-product-desc">' + desc + '</p>' +
     '<div class="mv-product-foot"><span class="mv-product-price">' + formatPrice(p.precio) + '</span>' + stockBadge + '<button type="button" class="mv-wa-card-btn" data-wa="' + p.id + '" title="Consultar por WhatsApp"><i class="bi bi-whatsapp"></i></button></div>' +
+    tryonBtn +
     slot +
     '</div></div></div>';
 }
@@ -173,6 +179,15 @@ grid.addEventListener('click', function (e) {
     }
     return;
   }
+  var tb = e.target.closest('.mv-btn-tryon');
+  if (tb) {
+    var tpid = tb.getAttribute('data-tryon');
+    var tprod = ALL.find(function (x) { return String(x.id) === String(tpid); });
+    if (tprod && window.MV && window.MV.openTryon) {
+      window.MV.openTryon(tprod, ALL);
+    }
+    return;
+  }
   var ac = e.target.closest('.btn-add-config'); if (ac && !ac.disabled) { openLenteModal(ac); return; }
   var a = e.target.closest('.btn-add'); if (a && !a.disabled) { doAdd(a); return; }
   var i = e.target.closest('.mv-q-inc'); if (i && !i.disabled) { doInc(i); return; }
@@ -182,6 +197,19 @@ searchInput.addEventListener('input', applyFilters);
 priceRange.addEventListener('input', applyFilters);
 catSelect.addEventListener('change', applyFilters);
 resetBtn.addEventListener('click', function () { searchInput.value = ''; catSelect.value = ''; priceRange.value = String(MAX_PRICE); applyFilters(); });
+var btnHero = document.getElementById('btn-hero-tryon');
+if (btnHero) {
+  btnHero.addEventListener('click', function () {
+    if (!ALL || !ALL.length) return;
+    var armazon = ALL.find(function (p) {
+      var cat = (p.categoria_nombre || '').toLowerCase();
+      return cat.indexOf('armaz') !== -1 || cat.indexOf('sol') !== -1 || !!p.imagen_tryon_url || !!p.configurable_lente;
+    }) || ALL[0];
+    if (window.MV && window.MV.openTryon) {
+      window.MV.openTryon(armazon, ALL);
+    }
+  });
+}
 function loadCartMap() {
   if (!auth.isAuthenticated()) return Promise.resolve({});
   return api.get('/orders/carrito/').then(function (r) {

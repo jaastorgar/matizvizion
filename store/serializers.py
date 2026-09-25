@@ -14,13 +14,14 @@ class ProductoSerializer(serializers.ModelSerializer):
     en_stock = serializers.BooleanField(read_only=True)
     stock_bajo = serializers.BooleanField(read_only=True)
     imagen_url = serializers.SerializerMethodField()
+    imagen_tryon_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Producto
         fields = [
             'id', 'sku', 'nombre', 'descripcion', 'precio', 'stock', 'stock_minimo',
-            'en_stock', 'stock_bajo', 'imagen', 'imagen_url', 'categoria',
-            'categoria_nombre', 'destacado', 'grupo', 'color', 'configurable_lente',
+            'en_stock', 'stock_bajo', 'imagen', 'imagen_url', 'imagen_tryon', 'imagen_tryon_url',
+            'categoria', 'categoria_nombre', 'destacado', 'grupo', 'color', 'configurable_lente',
         ]
         read_only_fields = fields
 
@@ -31,6 +32,14 @@ class ProductoSerializer(serializers.ModelSerializer):
         if request is not None:
             return request.build_absolute_uri(obj.imagen.url)
         return obj.imagen.url
+
+    def get_imagen_tryon_url(self, obj):
+        if not obj.imagen_tryon:
+            return None
+        request = self.context.get('request')
+        if request is not None:
+            return request.build_absolute_uri(obj.imagen_tryon.url)
+        return obj.imagen_tryon.url
 
 
 class RecetaOpticaSerializer(serializers.ModelSerializer):

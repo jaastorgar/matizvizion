@@ -48,6 +48,11 @@ class Producto(models.Model):
         help_text='Cuando el stock cae a este valor o menos, se dispara una alerta.'
     )
     imagen = models.ImageField('Imagen del producto', upload_to='productos/', blank=True, null=True)
+    imagen_tryon = models.ImageField(
+        'Imagen PNG frontal transparente (Probador virtual)',
+        upload_to='productos/tryon/', blank=True, null=True,
+        help_text='PNG frontal con fondo transparente para superponer en el rostro en el probador virtual.'
+    )
     activo = models.BooleanField('Visible en catalogo', default=True, db_index=True)
     destacado = models.BooleanField('Destacado en home', default=False, db_index=True)
     grupo = models.CharField('Grupo/Familia (colores)', max_length=60, blank=True, default='', db_index=True,

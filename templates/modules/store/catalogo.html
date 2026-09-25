@@ -17,6 +17,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'modules/store/catalogo.css' %}" />
+<link rel="stylesheet" href="{% static 'modules/store/tryon.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -25,6 +26,17 @@
     <h1 class="h3 mb-1">Catálogo de productos</h1>
     <p class="text-secondary mb-0" id="count-info">Cargando productos…</p>
   </div>
+</div>
+
+<div class="mv-tryon-hero-banner mb-4">
+  <div class="mv-tryon-hero-text">
+    <span class="mv-tryon-hero-pill"><i class="bi bi-stars"></i> Innovación Matizvisión</span>
+    <h2 class="mv-tryon-hero-title">Probador Virtual en Vivo 👓</h2>
+    <p class="mv-tryon-hero-sub">¿No sabes cómo te quedará el armazón? Pruébatelo en tiempo real con tu cámara o subiendo una foto antes de comprar.</p>
+  </div>
+  <button type="button" class="btn btn-cta btn-lg" id="btn-hero-tryon">
+    <i class="bi bi-camera-video-fill me-1"></i> Abrir Probador Virtual
+  </button>
 </div>
 
 <div class="row g-4">
@@ -67,5 +79,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'modules/store/tryon.js' %}"></script>
 <script src="{% static 'modules/store/catalogo.js' %}"></script>
 {% endblock %}

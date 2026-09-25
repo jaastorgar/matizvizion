@@ -1,0 +1,557 @@
+/* Óptica Matiz Visión — Probador Virtual (Virtual Try-On) */
+
+/* Botón "Probar en mi rostro" en las tarjetas de catálogo */
+.mv-btn-tryon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.52rem 0.85rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--green-dark, #065F46);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin-bottom: 0.45rem;
+}
+.mv-btn-tryon:hover {
+  background: var(--green-primary, #10B981);
+  color: #fff;
+  border-color: var(--green-primary, #10B981);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* Modal Overlay Principal */
+.mv-tryon-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+  animation: mvTryonFadeIn 0.22s ease-out;
+}
+@keyframes mvTryonFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Card del Probador */
+.mv-tryon-card {
+  position: relative;
+  width: 100%;
+  max-width: 840px;
+  height: 92vh;
+  max-height: 760px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header del Probador */
+.mv-tryon-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.4rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+.mv-tryon-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-head, sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--lead-dark, #111827);
+  margin: 0;
+}
+.mv-tryon-title i {
+  color: var(--green-primary, #10B981);
+  font-size: 1.35rem;
+}
+.mv-tryon-modes {
+  display: flex;
+  gap: 0.35rem;
+  background: #f3f4f6;
+  padding: 0.25rem;
+  border-radius: 12px;
+}
+.mv-tryon-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+}
+.mv-tryon-mode-btn.active {
+  background: #ffffff;
+  color: var(--green-dark, #065F46);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.mv-tryon-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.15s ease;
+}
+.mv-tryon-close:hover {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+/* Área de Visualización (Stage) */
+.mv-tryon-stage {
+  position: relative;
+  flex: 1;
+  background: #0f172a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mv-tryon-stage canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.mv-tryon-video-hidden {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Loading Spinner & Mensajes en el Stage */
+.mv-tryon-loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  color: #fff;
+  z-index: 10;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1.5rem;
+}
+.mv-tryon-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: var(--green-primary, #10B981);
+  border-radius: 50%;
+  animation: mvSpin 0.8s linear infinite;
+}
+@keyframes mvSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Floating Controls (Sliders y Botones) */
+.mv-tryon-floating-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 5;
+}
+.mv-tryon-float-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.15s ease;
+}
+.mv-tryon-float-btn:hover {
+  background: var(--green-primary, #10B981);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* Micro-ajustes desplegables */
+.mv-tryon-tuning-box {
+  position: absolute;
+  top: 4.8rem;
+  right: 1rem;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  color: #fff;
+  width: 220px;
+  z-index: 5;
+  display: none;
+}
+.mv-tryon-tuning-box.open {
+  display: block;
+}
+.mv-tryon-tuning-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+  color: #9ca3af;
+  display: flex;
+  justify-content: space-between;
+}
+.mv-tryon-tune-row {
+  margin-bottom: 0.65rem;
+}
+.mv-tryon-tune-row label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  color: #e5e7eb;
+}
+.mv-tryon-tune-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--green-primary, #10B981);
+}
+
+/* Carrusel de Armazones en el Pie */
+.mv-tryon-footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 0.8rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.mv-tryon-shelf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mv-tryon-current-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.mv-tryon-current-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--lead-dark, #111827);
+}
+.mv-tryon-current-price {
+  font-weight: 800;
+  color: var(--green-dark, #065F46);
+  font-size: 1.05rem;
+}
+.mv-tryon-shelf-track {
+  display: flex;
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding: 0.3rem 0.2rem 0.5rem;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+.mv-tryon-shelf-track::-webkit-scrollbar {
+  height: 6px;
+}
+.mv-tryon-shelf-track::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+.mv-tryon-thumb {
+  flex: 0 0 88px;
+  height: 72px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.35rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.mv-tryon-thumb img {
+  max-width: 100%;
+  max-height: 44px;
+  object-fit: contain;
+}
+.mv-tryon-thumb span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #4b5563;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.mv-tryon-thumb:hover {
+  border-color: var(--green-primary, #10B981);
+  transform: translateY(-2px);
+}
+.mv-tryon-thumb.active {
+  border-color: var(--green-primary, #10B981);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+/* Barra de acciones en el pie */
+.mv-tryon-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.mv-tryon-privacy-badge {
+  font-size: 0.74rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mv-tryon-privacy-badge i {
+  color: var(--green-primary, #10B981);
+}
+
+/* Modo Subir Foto / Demos */
+.mv-tryon-upload-prompt {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #fff;
+  text-align: center;
+}
+.mv-tryon-upload-prompt.active {
+  display: flex;
+}
+.mv-tryon-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--green-primary, #10B981);
+  color: #fff;
+  padding: 0.75rem 1.4rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mv-tryon-upload-btn:hover {
+  background: var(--green-dark, #065F46);
+}
+
+/* Responsive para pantallas móviles */
+@media (max-width: 640px) {
+  .mv-tryon-overlay {
+    padding: 0;
+  }
+  .mv-tryon-card {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .mv-tryon-header {
+    padding: 0.75rem 1rem;
+  }
+  .mv-tryon-title {
+    font-size: 1rem;
+  }
+  .mv-tryon-footer {
+    padding: 0.6rem 0.8rem;
+  }
+  .mv-tryon-action-bar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .mv-tryon-action-bar .btn {
+    width: 100%;
+  }
+  .mv-tryon-privacy-badge {
+    text-align: center;
+    justify-content: center;
+    font-size: 0.68rem;
+  }
+}
+
+/* Hero Banner en el Catálogo */
+.mv-tryon-hero-banner {
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 45%, #0D9488 100%);
+  border-radius: 20px;
+  padding: 1.6rem 2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 12px 32px rgba(6, 78, 59, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+.mv-tryon-hero-banner::after {
+  content: '👓';
+  position: absolute;
+  right: 18%;
+  bottom: -25px;
+  font-size: 8rem;
+  opacity: 0.12;
+  pointer-events: none;
+  transform: rotate(-15deg);
+}
+.mv-tryon-hero-text {
+  position: relative;
+  z-index: 1;
+}
+.mv-tryon-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+.mv-tryon-hero-title {
+  font-family: var(--font-head, sans-serif);
+  font-size: clamp(1.3rem, 2.5vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.4rem;
+  color: #fff;
+}
+.mv-tryon-hero-sub {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 520px;
+}
+#btn-hero-tryon {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  padding: 0.85rem 1.6rem;
+  font-weight: 800;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Guía visual de centrado facial */
+.mv-tryon-face-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 290px;
+  border: 2px dashed rgba(16, 185, 129, 0.65);
+  border-radius: 50%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  transition: opacity 0.5s ease;
+  z-index: 4;
+}
+.mv-tryon-face-guide.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Botones de modelos demo en el tab de subida */
+.mv-tryon-demo-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.8rem;
+}
+.mv-tryon-demo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mv-tryon-demo-btn:hover {
+  background: var(--green-primary, #10B981);
+  border-color: var(--green-primary, #10B981);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .mv-tryon-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.4rem 1.25rem;
+  }
+  #btn-hero-tryon {
+    width: 100%;
+    justify-content: center;
+  }
+}
