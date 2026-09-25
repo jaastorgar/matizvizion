@@ -1,0 +1,79 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Recetas de clientes — Matizvisión{% endblock %}
+{% block extra_css %}
+<style>
+  .mv-rec-card { display: flex; gap: .8rem; align-items: flex-start; border: 1px solid var(--border-color); border-radius: 14px; box-shadow: var(--shadow); background: #fff; padding: .9rem 1rem; margin-bottom: .8rem; flex-wrap: wrap; }
+  .mv-rec-ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(16,185,129,.12); color: var(--green-dark); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex: 0 0 auto; }
+  .mv-rec-info { flex: 1 1 240px; min-width: 0; }
+  .mv-rec-nom { font-weight: 700; color: var(--lead-dark); word-break: break-word; }
+  .mv-rec-meta { color: var(--lead-muted); font-size: .82rem; margin-top: .15rem; }
+  .mv-rec-det { color: var(--lead-muted); font-size: .85rem; margin-top: .35rem; white-space: pre-wrap; }
+  .mv-rec-side { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+  .mv-rec-badge { border-radius: 999px; font-size: .72rem; font-weight: 700; padding: .22rem .6rem; }
+  .mv-rec-badge.ok { background: rgba(16,185,129,.15); color: var(--green-dark); }
+  .mv-rec-badge.bad { background: rgba(220,38,38,.12); color: var(--danger); }
+  .mv-rec-badge.mut { background: var(--lead-light); color: var(--lead-muted); }
+  .mv-rec-del { color: var(--danger); border: 1px solid rgba(220,38,38,.35); background: #fff; border-radius: 10px; min-width: 38px; min-height: 38px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <h1 class="h3 mb-1"><i class="bi bi-files"></i> Recetas de clientes</h1>
+    <p class="text-secondary mb-4">Busca, descarga y administra las recetas subidas por tus clientes (o súbelas tú en su nombre).</p>
+
+    <div class="mv-card p-3 p-md-4 mb-4">
+      <h2 class="h6 text-uppercase text-muted mb-3">Buscar cliente</h2>
+      <div class="input-group">
+        <input type="search" class="form-control" id="rs-q" placeholder="Correo, nombre, apellido o RUT del cliente" />
+        <button class="btn btn-cta" type="button" id="rs-search"><i class="bi bi-search"></i> Buscar</button>
+      </div>
+      <div class="small text-muted mt-2" id="rs-qinfo">Mostrando todas las recetas.</div>
+    </div>
+
+    <div class="mv-card p-3 p-md-4 mb-4">
+      <h2 class="h6 text-uppercase text-muted mb-3">Subir receta en nombre de un cliente</h2>
+      <form id="rs-form" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="rs-email">Correo del cliente *</label>
+            <input type="email" class="form-control" id="rs-email" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="rs-tipo">Tipo de receta</label>
+            <select class="form-select" id="rs-tipo">
+              <option value="OPTICA">Receta de lentes (óptica)</option>
+              <option value="CONTACTOLOGIA">Receta de lentes de contacto</option>
+              <option value="OTRO">Otro documento visual</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="rs-file">Archivo *</label>
+            <input type="file" class="form-control" id="rs-file" accept=".pdf,.jpg,.jpeg,.png,.webp" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="rs-vigencia">Vigente hasta (opcional)</label>
+            <input type="date" class="form-control" id="rs-vigencia" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="rs-nombre">Nombre del documento (opcional)</label>
+            <input type="text" class="form-control" id="rs-nombre" />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="rs-detalle">Graduación / notas (opcional)</label>
+            <textarea class="form-control" id="rs-detalle" rows="2"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-cta w-100 mt-3" type="submit" id="rs-submit"><i class="bi bi-upload"></i> Subir receta</button>
+      </form>
+    </div>
+
+    <h2 class="h6 text-uppercase text-muted mb-3">Recetas</h2>
+    <div id="rs-list"><div class="mv-empty">Cargando…</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'modules/recetas/staff_recetas.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}Mis Recetas — Óptica Matiz Visión{% endblock %}
+{% block extra_css %}
+<style>
+  .mv-rec-drop { border: 2px dashed var(--border-color); border-radius: 14px; padding: 1.4rem 1rem; text-align: center; color: var(--lead-muted); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+  .mv-rec-drop.over, .mv-rec-drop:hover { border-color: var(--green-primary); background: rgba(16,185,129,.06); color: var(--green-dark); }
+  .mv-rec-drop i { font-size: 1.8rem; display: block; margin-bottom: .4rem; }
+  .mv-rec-card { display: flex; gap: .8rem; align-items: flex-start; border: 1px solid var(--border-color); border-radius: 14px; box-shadow: var(--shadow); background: #fff; padding: .9rem 1rem; margin-bottom: .8rem; flex-wrap: wrap; }
+  .mv-rec-ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(16,185,129,.12); color: var(--green-dark); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex: 0 0 auto; }
+  .mv-rec-info { flex: 1 1 220px; min-width: 0; }
+  .mv-rec-nom { font-weight: 700; color: var(--lead-dark); word-break: break-word; }
+  .mv-rec-meta { color: var(--lead-muted); font-size: .82rem; margin-top: .15rem; }
+  .mv-rec-det { color: var(--lead-muted); font-size: .85rem; margin-top: .35rem; white-space: pre-wrap; }
+  .mv-rec-side { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+  .mv-rec-badge { border-radius: 999px; font-size: .72rem; font-weight: 700; padding: .22rem .6rem; }
+  .mv-rec-badge.ok { background: rgba(16,185,129,.15); color: var(--green-dark); }
+  .mv-rec-badge.bad { background: rgba(220,38,38,.12); color: var(--danger); }
+  .mv-rec-badge.mut { background: var(--lead-light); color: var(--lead-muted); }
+  .mv-rec-del { color: var(--danger); border: 1px solid rgba(220,38,38,.35); background: #fff; border-radius: 10px; min-width: 38px; min-height: 38px; }
+  .mv-rec-consent { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.4); color: #92400e; border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <h1 class="h3 mb-1"><i class="bi bi-file-earmark-medical"></i> Mis Recetas</h1>
+    <p class="text-secondary mb-4">Sube y administra tus recetas ópticas. Las usamos para fabricar tus lentes con tu graduación exacta.</p>
+
+    <div class="mv-rec-consent" id="rec-consent" hidden>
+      <i class="bi bi-shield-exclamation"></i>
+      <span style="flex:1 1 240px;">Para almacenar tus recetas necesitamos tu autorización de datos de salud (Ley 21.719).</span>
+      <button class="btn btn-cta btn-sm" type="button" id="rec-consent-btn">Autorizar</button>
+    </div>
+
+    <div class="mv-card p-3 p-md-4 mb-4">
+      <h2 class="h6 text-uppercase text-muted mb-3">Subir nueva receta</h2>
+      <form id="rec-form" novalidate>
+        <div class="mv-rec-drop" id="rec-drop">
+          <i class="bi bi-cloud-arrow-up"></i>
+          Arrastra tu receta aquí o haz clic para elegir el archivo<br>
+          <small>PDF, JPG, PNG o WEBP · máximo 10 MB</small>
+          <input type="file" id="rec-file" accept=".pdf,.jpg,.jpeg,.png,.webp" hidden />
+        </div>
+        <div class="small text-muted mt-1" id="rec-filename">Ningún archivo elegido</div>
+        <div class="row g-3 mt-1">
+          <div class="col-sm-6">
+            <label class="form-label" for="rec-tipo">Tipo de receta</label>
+            <select class="form-select" id="rec-tipo">
+              <option value="OPTICA">Receta de lentes (óptica)</option>
+              <option value="CONTACTOLOGIA">Receta de lentes de contacto</option>
+              <option value="OTRO">Otro documento visual</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label" for="rec-vigencia">Vigente hasta (opcional)</label>
+            <input type="date" class="form-control" id="rec-vigencia" />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="rec-nombre">Nombre del documento (opcional)</label>
+            <input type="text" class="form-control" id="rec-nombre" placeholder="Ej: Receta Dr. Pérez — control 2026" />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="rec-detalle">Graduación / notas (opcional)</label>
+            <textarea class="form-control" id="rec-detalle" rows="3" placeholder="OD: -1.25 -0.50 x 180 · OI: -1.00 -0.25 x 175 · ADD +1.50"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-cta w-100 mt-3" type="submit" id="rec-submit"><i class="bi bi-upload"></i> Subir receta</button>
+      </form>
+    </div>
+
+    <h2 class="h6 text-uppercase text-muted mb-3">Mis recetas subidas</h2>
+    <div id="rec-list"><div class="mv-empty">Cargando…</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'modules/recetas/mis_recetas.js' %}"></script>
+{% endblock %}

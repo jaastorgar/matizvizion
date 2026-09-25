@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'orders',
     'payments',
     'appointments',
+    'recetas',
     'web',
 ]
 

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from accounts.auth_login import LoginView
 from django.urls import path, include
+from recetas.views import MisRecetasPage, RecetasStaffPage
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -19,6 +20,9 @@ urlpatterns = [
     path('api/core/', include('core.urls')),
     path('api/store/', include('store.urls')),
     path('api/orders/', include('orders.urls')),
+    path('api/recetas/', include('recetas.urls')),
+    path('mis-recetas/', MisRecetasPage.as_view()),
+    path('recetas-staff/', RecetasStaffPage.as_view()),
     path('api/payments/', include('payments.urls')),
     path('api/appointments/', include('appointments.urls')),
     # Inteligencia de negocio (solo ADMIN)
@@ -30,3 +34,8 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# media-recetas
+from django.conf import settings as dj_settings
+from django.conf.urls.static import static
+if dj_settings.DEBUG:
+    urlpatterns += static(dj_settings.MEDIA_URL, document_root=dj_settings.MEDIA_ROOT)
