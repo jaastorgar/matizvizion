@@ -22,6 +22,7 @@
     currentGlassesImg: null,
     scaleFactor: 1.0, // Control manual de calibre (+- 25%)
     offsetY: 0,       // Control manual de altura (+- 30px)
+    manualRotation: 0, // Control manual de inclinación / nivelación en radianes
     staticImage: null,
     lastLandmarks: null,
     facingMode: 'user'
@@ -134,9 +135,13 @@
               '<label><span>Tamaño / Calibre</span> <span id="val-scale">100%</span></label>' +
               '<input type="range" id="tune-scale" min="0.70" max="1.35" step="0.02" value="1.00" />' +
             '</div>' +
-            '<div class="mv-tryon-tune-row mb-0">' +
+            '<div class="mv-tryon-tune-row">' +
               '<label><span>Altura nasal</span> <span id="val-height">0</span></label>' +
               '<input type="range" id="tune-height" min="-40" max="40" step="1" value="0" />' +
+            '</div>' +
+            '<div class="mv-tryon-tune-row mb-0">' +
+              '<label><span>Inclinación / Nivelar</span> <span id="val-rotate">0°</span></label>' +
+              '<input type="range" id="tune-rotate" min="-20" max="20" step="1" value="0" />' +
             '</div>' +
           '</div>' +
 
@@ -231,6 +236,18 @@
         drawFrameStatic(state.lastLandmarks);
       }
     });
+
+    var tuneRotate = document.getElementById('tune-rotate');
+    var valRotate = document.getElementById('val-rotate');
+    if (tuneRotate) {
+      tuneRotate.addEventListener('input', function () {
+        state.manualRotation = parseInt(tuneRotate.value, 10) * Math.PI / 180;
+        valRotate.textContent = (tuneRotate.value > 0 ? '+' : '') + tuneRotate.value + '°';
+        if (state.mode === 'upload' && state.lastLandmarks) {
+          drawFrameStatic(state.lastLandmarks);
+        }
+      });
+    }
 
     // Snapshot
     document.getElementById('tryon-btn-snapshot').addEventListener('click', takeSnapshot);
@@ -669,10 +686,22 @@
       renderAngle = smoothTracker.angle;
     }
 
-    // Renderizar armazón con rotación y escala correcta (derecho)
+    // Aplicar rotación manual (nivelación) si el usuario la ajustó
+    var finalAngle = renderAngle + (state.manualRotation || 0);
+
+    // Estimación 3D de giro de cabeza (Yaw lateral) para perspectiva realista
+    var distLeftEye = Math.abs(ptNoseX - screenLeftEye.x);
+    var distRightEye = Math.abs(screenRightEye.x - ptNoseX);
+    var totalEyeSpan = distLeftEye + distRightEye;
+    var yawRatio = (totalEyeSpan > 0) ? (distRightEye - distLeftEye) / totalEyeSpan : 0;
+    // Comprimir levemente en el eje X cuando la persona gira el rostro de lado (perspectiva 3D)
+    var yawScaleX = Math.cos(Math.max(-0.45, Math.min(0.45, yawRatio)) * 1.15);
+
+    // Renderizar armazón con rotación, perspectiva y escala correcta (derecho)
     ctx.save();
     ctx.translate(renderX, renderY);
-    ctx.rotate(renderAngle);
+    ctx.rotate(finalAngle);
+    ctx.scale(yawScaleX, 1);
     ctx.drawImage(glassesImg, -renderWidth / 2, -renderHeight / 2, renderWidth, renderHeight);
     ctx.restore();
   }
