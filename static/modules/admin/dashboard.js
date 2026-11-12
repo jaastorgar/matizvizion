@@ -115,7 +115,7 @@ ORDMAP = {}; (filterRut||[]).forEach(function(o){ ORDMAP[o.id]=o; });
     var waBtn = '<button class="btn btn-outline-mv btn-sm me-1" data-wa="'+o.id+'" title="Avisar por WhatsApp"><i class="bi bi-whatsapp"></i></button>';
     var cancelBtn = (['PAGADA','EN_PREPARACION','LISTO_PARA_RETIRO'].indexOf(st)!==-1) ? '<button class="btn btn-sm me-1" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;" data-cancela="'+o.id+'" title="Cancelar por quiebre de stock"><i class="bi bi-x-octagon"></i> Cancelar</button>' : '';
     var acc = waBtn + cancelBtn + saldoBtn + (NEXT[st] ? '<button class="btn btn-cta btn-sm" data-id="' + o.id + '" data-next="' + NEXT[st] + '"' + nextDis + '>' + esc(LABEL[st]) + '</button>' : '<span class="text-muted">—</span>');
-      return '<tr><td>' + esc(o.codigo || ('#' + o.id)) + '</td><td>' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td>' + acc + '</td></tr>';
+      return '<tr><td data-label="Código"><strong>' + esc(o.codigo || ('#' + o.id)) + '</strong></td><td data-label="Cliente / RUT">' + esc(o.cliente_email) + '<br><small class="text-muted">' + esc(fmtRut(o.cliente_rut) || '—') + '</small></td><td data-label="Estado"><span class="mv-badge ' + st + '">' + esc(STATE_TXT[st] || st) + '</span></td><td data-label="Acción" class="mv-td-actions">' + acc + '</td></tr>';
     }).join('');
     body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Código</th><th>Cliente / RUT</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
@@ -186,7 +186,7 @@ ORDMAP = {}; (filterRut||[]).forEach(function(o){ ORDMAP[o.id]=o; });
     if (!STOCK_BAJO.length) { body.innerHTML = '<div class="mv-empty">No hay productos con stock bajo. ¡Buen trabajo!</div>'; return; }
     var rows = STOCK_BAJO.map(function (p){
       var tag = p.stock <= 0 ? '<span class="mv-badge CANCELADA">AGOTADO</span>' : '<span class="mv-badge EN_PREPARACION">BAJO</span>';
-      return '<tr><td>' + esc(p.nombre) + '</td><td>' + esc(p.sku || '—') + '</td><td>' + p.stock + '</td><td>' + (p.stock_minimo != null ? p.stock_minimo : '—') + '</td><td>' + tag + '</td></tr>';
+      return '<tr><td data-label="Producto"><strong>' + esc(p.nombre) + '</strong></td><td data-label="SKU">' + esc(p.sku || '—') + '</td><td data-label="Stock">' + p.stock + '</td><td data-label="Mínimo">' + (p.stock_minimo != null ? p.stock_minimo : '—') + '</td><td data-label="Estado">' + tag + '</td></tr>';
     }).join('');
     body.innerHTML = '<table class="mv-dash-table"><thead><tr><th>Producto</th><th>SKU</th><th>Stock</th><th>Mínimo</th><th>Estado</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }

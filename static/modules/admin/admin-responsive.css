@@ -82,64 +82,185 @@
   }
 }
 
-/* ============================================
-   3) TABLAS: scroll horizontal + columna sticky
-   ============================================ */
-@media (max-width: 768px) {
+/* ==========================================================
+   3) TABLAS RESPONSIVAS: Desktop/Tablet Table → Mobile Cards
+   ========================================================== */
+/* En Desktop y Tablet (>= 768px): Tabla estructurada y legible */
+@media (min-width: 768px) {
   .mv-ad-panel > table,
   .mv-dash-panel > table,
   .mv-ad-table,
   .mv-dash-table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
+    display: table !important;
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    overflow: visible !important;
   }
-
-  .mv-ad-table thead th:first-child,
-  .mv-dash-table thead th:first-child,
-  .mv-ad-table tbody td:first-child,
-  .mv-dash-table tbody td:first-child {
-    position: sticky;
-    left: 0;
-    background: var(--white);
-    z-index: 2;
-    min-width: 140px;
-    font-weight: 700;
-    box-shadow: 2px 0 4px rgba(0,0,0,.04);
+  .mv-ad-table thead,
+  .mv-dash-table thead {
+    display: table-header-group !important;
   }
-
+  .mv-ad-table tbody,
+  .mv-dash-table tbody {
+    display: table-row-group !important;
+  }
+  .mv-ad-table tr,
+  .mv-dash-table tr {
+    display: table-row !important;
+  }
   .mv-ad-table th, .mv-ad-table td,
   .mv-dash-table th, .mv-dash-table td {
-    white-space: nowrap;
-    font-size: .85rem;
-    padding: .55rem .6rem;
+    display: table-cell !important;
+    position: static !important;
+    padding: .75rem .7rem !important;
+    border-bottom: 1px solid var(--border-color, #e5e7eb) !important;
+    font-size: .9rem !important;
+    white-space: normal !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  .mv-ad-table th,
+  .mv-dash-table th {
+    color: var(--lead-muted, #6B7280) !important;
+    text-transform: uppercase !important;
+    font-size: .72rem !important;
+    letter-spacing: .04em !important;
+    font-weight: 700 !important;
+  }
+  .mv-ad-actions,
+  .mv-td-actions {
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* En Moviles (< 768px): NO se usan tablas -> Se transforman en TARJETAS DE DATOS (Data Cards) */
+@media (max-width: 767.98px) {
+  .mv-ad-panel > table,
+  .mv-dash-panel > table,
+  .mv-ad-table,
+  .mv-dash-table {
+    display: block !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+    padding: 0 !important;
   }
 
-  /* Columna de acciones siempre visible a la derecha */
-  .mv-ad-table thead th:last-child,
-  .mv-dash-table thead th:last-child,
-  .mv-ad-table tbody td:last-child,
-  .mv-dash-table tbody td:last-child {
-    position: sticky;
-    right: 0;
-    background: var(--white);
-    z-index: 2;
-    box-shadow: -2px 0 4px rgba(0,0,0,.04);
+  /* Ocultar cabeceras en movil */
+  .mv-ad-table thead,
+  .mv-dash-table thead {
+    display: none !important;
   }
 
-  /* Acciones: botones con target 44px */
+  /* Contenedor vertical de tarjetas */
+  .mv-ad-table tbody,
+  .mv-dash-table tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: .9rem !important;
+    width: 100% !important;
+  }
+
+  /* Cada fila (tr) es una tarjeta independiente */
+  .mv-ad-table tr,
+  .mv-dash-table tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--white, #ffffff) !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    border-radius: 16px !important;
+    padding: 1.1rem 1.15rem !important;
+    box-shadow: 0 4px 14px rgba(31, 41, 55, .06) !important;
+    position: static !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    gap: .45rem !important;
+    margin-bottom: .25rem !important;
+  }
+
+  /* Celdas clave-valor alineadas */
+  .mv-ad-table td,
+  .mv-dash-table td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: right !important;
+    padding: .45rem 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed rgba(229, 231, 235, .8) !important;
+    font-size: .88rem !important;
+    white-space: normal !important;
+    position: static !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    min-width: 0 !important;
+  }
+
+  /* Etiqueta inyectada desde data-label */
+  .mv-ad-table td[data-label]::before,
+  .mv-dash-table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: .74rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--lead-muted, #6B7280);
+    text-align: left;
+    margin-right: .75rem;
+    flex-shrink: 0;
+  }
+
+  .mv-ad-table td:first-child strong,
+  .mv-dash-table td:first-child strong {
+    font-size: .95rem;
+    color: var(--lead-dark);
+  }
+
+  /* Barra de acciones al pie de la tarjeta */
+  .mv-ad-table td:last-child,
+  .mv-dash-table td:last-child,
+  .mv-ad-actions,
+  .mv-td-actions {
+    border-bottom: none !important;
+    border-top: 1px solid var(--border-color, #e5e7eb) !important;
+    margin-top: .5rem !important;
+    padding-top: .75rem !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    gap: .5rem !important;
+    width: 100% !important;
+  }
+
+  .mv-ad-table td:last-child::before,
+  .mv-dash-table td:last-child::before,
+  .mv-ad-actions::before,
+  .mv-td-actions::before {
+    display: none !important;
+  }
+
+  /* Botones tactiles amplios (minimo 44px) */
   .mv-ad-actions button,
+  .mv-td-actions .btn,
+  .mv-dash-table td:last-child .btn,
   .mv-cita-actions button {
-    min-width: 40px !important;
-    min-height: 40px !important;
-    padding: .4rem .6rem !important;
-    font-size: .82rem !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: .5rem .95rem !important;
+    font-size: .85rem !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: .4rem !important;
+    flex-grow: 1 !important;
+    max-width: 100% !important;
   }
 }
 
@@ -396,11 +517,12 @@
   max-width: 100% !important;
   width: 100% !important;
 }
-.mv-dash-table, .mv-ad-table {
-  display: block !important;
-  overflow-x: auto !important;
-  max-width: 100% !important;
-  -webkit-overflow-scrolling: touch;
+/* Tablas adaptables sin forzar display block global */
+@media (max-width: 767.98px) {
+  .mv-dash-table, .mv-ad-table {
+    display: block !important;
+    width: 100% !important;
+  }
 }
 .mv-dash-wrap, .mv-ad-wrap, .mv-ad-shell, .mv-in-shell { max-width: 100% !important; }
 body { overflow-x: clip !important; }

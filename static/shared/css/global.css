@@ -116,7 +116,52 @@ a:hover { color: var(--green-primary); }
 /* Imágenes responsive */
 img { max-width: 100%; height: auto; display: block; }
 
-/* Tablas responsive */
+/* Tablas responsive: En móviles se transforman en tarjetas legibles con data-label */
+@media (max-width: 767.98px) {
+  .table-cards, .mv-table-cards {
+    display: block !important;
+    width: 100% !important;
+    border: none !important;
+  }
+  .table-cards thead, .mv-table-cards thead {
+    display: none !important;
+  }
+  .table-cards tbody, .mv-table-cards tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.85rem !important;
+  }
+  .table-cards tr, .mv-table-cards tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border: 1px solid var(--border-color, #e5e7eb) !important;
+    border-radius: 14px !important;
+    padding: 1rem !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05) !important;
+    gap: 0.4rem !important;
+  }
+  .table-cards td, .mv-table-cards td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.4rem 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed #f3f4f6 !important;
+    white-space: normal !important;
+    text-align: right !important;
+  }
+  .table-cards td[data-label]::before, .mv-table-cards td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    color: var(--lead-muted, #6b7280);
+    text-align: left;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+}
 .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 /* ========== footer-logo-centrado ========== */
 .mv-footer .container,

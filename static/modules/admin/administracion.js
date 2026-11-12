@@ -124,13 +124,13 @@
       html += '<div style="font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--lead-muted,#6B7280);margin:0 0 .5rem;">Equipo</div>';
       if (tecs.length) {
         html += '<table class="mv-ad-table"><thead><tr><th>Nombre</th><th>Especialidad</th><th>Activo</th></tr></thead><tbody>' +
-          tecs.map(function (t){ return '<tr><td>' + esc(t.nombre) + '</td><td>' + esc(t.especialidad) + '</td><td>' + (t.activo ? 'Sí' : 'No') + '</td></tr>'; }).join('') +
+          tecs.map(function (t){ return '<tr><td data-label="Nombre"><strong>' + esc(t.nombre) + '</strong></td><td data-label="Especialidad">' + esc(t.especialidad) + '</td><td data-label="Activo">' + (t.activo ? 'Sí' : 'No') + '</td></tr>'; }).join('') +
           '</tbody></table>';
       } else html += '<div class="mv-empty">Sin tecnólogos en esta óptica.</div>';
       html += '<div style="font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--lead-muted,#6B7280);margin:1.2rem 0 .5rem;">Próximos bloques</div>';
       if (BLO.length) {
         html += '<table class="mv-ad-table"><thead><tr><th>Tecnólogo</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>' +
-          BLO.slice(0, 8).map(function (b){ return '<tr><td>' + esc(optLabel('/admin/tecnologos/', b.tecnologo)) + '</td><td>' + esc(b.fecha) + '</td><td>' + esc(String(b.hora_inicio).slice(0,5)) + '–' + esc(String(b.hora_fin).slice(0,5)) + '</td></tr>'; }).join('') +
+          BLO.slice(0, 8).map(function (b){ return '<tr><td data-label="Tecnólogo"><strong>' + esc(optLabel('/admin/tecnologos/', b.tecnologo)) + '</strong></td><td data-label="Fecha">' + esc(b.fecha) + '</td><td data-label="Hora">' + esc(String(b.hora_inicio).slice(0,5)) + '–' + esc(String(b.hora_fin).slice(0,5)) + '</td></tr>'; }).join('') +
           '</tbody></table>';
       } else html += '<div class="mv-empty">Sin bloques disponibles próximos.</div>';
       body.innerHTML = html;
@@ -152,9 +152,9 @@
       if (!list.length) { body.innerHTML = '<div class="mv-empty">Sin registros.</div>'; return; }
       var head = current.cols.map(function (c){ return '<th>' + c[1] + '</th>'; }).join('') + '<th></th>';
       var rows = list.map(function (row){
-        var tds = current.cols.map(function (c){ return '<td>' + cellVal(row, c[0]) + '</td>'; }).join('');
-        return '<tr>' + tds + '<td class="mv-ad-actions"><button class="edit" data-id="' + row.id + '"><i class="bi bi-pencil"></i></button>' +
-          (current.noCreate ? '' : '<button class="del" data-id="' + row.id + '"><i class="bi bi-trash"></i></button>') + '</td></tr>';
+        var tds = current.cols.map(function (c, i){ return '<td data-label="' + esc(c[1]) + '">' + (i === 0 ? '<strong>' + cellVal(row, c[0]) + '</strong>' : cellVal(row, c[0])) + '</td>'; }).join('');
+        return '<tr>' + tds + '<td class="mv-ad-actions" data-label="Acciones"><button class="edit" data-id="' + row.id + '" title="Editar"><i class="bi bi-pencil"></i><span class="d-md-none ms-1">Editar</span></button>' +
+          (current.noCreate ? '' : '<button class="del" data-id="' + row.id + '" title="Eliminar"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Eliminar</span></button>') + '</td></tr>';
       }).join('');
       body.innerHTML = '<table class="mv-ad-table"><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>';
       body.querySelectorAll('.edit').forEach(function (b){ b.addEventListener('click', function (){ openModal(list.filter(function (x){ return String(x.id) === b.getAttribute('data-id'); })[0]); }); });
