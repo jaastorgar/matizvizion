@@ -103,6 +103,12 @@ class Orden(models.Model):
     monto_abonado = models.DecimalField('Monto abonado online', max_digits=10, decimal_places=2, default=0)
     saldo_cancelado = models.BooleanField('Saldo cancelado en tienda', default=False)
     saldo_cancelado_en = models.DateTimeField('Fecha de cancelacion del saldo', null=True, blank=True)
+    stock_revertido = models.BooleanField(
+        'Stock devuelto al inventario',
+        default=False,
+        db_index=True,
+        help_text='Indica si las unidades de esta orden ya fueron devueltas/reincorporadas al stock.'
+    )
     fecha_entrega = models.DateField(
         'Fecha de entrega', null=True, blank=True,
         help_text='Se sella automaticamente al pasar a ENTREGADA. Ancla el reloj de garantias.'
@@ -137,12 +143,17 @@ class Orden(models.Model):
         return f"MV-{self.creado_en.year}-{uuid.uuid4().hex[:5].upper()}"
 
     def save(self, *args, **kwargs):
-        if self.pk:
+        is_new = self.pk is None
+        if not is_new:
             self._prev_estado = Orden.objects.filter(pk=self.pk).values_list('estado', flat=True).first()
         super().save(*args, **kwargs)
         if not self.codigo:
             self.codigo = self._generar_codigo()
             super().save(update_fields=['codigo'])
+        # Si la orden entra en un estado que cancela, falla o devuelve la compra,
+        # el stock reservado debe volver de inmediato al inventario de forma automática.
+        if not is_new and self.estado in (self.Estado.CANCELADA, self.Estado.FALLIDA, self.Estado.DEVUELTA) and not self.stock_revertido:
+            self.revertir_stock()
 
     def puede_cambiar_a(self, nuevo_estado):
         return nuevo_estado in self.TRANSICIONES_PERMITIDAS.get(self.estado, [])
@@ -157,15 +168,59 @@ class Orden(models.Model):
             self.fecha_entrega = timezone.localdate()
             fields.append('fecha_entrega')
         self.save(update_fields=fields)
+        if nuevo_estado in (self.Estado.CANCELADA, self.Estado.FALLIDA, self.Estado.DEVUELTA) and not self.stock_revertido:
+            self.revertir_stock()
         HistorialEstado.objects.create(
             orden=self, estado_anterior=estado_anterior, estado_nuevo=nuevo_estado, usuario=usuario
         )
 
-    def revertir_stock(self):
+    def cantidades_devueltas_por_solicitudes(self):
+        """
+        Retorna un diccionario {item_id: total_devuelto} con las unidades
+        ya devueltas formalmente mediante SolicitudDevolucion aprobadas con resolución 'devolucion'.
+        """
+        totales = {}
+        sols = self.devoluciones.filter(
+            estado='APROBADA', resolucion='devolucion'
+        ).prefetch_related('items')
+        for s in sols:
+            for it in s.items.all():
+                totales[it.id] = totales.get(it.id, 0) + s.cantidad_de(it)
+        return totales
+
+    def revertir_stock(self, motivo=''):
+        """
+        Reincorpora de forma atómica e idempotente las unidades de esta orden al inventario.
+        Descuenta las unidades ya devueltas por SolicitudDevolucion para evitar doble conteo.
+        Retorna el número de unidades repuestas.
+        """
+        from django.db import transaction
         from django.db.models import F
         from store.models import Producto
-        for it in self.items.select_related('producto').all():
-            Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + it.cantidad)
+
+        if self.stock_revertido:
+            return 0
+
+        with transaction.atomic():
+            orden_db = Orden.objects.select_for_update().get(pk=self.pk)
+            if orden_db.stock_revertido:
+                self.stock_revertido = True
+                return 0
+
+            ya_devueltas = orden_db.cantidades_devueltas_por_solicitudes()
+            total_repuesto = 0
+
+            for it in orden_db.items.select_related('producto').all():
+                devuelta_previa = ya_devueltas.get(it.id, 0)
+                por_devolver = max(0, it.cantidad - devuelta_previa)
+                if por_devolver > 0:
+                    Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + por_devolver)
+                    total_repuesto += por_devolver
+
+            orden_db.stock_revertido = True
+            orden_db.save(update_fields=['stock_revertido'])
+            self.stock_revertido = True
+            return total_repuesto
 
 
 class ItemOrden(models.Model):
@@ -241,6 +296,11 @@ class SolicitudDevolucion(models.Model):
     garantia_aplicada = models.CharField('Garantia aplicada (codigo de politica)', max_length=40, blank=True, null=True)
     motivo_rechazo = models.TextField('Motivo de rechazo (vendedor)', blank=True, null=True)
     reembolso_procesado = models.BooleanField('Reembolso procesado (manual)', default=False)
+    stock_revertido = models.BooleanField(
+        'Stock devuelto al inventario',
+        default=False,
+        help_text='Indica si las unidades de esta solicitud ya fueron devueltas al inventario.'
+    )
     cantidades = models.JSONField(
         'Cantidades devueltas por linea (item_id -> cantidad)',
         default=dict, blank=True,
@@ -266,12 +326,28 @@ class SolicitudDevolucion(models.Model):
             return item.cantidad
 
     def revertir_stock_items(self):
-        """Repone al inventario SOLO los productos/cantidades de esta solicitud."""
+        """Repone al inventario SOLO los productos/cantidades de esta solicitud (idempotente)."""
+        if self.stock_revertido:
+            return 0
+        from django.db import transaction
         from django.db.models import F
         from store.models import Producto
-        for it in self.items.select_related('producto').all():
-            qty = self.cantidad_de(it)
-            Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + qty)
+
+        with transaction.atomic():
+            sol_db = SolicitudDevolucion.objects.select_for_update().get(pk=self.pk)
+            if sol_db.stock_revertido:
+                self.stock_revertido = True
+                return 0
+            total = 0
+            for it in sol_db.items.select_related('producto').all():
+                qty = sol_db.cantidad_de(it)
+                if qty > 0:
+                    Producto.objects.filter(pk=it.producto_id).update(stock=F('stock') + qty)
+                    total += qty
+            sol_db.stock_revertido = True
+            sol_db.save(update_fields=['stock_revertido'])
+            self.stock_revertido = True
+            return total
 
 
 class PoliticaGarantia(models.Model):
@@ -312,7 +388,7 @@ class PoliticaGarantia(models.Model):
 
 # ---- Signal: mail cuando cambia el ESTADO de una orden ----
 from django.db import transaction as _tx
-from django.db.models.signals import post_save as _post_save_orden
+from django.db.models.signals import post_save as _post_save_orden, pre_delete as _pre_delete_orden
 from django.dispatch import receiver as _receiver_orden
 
 
@@ -335,3 +411,16 @@ def _orden_estado_mail(sender, instance, created, **kwargs):
     estado = instance.estado
     oid = instance.pk
     _tx.on_commit(lambda: _enviar_mail_orden(oid, estado))
+
+
+@_receiver_orden(_pre_delete_orden, sender=Orden)
+def _orden_pre_delete_reponer_stock(sender, instance, **kwargs):
+    """
+    Si una orden activa se elimina de la base de datos sin haber revertido previamente su stock,
+    restituir inmediatamente las unidades para que no se pierdan del inventario físico.
+    """
+    if not getattr(instance, 'stock_revertido', False):
+        try:
+            instance.revertir_stock(motivo='Eliminación de orden')
+        except Exception:
+            pass

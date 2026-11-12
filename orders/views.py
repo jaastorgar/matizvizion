@@ -214,6 +214,7 @@ class OperacionOrdenViewSet(
             orden.estado = 'CANCELADA'
             orden.motivo_cancelacion = motivo
             orden.save(update_fields=['estado', 'motivo_cancelacion'])
+            orden.revertir_stock()
             HistorialEstado.objects.create(orden=orden, estado_anterior=previo, estado_nuevo='CANCELADA', usuario=request.user)
         return Response({'ok': True, 'codigo': orden.codigo})
 

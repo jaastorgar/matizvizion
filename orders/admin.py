@@ -9,12 +9,33 @@ class ItemOrdenInline(admin.TabularInline):
 
 @admin.register(models.Orden)
 class OrdenAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'cliente', 'estado', 'total', 'creado_en')
-    list_filter = ('estado',)
+    list_display = ('codigo', 'cliente', 'estado', 'stock_revertido', 'total', 'creado_en')
+    list_filter = ('estado', 'stock_revertido')
     search_fields = ('codigo', 'cliente__email')
     inlines = (ItemOrdenInline,)
-    readonly_fields = ('codigo', 'creado_en', 'actualizado_en')
-    actions = ['marcar_entregada']
+    readonly_fields = ('codigo', 'stock_revertido', 'creado_en', 'actualizado_en')
+    actions = ['marcar_entregada', 'marcar_cancelada', 'marcar_devuelta']
+
+    def save_model(self, request, obj, form, change):
+        if change and 'estado' in form.changed_data:
+            prev_estado = form.initial.get('estado')
+            nuevo_estado = obj.estado
+            super().save_model(request, obj, form, change)
+            if nuevo_estado in (models.EstadoOrden.CANCELADA, models.EstadoOrden.FALLIDA, models.EstadoOrden.DEVUELTA):
+                unidades = obj.revertir_stock()
+                if unidades > 0:
+                    self.message_user(
+                        request,
+                        f"Stock devuelto automáticamente: {unidades} unidad(es) de la orden {obj.codigo} reincorporadas al inventario."
+                    )
+            models.HistorialEstado.objects.create(
+                orden=obj,
+                estado_anterior=prev_estado or '',
+                estado_nuevo=nuevo_estado,
+                usuario=request.user,
+            )
+        else:
+            super().save_model(request, obj, form, change)
 
     def marcar_entregada(self, request, queryset):
         n = 0
@@ -24,6 +45,40 @@ class OrdenAdmin(admin.ModelAdmin):
                 n += 1
         self.message_user(request, f'{n} orden(es) marcadas como entregadas.')
     marcar_entregada.short_description = 'Marcar como entregada'
+
+    def marcar_cancelada(self, request, queryset):
+        n = 0
+        unidades = 0
+        for o in queryset:
+            if o.estado not in (models.EstadoOrden.CANCELADA, models.EstadoOrden.DEVUELTA):
+                prev = o.estado
+                o.estado = models.EstadoOrden.CANCELADA
+                o.save(update_fields=['estado', 'actualizado_en'])
+                u = o.revertir_stock()
+                unidades += u
+                models.HistorialEstado.objects.create(
+                    orden=o, estado_anterior=prev, estado_nuevo=models.EstadoOrden.CANCELADA, usuario=request.user
+                )
+                n += 1
+        self.message_user(request, f"{n} orden(es) canceladas. Se reincorporaron {unidades} unidad(es) al stock.")
+    marcar_cancelada.short_description = "Marcar como CANCELADA (repone stock al inventario)"
+
+    def marcar_devuelta(self, request, queryset):
+        n = 0
+        unidades = 0
+        for o in queryset:
+            if o.estado in (models.EstadoOrden.ENTREGADA, models.EstadoOrden.ENVIADA):
+                prev = o.estado
+                o.estado = models.EstadoOrden.DEVUELTA
+                o.save(update_fields=['estado', 'actualizado_en'])
+                u = o.revertir_stock()
+                unidades += u
+                models.HistorialEstado.objects.create(
+                    orden=o, estado_anterior=prev, estado_nuevo=models.EstadoOrden.DEVUELTA, usuario=request.user
+                )
+                n += 1
+        self.message_user(request, f"{n} orden(es) marcadas como DEVUELTA. Se reincorporaron {unidades} unidad(es) al stock.")
+    marcar_devuelta.short_description = "Marcar como DEVUELTA (repone stock al inventario)"
 
 
 @admin.register(models.Carrito)
@@ -42,10 +97,10 @@ class HistorialEstadoAdmin(admin.ModelAdmin):
 if hasattr(models, 'SolicitudDevolucion'):
     @admin.register(models.SolicitudDevolucion)
     class SolicitudDevolucionAdmin(admin.ModelAdmin):
-        list_display = ('id', 'orden', 'cliente', 'estado', 'creado_en')
-        list_filter = ('estado',)
+        list_display = ('id', 'orden', 'cliente', 'estado', 'resolucion', 'stock_revertido', 'creado_en')
+        list_filter = ('estado', 'resolucion', 'stock_revertido')
         search_fields = ('orden__codigo', 'cliente__email')
-        readonly_fields = ('creado_en',)
+        readonly_fields = ('creado_en', 'stock_revertido')
 
 
 if hasattr(models, 'PoliticaGarantia'):

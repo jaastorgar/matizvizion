@@ -80,9 +80,7 @@ def _tbk_commit(token_ws):
 
 
 def _revertir_stock(orden):
-    for item in orden.items.select_related('producto').all():
-        item.producto.stock += item.cantidad
-        item.producto.save(update_fields=['stock'])
+    orden.revertir_stock()
 
 
 class WebpayCreateView(APIView):
