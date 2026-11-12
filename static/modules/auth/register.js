@@ -28,6 +28,111 @@
     selCom.disabled = !selReg.value;
   });
 
+  // ---------- Control del Modal Nativo de Términos y Privacidad (sin nueva pestaña) ----------
+  var legalModal = document.getElementById('mv-legal-modal');
+  var tabTerminos = document.getElementById('tab-btn-terminos');
+  var tabPrivacidad = document.getElementById('tab-btn-privacidad');
+  var paneTerminos = document.getElementById('pane-terminos');
+  var panePrivacidad = document.getElementById('pane-privacidad');
+  var btnCloseModal = document.getElementById('legal-modal-close');
+  var btnCancelModal = document.getElementById('legal-modal-cancel');
+  var btnAcceptModal = document.getElementById('legal-modal-accept');
+  var linkTerminos = document.getElementById('link-terminos');
+  var linkPrivacidad = document.getElementById('link-privacidad');
+  var chkTerminos = document.getElementById('reg-terminos');
+
+  function switchLegalTab(which) {
+    if (!tabTerminos || !tabPrivacidad || !paneTerminos || !panePrivacidad) return;
+    if (which === 'privacidad') {
+      tabPrivacidad.classList.add('active');
+      tabPrivacidad.setAttribute('aria-selected', 'true');
+      tabTerminos.classList.remove('active');
+      tabTerminos.setAttribute('aria-selected', 'false');
+      panePrivacidad.style.display = 'block';
+      panePrivacidad.removeAttribute('hidden');
+      paneTerminos.style.display = 'none';
+      paneTerminos.setAttribute('hidden', '');
+    } else {
+      tabTerminos.classList.add('active');
+      tabTerminos.setAttribute('aria-selected', 'true');
+      tabPrivacidad.classList.remove('active');
+      tabPrivacidad.setAttribute('aria-selected', 'false');
+      paneTerminos.style.display = 'block';
+      paneTerminos.removeAttribute('hidden');
+      panePrivacidad.style.display = 'none';
+      panePrivacidad.setAttribute('hidden', '');
+    }
+  }
+
+  function openLegalModal(tab) {
+    if (!legalModal) return;
+    switchLegalTab(tab || 'terminos');
+    if (typeof legalModal.showModal === 'function') {
+      legalModal.showModal();
+    } else {
+      legalModal.setAttribute('open', '');
+    }
+  }
+
+  function closeLegalModal() {
+    if (!legalModal) return;
+    if (typeof legalModal.close === 'function') {
+      legalModal.close();
+    } else {
+      legalModal.removeAttribute('open');
+    }
+  }
+
+  if (linkTerminos) {
+    linkTerminos.addEventListener('click', function (e) {
+      e.preventDefault();
+      openLegalModal('terminos');
+    });
+  }
+
+  if (linkPrivacidad) {
+    linkPrivacidad.addEventListener('click', function (e) {
+      e.preventDefault();
+      openLegalModal('privacidad');
+    });
+  }
+
+  if (tabTerminos) {
+    tabTerminos.addEventListener('click', function () { switchLegalTab('terminos'); });
+  }
+  if (tabPrivacidad) {
+    tabPrivacidad.addEventListener('click', function () { switchLegalTab('privacidad'); });
+  }
+  if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', closeLegalModal);
+  }
+  if (btnCancelModal) {
+    btnCancelModal.addEventListener('click', closeLegalModal);
+  }
+  if (btnAcceptModal) {
+    btnAcceptModal.addEventListener('click', function () {
+      if (chkTerminos) chkTerminos.checked = true;
+      closeLegalModal();
+    });
+  }
+
+  // Light-dismiss seguro conforme a modern-web-guidance (descarta clics en el backdrop)
+  if (legalModal) {
+    var outside = function (e, dialog) {
+      var r = dialog.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    var pressedOutside = false;
+    legalModal.addEventListener('pointerdown', function (e) {
+      pressedOutside = outside(e, legalModal);
+    });
+    legalModal.addEventListener('pointerup', function (e) {
+      if (pressedOutside && outside(e, legalModal)) {
+        closeLegalModal();
+      }
+    });
+  }
+
   function err(msg){ var e = document.getElementById('reg-err'); e.style.display = 'block'; e.innerHTML = msg; }
   document.getElementById('reg-form').addEventListener('submit', function (ev){
     ev.preventDefault();

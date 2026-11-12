@@ -22,6 +22,117 @@
     .form-check-input { width: 1.3em; height: 1.3em; margin-top: 0; }
     .mv-reg-err { font-size: .85rem; }
   }
+
+  /* Modal nativo de Términos y Privacidad (conforme a modern-web-guidance) */
+  dialog.mv-legal-dialog {
+    border: none;
+    border-radius: 20px;
+    padding: 0;
+    max-width: 740px;
+    width: min(92vw, 740px);
+    box-shadow: 0 25px 60px rgba(17, 24, 39, .38);
+    background: var(--white);
+    color: var(--lead-dark);
+  }
+  dialog.mv-legal-dialog::backdrop {
+    background: rgba(17, 24, 39, .62);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+  .mv-legal-dialog-inner {
+    display: flex;
+    flex-direction: column;
+    max-height: 82vh;
+  }
+  .mv-legal-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border-color);
+    background: #f9fafb;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+  .mv-legal-tabs {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+  .mv-legal-tab {
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    padding: .45rem .95rem;
+    border-radius: 10px;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--lead-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    transition: all .15s ease;
+  }
+  .mv-legal-tab:hover {
+    background: #f3f4f6;
+    color: var(--lead-dark);
+  }
+  .mv-legal-tab.active {
+    background: var(--green-primary);
+    color: #fff;
+    border-color: var(--green-primary);
+    box-shadow: 0 4px 12px rgba(16,185,129,.25);
+  }
+  .mv-legal-close-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: #e5e7eb;
+    border-radius: 50%;
+    color: var(--lead-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background .15s ease, color .15s ease;
+  }
+  .mv-legal-close-btn:hover {
+    background: rgba(220, 38, 38, .12);
+    color: #b91c1c;
+  }
+  .mv-legal-dialog-body {
+    padding: 1.4rem 1.6rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    line-height: 1.6;
+    font-size: .92rem;
+  }
+  .mv-legal-dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .75rem;
+    padding: .9rem 1.4rem;
+    border-top: 1px solid var(--border-color);
+    background: #f9fafb;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+  .mv-legal-link {
+    color: var(--green-dark);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .mv-legal-link:hover {
+    color: var(--green-primary);
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -43,28 +154,134 @@
     </div>
     <div class="mv-reg-err" id="reg-err"></div>
     <div class="mv-consent-block mt-3 mb-3">
-  <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="reg-terminos">
-    <label class="form-check-label small" for="reg-terminos">
-      He leído y acepto los <a href="/terminos/" target="_blank" rel="noopener">términos del servicio</a> y la
-      <a href="/privacidad/" target="_blank" rel="noopener">política de privacidad</a> <span class="text-danger">*</span>
-    </label>
-  </div>
-  <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="reg-salud">
-    <label class="form-check-label small" for="reg-salud">
-      Autorizo el almacenamiento y tratamiento de mis datos de salud visual y recetas.
-    </label>
-  </div>
-  <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="reg-marketing">
-    <label class="form-check-label small" for="reg-marketing">
-      Deseo recibir ofertas y promociones (opcional).
-    </label>
-  </div>
-</div><button class="btn btn-cta w-100 mt-3" type="submit">Registrarme</button>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="reg-terminos">
+        <label class="form-check-label small" for="reg-terminos">
+          He leído y acepto los <a href="/terminos/" id="link-terminos" class="mv-legal-link">términos del servicio</a> y la
+          <a href="/privacidad/" id="link-privacidad" class="mv-legal-link">política de privacidad</a> <span class="text-danger">*</span>
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="reg-salud">
+        <label class="form-check-label small" for="reg-salud">
+          Autorizo el almacenamiento y tratamiento de mis datos de salud visual y recetas.
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="reg-marketing">
+        <label class="form-check-label small" for="reg-marketing">
+          Deseo recibir ofertas y promociones (opcional).
+        </label>
+      </div>
+    </div>
+    <button class="btn btn-cta w-100 mt-3" type="submit">Registrarme</button>
     <p class="text-center mt-3" style="color:var(--lead-muted,#6B7280);">¿Ya tienes cuenta? <a href="{% url 'web:login' %}">Inicia sesión</a></p>
   </form>
 </div>
+
+<!-- Modal Dialog nativo e interactivo para Términos y Privacidad (sin abrir nueva pestaña) -->
+<dialog id="mv-legal-modal" class="mv-legal-dialog" aria-labelledby="legal-modal-title">
+  <div class="mv-legal-dialog-inner">
+    <div class="mv-legal-dialog-header">
+      <div class="mv-legal-tabs" role="tablist">
+        <button type="button" class="mv-legal-tab active" id="tab-btn-terminos" role="tab" aria-selected="true" aria-controls="pane-terminos">
+          <i class="bi bi-file-earmark-text"></i> Términos del Servicio
+        </button>
+        <button type="button" class="mv-legal-tab" id="tab-btn-privacidad" role="tab" aria-selected="false" aria-controls="pane-privacidad">
+          <i class="bi bi-shield-check"></i> Política de Privacidad
+        </button>
+      </div>
+      <button type="button" class="mv-legal-close-btn" id="legal-modal-close" aria-label="Cerrar modal">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="mv-legal-dialog-body">
+      <!-- Panel 1: Términos del Servicio -->
+      <div class="mv-legal-pane" id="pane-terminos" role="tabpanel" aria-labelledby="tab-btn-terminos">
+        <h2 id="legal-modal-title" class="h5 text-dark fw-bold mb-1">Términos y Condiciones del Servicio</h2>
+        <p class="text-secondary small mb-3">Óptica Matiz Visión · Conforme a la Ley N° 19.496 (SERNAC) · Vigente 2026</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">1. Disposiciones Generales e Individualización</h3>
+        <p class="small text-secondary">Este instrumento establece los términos y condiciones que rigen el uso del sitio web, comercio electrónico y servicios de agendamiento clínico de Óptica Matiz Visión. La navegación, registro, compra o agendamiento confiere la condición de Usuario/Paciente e implica la aceptación de todas las cláusulas aquí contenidas.</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">2. Perfiles de Usuario y Acceso</h3>
+        <ul class="small text-secondary mb-2">
+          <li><strong>Cliente/Paciente:</strong> vitrina pública, carrito, registro de recetas, seguimiento de órdenes y agendamiento clínico.</li>
+          <li><strong>Vendedor/Personal operativo:</strong> gestión de sucursal, verificación de citas, cambio de estado de entrega y asesoría técnica.</li>
+          <li><strong>Administrador:</strong> catálogo, precios, bloques médicos y auditoría del sistema.</li>
+        </ul>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">3. Proceso de Compra, Precios e Inmutabilidad de Órdenes</h3>
+        <ul class="small text-secondary mb-2">
+          <li>Precios en pesos chilenos (CLP), IVA incluido.</li>
+          <li>Al confirmar el carrito se genera una Orden en estado <em>PENDIENTE</em> que congela el stock temporalmente.</li>
+          <li>El precio unitario queda fijado de forma inmutable al generar la orden.</li>
+          <li>Los pagos se procesan vía Webpay Plus de Transbank; confirmado el pago, la orden pasa a <em>PAGADA</em> y se descuenta el stock definitivamente.</li>
+        </ul>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">4. Política de Garantías Ópticas y Postventa</h3>
+        <p class="small text-secondary mb-2">En estricto cumplimiento de la Ley N° 19.496 (SERNAC) y normas ópticas, Matiz Visión otorga cuatro niveles de cobertura sincronizados con el Certificado de Garantía digital de cada compra:</p>
+        <ul class="small text-secondary mb-2">
+          <li><strong>1. Garantía Legal (Ley N° 19.496 - SERNAC / Opción 6x3):</strong> 6 meses desde la recepción física ante fallas de origen. Coberturas: devolución del dinero, cambio directo o reparación gratuita.</li>
+          <li><strong>2. Garantía Técnica - Armazones:</strong> 12 meses desde la recepción ante desprendimiento espontáneo de soldaduras, fallas en bisagras o decoloración anómala del material (cambio directo o reparación gratuita).</li>
+          <li><strong>3. Garantía Técnica - Tratamientos y Cristales:</strong> 3 a 6 meses (según gama de cristales y tratamientos) ante craquelado, ampollamiento o desprendimiento de antirreflejo, filtro azul o viraje fotocromático (cambio directo o reposición gratuita).</li>
+          <li><strong>4. Garantía de Adaptación Óptica (Confort Visual):</strong> 30 a 60 días corridos para revisión y ajuste sin costo; en multifocales no adaptados, se re-hacen sin costo en dos monofocales (cerca y lejos) o un bifocal equivalente.</li>
+        </ul>
+        <p class="small text-secondary mb-3"><em>Exclusiones:</em> Ralladuras por fricción o limpieza en seco; roturas por golpes, caídas o aplastamiento; manipulación por terceros no autorizados; químicos abrasivos y calor extremo.</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">5. Servicios Clínicos y Agendamiento</h3>
+        <ul class="small text-secondary mb-0">
+          <li>Bloques de evaluación de 15 a 30 minutos según complejidad refractiva.</li>
+          <li>Cancelación o reagendamiento con al menos 24 horas de anticipación a través de la plataforma.</li>
+        </ul>
+      </div>
+
+      <!-- Panel 2: Política de Privacidad -->
+      <div class="mv-legal-pane" id="pane-privacidad" role="tabpanel" aria-labelledby="tab-btn-privacidad" style="display:none;">
+        <h2 class="h5 text-dark fw-bold mb-1">Política de Privacidad y Protección de Datos</h2>
+        <p class="text-secondary small mb-3">Conforme a la Ley N° 21.719 · Vigente desde 2026</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">1. Marco Normativo</h3>
+        <p class="small text-secondary">Óptica Matiz Visión adopta rigurosos estándares de confidencialidad conforme a la Ley N° 21.719 sobre Protección de Datos Personales y las normas sanitarias vigentes en Chile.</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">2. Categorías de Datos Recolectados</h3>
+        <ul class="small text-secondary mb-2">
+          <li><strong>Identificatorios y de contacto:</strong> RUT, nombres, apellidos, correo, teléfono y dirección de despacho.</li>
+          <li><strong>Datos sensibles de salud visual:</strong> graduación oftalmológica, historial de recetas y observaciones clínicas.</li>
+          <li><strong>Transaccionales:</strong> compras, estados de despacho, comprobantes de pago y agendamiento de horas.</li>
+        </ul>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">3. Carácter Sensible de la Receta y Consentimiento Explícito</h3>
+        <p class="small text-secondary">Los parámetros ópticos constituyen datos sensibles. Su tratamiento requiere consentimiento previo, explícito e informado, otorgado mediante casilla independiente en el registro y en el agendamiento clínico.</p>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">4. Derechos del Titular (ARCOP)</h3>
+        <ul class="small text-secondary mb-2">
+          <li><strong>Acceso:</strong> conocer qué datos y antecedentes clínicos almacenamos.</li>
+          <li><strong>Rectificación:</strong> solicitar corrección de datos inexactos o desactualizados.</li>
+          <li><strong>Cancelación/Supresión:</strong> borrado cuando ya no sean necesarios, con excepción de recetas que deban conservarse por regulación sanitaria.</li>
+          <li><strong>Oposición:</strong> oponerse al tratamiento para fines no esenciales (marketing/ofertas).</li>
+          <li><strong>Portabilidad:</strong> solicitar copia de tu historial en formato estructurado e interoperable.</li>
+        </ul>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">5. Medidas de Seguridad</h3>
+        <ul class="small text-secondary mb-2">
+          <li>Cifrado en tránsito (HTTPS/TLS) y contraseñas con derivación criptográfica segura (PBKDF2/SHA-256).</li>
+          <li>Auditoría y control de acceso estricto sobre antecedentes médicos y transacciones.</li>
+        </ul>
+
+        <h3 class="h6 fw-bold mt-3 text-dark">6. Contacto y Ejercicio de Derechos</h3>
+        <p class="small text-secondary mb-0">Escribe a <a href="mailto:privacidad@matizvision.cl">privacidad@matizvision.cl</a> o acude a sucursal central para ejercer tus derechos ARCOP.</p>
+      </div>
+    </div>
+
+    <div class="mv-legal-dialog-footer">
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="legal-modal-cancel">Cerrar</button>
+      <button type="button" class="btn btn-cta btn-sm" id="legal-modal-accept">
+        <i class="bi bi-check2-circle"></i> Aceptar términos y continuar
+      </button>
+    </div>
+  </div>
+</dialog>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'modules/auth/register.js' %}?v=1"></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'modules/auth/register.js' %}?v=2"></script>{% endblock %}

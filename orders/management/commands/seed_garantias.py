@@ -56,12 +56,12 @@ POLITICAS = [
     },
     {
         'codigo': 'tecnica_tratamiento',
-        'nombre': 'Garantía Técnica - Tratamientos',
+        'nombre': 'Garantía Técnica - Tratamientos y Cristales',
         'base': 'FABRICANTE',
         'orden_prioridad': 3,
-        'plazo_label': '6 a 12 meses',
-        'plazo_dias_min': 180,
-        'plazo_dias_max': 365,
+        'plazo_label': '3 a 6 meses',
+        'plazo_dias_min': 90,
+        'plazo_dias_max': 180,
         'descripcion': (
             "Craquelado, ampollamiento o desprendimiento espontaneo del Antirreflejo, "
             "Filtro Azul o viraje Fotocromatico."
