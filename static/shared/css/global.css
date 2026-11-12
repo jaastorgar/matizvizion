@@ -134,15 +134,19 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ========== logo-xl-legible ========== */
 .mv-footer img {
-  height: 120px !important;
+  height: 56px !important;
   width: auto !important;
   max-width: 60vw;
 }
 .mv-navbar {
-  padding-top: .25rem !important;
-  padding-bottom: .25rem !important;
+  padding-top: .35rem !important;
+  padding-bottom: .35rem !important;
+}
+.mv-navbar .navbar-brand img {
+  height: 52px !important;
+  width: auto !important;
 }
 @media (max-width: 576px) {
-  .mv-navbar .navbar-brand img { height: 76px !important; }
-  .mv-footer img { height: 96px !important; }
+  .mv-navbar .navbar-brand img { height: 42px !important; }
+  .mv-footer img { height: 48px !important; }
 }
