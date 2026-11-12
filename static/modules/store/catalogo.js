@@ -95,17 +95,28 @@ function render(list) {
   grid.innerHTML = html.length ? html.join('') : '<div class="col-12 mv-empty">No hay productos que coincidan con los filtros.</div>';
   countInfo.textContent = 'Mostrando ' + html.length + ' de ' + ALL.length + ' productos';
 }
-function applyFilters() {
-  var q = (searchInput.value || '').trim().toLowerCase();
+function syncUrlParam(q) {
+  try {
+    var url = new URL(window.location.href);
+    if (q) { url.searchParams.set('q', q); } else { url.searchParams.delete('q'); }
+    window.history.replaceState({}, '', url.toString());
+  } catch (err) {}
+}
+function applyFilters(skipSyncUrl) {
+  var rawQ = (searchInput.value || '').trim();
+  var q = rawQ.toLowerCase();
   var cat = catSelect.value;
   var maxP = Number(priceRange.value);
   priceValue.textContent = formatPrice(maxP);
+  if (!skipSyncUrl) syncUrlParam(rawQ);
+  var tokens = q ? q.split(/\s+/).filter(Boolean) : [];
   render(ALL.filter(function (p) {
     if (cat && String(p.categoria) !== cat) return false;
     if ((Number(p.precio) || 0) > maxP) return false;
-    if (q) {
-      var hay = (p.nombre || '').toLowerCase().indexOf(q) !== -1 || (p.descripcion || '').toLowerCase().indexOf(q) !== -1 || (p.categoria_nombre || '').toLowerCase().indexOf(q) !== -1 || (p.color || '').toLowerCase().indexOf(q) !== -1;
-      if (!hay) return false;
+    if (tokens.length) {
+      var corpus = [p.nombre || '', p.descripcion || '', p.categoria_nombre || '', p.color || '', p.sku || '', p.grupo || ''].join(' ').toLowerCase();
+      var matchesAll = tokens.every(function (t) { return corpus.indexOf(t) !== -1; });
+      if (!matchesAll) return false;
     }
     return true;
   }));
@@ -225,7 +236,25 @@ Promise.all([api.get('/store/productos/'), api.get('/store/categorias/'), loadCa
   if (ALL.length) { MAX_PRICE = Math.max.apply(null, ALL.map(function (p) { return Number(p.precio) || 0; })); MAX_PRICE = Math.ceil(MAX_PRICE / 1000) * 1000 || 150000; }
   priceRange.max = String(MAX_PRICE); priceRange.value = String(MAX_PRICE);
   if (rc.ok && Array.isArray(rc.data)) rc.data.forEach(function (c) { var o = document.createElement('option'); o.value = String(c.id); o.textContent = c.nombre; catSelect.appendChild(o); });
-  applyFilters(); badge();
+
+  // Leer parametros iniciales de la URL (ej: /catalogo/?q=armazon)
+  try {
+    var up = new URLSearchParams(window.location.search);
+    var initQ = up.get('q') || up.get('search');
+    if (initQ && searchInput) { searchInput.value = initQ; }
+    var initCat = up.get('categoria');
+    if (initCat && catSelect) { catSelect.value = initCat; }
+  } catch (e) {}
+
+  applyFilters(true); badge();
+});
+
+// Sincronizar busquedas disparadas desde el buscador global de la navbar
+window.addEventListener('mv:search', function (e) {
+  if (searchInput && e.detail && typeof e.detail.query === 'string') {
+    searchInput.value = e.detail.query;
+    applyFilters(false);
+  }
 });
 
 

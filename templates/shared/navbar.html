@@ -8,11 +8,54 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="mvNav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <ul class="navbar-nav me-lg-2 mb-2 mb-lg-0">
         <li class="nav-item nav-catalogo d-none"><a class="nav-link" href="/catalogo/">Catálogo</a></li>
         <li class="nav-item nav-catalogo d-none"><a class="nav-link" href="/citas/">Agendar cita</a></li>
       </ul>
-      <ul class="navbar-nav align-items-lg-center">
+
+      <!-- Buscador Global Matizvisión -->
+      <div class="mv-nav-search-wrap mx-lg-auto my-2 my-lg-0">
+        <search role="search" class="w-100">
+          <form class="mv-search-form position-relative" id="mv-nav-search-form" action="/catalogo/" method="GET" autocomplete="off">
+            <div class="mv-search-group">
+              <span class="mv-search-icon" aria-hidden="true">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="search"
+                name="q"
+                class="mv-search-input flex-grow-1"
+                id="mv-nav-search"
+                placeholder="Buscar armazones, lentes, marcas o color…"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="none"
+                spellcheck="false"
+                enterkeyhint="search"
+                aria-label="Buscar en el catálogo"
+                aria-autocomplete="list"
+                aria-controls="mv-search-dropdown"
+                aria-expanded="false"
+              />
+              <button
+                type="button"
+                class="mv-search-clear d-none"
+                id="mv-search-clear"
+                aria-label="Limpiar búsqueda"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+              <button type="submit" class="btn btn-cta btn-sm mv-search-submit-btn" aria-label="Buscar">
+                Buscar
+              </button>
+            </div>
+            <!-- Desplegable de sugerencias en vivo -->
+            <div id="mv-search-dropdown" class="mv-search-dropdown" role="listbox" hidden></div>
+          </form>
+        </search>
+      </div>
+
+      <ul class="navbar-nav align-items-lg-center ms-lg-2">
         <li class="nav-item nav-cart d-none"><a class="nav-link position-relative" href="/carrito/"><i class="bi bi-cart3"></i> Carrito <span id="cart-badge" hidden>0</span></a></li>
         <li class="nav-item nav-guest d-none"><a class="nav-link" href="/login/">Ingresar</a></li>
         <li class="nav-item nav-guest d-none"><a class="btn btn-cta btn-sm ms-lg-2" href="/register/">Registrarme</a></li>
@@ -61,5 +104,251 @@
     });
     if (out) out.addEventListener('click', function () { MV.auth.logout(true); });
     if (MV.refreshCartBadge) MV.refreshCartBadge();
+
+    // --- Buscador Global y Autocompletado en vivo ---
+    (function () {
+      var searchForm = document.getElementById('mv-nav-search-form');
+      var searchInput = document.getElementById('mv-nav-search');
+      var searchClear = document.getElementById('mv-search-clear');
+      var dropdown = document.getElementById('mv-search-dropdown');
+      if (!searchForm || !searchInput || !dropdown) return;
+
+      var debounceTimer = null;
+      var abortCtrl = null;
+      var cache = {};
+      var priceFmt = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+
+      function getEmoji(cat) {
+        cat = (cat || '').toLowerCase();
+        if (cat.indexOf('sol') !== -1) return '🕶️';
+        if (cat.indexOf('contacto') !== -1) return '👁️';
+        if (cat.indexOf('armaz') !== -1) return '👓';
+        return '🛍️';
+      }
+
+      function escapeRegex(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function highlightMatch(text, q) {
+        if (!text) return '';
+        var escFn = (MV && MV.escape) ? MV.escape : function (s) { return String(s); };
+        var escText = escFn(text);
+        if (!q) return escText;
+        var words = q.trim().split(/\s+/).filter(Boolean);
+        if (!words.length) return escText;
+        var pattern = new RegExp('(' + words.map(escapeRegex).join('|') + ')', 'gi');
+        return escText.replace(pattern, '<mark>$1</mark>');
+      }
+
+      function closeDropdown() {
+        dropdown.hidden = true;
+        dropdown.innerHTML = '';
+        searchInput.setAttribute('aria-expanded', 'false');
+      }
+
+      function renderSuggestions(q, items) {
+        var escFn = (MV && MV.escape) ? MV.escape : function (s) { return String(s); };
+        if (!items || !items.length) {
+          dropdown.innerHTML =
+            '<div class="mv-search-no-results">' +
+            '<i class="bi bi-search text-muted me-1"></i> No encontramos productos para "<strong>' + escFn(q) + '</strong>".' +
+            '<div class="mt-2"><a href="/catalogo/" class="btn btn-sm btn-outline-mv">Ver todo el catálogo</a></div>' +
+            '</div>';
+          dropdown.hidden = false;
+          searchInput.setAttribute('aria-expanded', 'true');
+          return;
+        }
+
+        var maxShow = 5;
+        var shown = items.slice(0, maxShow);
+        var total = items.length;
+
+        var html = '<div class="mv-search-dropdown-header">Sugerencias de productos</div>';
+        shown.forEach(function (p, idx) {
+          var stock = Number(p.stock) || 0;
+          var inStock = stock > 0;
+          var stockBadge = inStock
+            ? '<span class="mv-search-item-stock in">En stock (' + stock + ')</span>'
+            : '<span class="mv-search-item-stock out">Agotado</span>';
+
+          var thumb = p.imagen_url
+            ? '<img src="' + p.imagen_url + '" class="mv-search-item-thumb" alt="' + escFn(p.nombre) + '" />'
+            : '<div class="mv-search-item-thumb">' + getEmoji(p.categoria_nombre) + '</div>';
+
+          var url = '/catalogo/?q=' + encodeURIComponent(p.nombre);
+
+          html +=
+            '<a href="' + url + '" class="mv-search-item" data-index="' + idx + '" role="option">' +
+            thumb +
+            '<div class="mv-search-item-info">' +
+            '<h4 class="mv-search-item-title">' + highlightMatch(p.nombre, q) + '</h4>' +
+            '<div class="mv-search-item-meta">' +
+            (p.categoria_nombre ? '<span class="mv-search-item-cat">' + escFn(p.categoria_nombre) + '</span>' : '') +
+            (p.color ? '<span>• ' + escFn(p.color) + '</span>' : '') +
+            '</div>' +
+            '</div>' +
+            '<div class="mv-search-item-price-col">' +
+            '<div class="mv-search-item-price">' + priceFmt.format(Number(p.precio) || 0) + '</div>' +
+            stockBadge +
+            '</div>' +
+            '</a>';
+        });
+
+        html +=
+          '<div class="mv-search-dropdown-footer">' +
+          '<a href="/catalogo/?q=' + encodeURIComponent(q) + '" class="mv-search-all-link">' +
+          '<i class="bi bi-arrow-right-circle"></i> Ver todos los resultados (' + total + ')' +
+          '</a>' +
+          '</div>';
+
+        dropdown.innerHTML = html;
+        dropdown.hidden = false;
+        searchInput.setAttribute('aria-expanded', 'true');
+      }
+
+      function doSearch(q) {
+        q = q.trim();
+        if (q.length < 2) {
+          closeDropdown();
+          return;
+        }
+
+        if (cache[q]) {
+          renderSuggestions(q, cache[q]);
+          return;
+        }
+
+        dropdown.innerHTML = '<div class="mv-search-loading"><i class="spinner-border spinner-border-sm text-secondary me-2"></i>Buscando en catálogo…</div>';
+        dropdown.hidden = false;
+        searchInput.setAttribute('aria-expanded', 'true');
+
+        if (abortCtrl) abortCtrl.abort();
+        abortCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+
+        var fetchUrl = '/api/store/productos/?search=' + encodeURIComponent(q);
+        var opts = abortCtrl ? { signal: abortCtrl.signal } : {};
+
+        fetch(fetchUrl, opts)
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            var items = Array.isArray(data) ? data : (data.results || []);
+            cache[q] = items;
+            renderSuggestions(q, items);
+          })
+          .catch(function (err) {
+            if (err && err.name === 'AbortError') return;
+            dropdown.innerHTML = '<div class="mv-search-no-results text-muted">Error al buscar. Intente de nuevo.</div>';
+          });
+      }
+
+      // Input listener with debounce
+      searchInput.addEventListener('input', function () {
+        var val = searchInput.value || '';
+        if (searchClear) searchClear.classList.toggle('d-none', !val.length);
+
+        // Si el usuario ya está en /catalogo/, sincronizamos en tiempo real
+        if (window.location.pathname.indexOf('/catalogo') !== -1) {
+          window.dispatchEvent(new CustomEvent('mv:search', { detail: { query: val } }));
+        }
+
+        clearTimeout(debounceTimer);
+        if (!val.trim()) {
+          closeDropdown();
+          return;
+        }
+        debounceTimer = setTimeout(function () {
+          doSearch(val);
+        }, 220);
+      });
+
+      if (searchClear) {
+        searchClear.addEventListener('click', function () {
+          searchInput.value = '';
+          searchClear.classList.add('d-none');
+          closeDropdown();
+          searchInput.focus();
+          if (window.location.pathname.indexOf('/catalogo') !== -1) {
+            window.dispatchEvent(new CustomEvent('mv:search', { detail: { query: '' } }));
+          }
+        });
+      }
+
+      // Keyboard navigation per accessibility & IME-safe guidance
+      searchInput.addEventListener('keydown', function (e) {
+        // IME Composition check (Modern Web Guidance: ime-safe-enter-submit)
+        if (e.key === 'Enter' && (e.isComposing || e.keyCode === 229)) {
+          return;
+        }
+
+        if (dropdown.hidden) return;
+
+        var items = dropdown.querySelectorAll('.mv-search-item');
+        var activeItem = dropdown.querySelector('.mv-search-item.active');
+        var activeIdx = -1;
+        if (activeItem) {
+          activeIdx = Array.prototype.indexOf.call(items, activeItem);
+        }
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          var nextIdx = activeIdx + 1;
+          if (nextIdx >= items.length) nextIdx = 0;
+          if (activeItem) activeItem.classList.remove('active');
+          if (items[nextIdx]) {
+            items[nextIdx].classList.add('active');
+            items[nextIdx].scrollIntoView({ block: 'nearest' });
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          var prevIdx = activeIdx - 1;
+          if (prevIdx < 0) prevIdx = items.length - 1;
+          if (activeItem) activeItem.classList.remove('active');
+          if (items[prevIdx]) {
+            items[prevIdx].classList.add('active');
+            items[prevIdx].scrollIntoView({ block: 'nearest' });
+          }
+        } else if (e.key === 'Enter') {
+          if (activeItem) {
+            e.preventDefault();
+            activeItem.click();
+          }
+        } else if (e.key === 'Escape') {
+          closeDropdown();
+        }
+      });
+
+      // Form submit interception if already on /catalogo/
+      searchForm.addEventListener('submit', function (e) {
+        var val = (searchInput.value || '').trim();
+        if (window.location.pathname.indexOf('/catalogo') !== -1) {
+          e.preventDefault();
+          closeDropdown();
+          window.dispatchEvent(new CustomEvent('mv:search', { detail: { query: val } }));
+          try {
+            var url = new URL(window.location.href);
+            if (val) { url.searchParams.set('q', val); } else { url.searchParams.delete('q'); }
+            window.history.replaceState({}, '', url.toString());
+          } catch (err) {}
+        }
+      });
+
+      // Pre-poblar el buscador si la URL actual ya contiene ?q=
+      try {
+        var up = new URLSearchParams(window.location.search);
+        var qParam = up.get('q') || up.get('search');
+        if (qParam) {
+          searchInput.value = qParam;
+          if (searchClear) searchClear.classList.remove('d-none');
+        }
+      } catch (err) {}
+
+      // Cerrar sugerencias al hacer clic fuera
+      document.addEventListener('click', function (e) {
+        if (!searchForm.contains(e.target)) {
+          closeDropdown();
+        }
+      });
+    })();
   });
 </script>

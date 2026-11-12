@@ -34,7 +34,7 @@ class ProductoViewSet(viewsets.ReadOnlyModelViewSet):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['categoria', 'destacado']
-    search_fields = ['nombre', 'descripcion', 'categoria__nombre']
+    search_fields = ['nombre', 'descripcion', 'categoria__nombre', 'sku', 'color', 'grupo']
     ordering_fields = ['precio', 'nombre', 'creado_en']
     ordering = ['nombre']
 
