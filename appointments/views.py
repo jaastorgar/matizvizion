@@ -97,7 +97,10 @@ class CitaMedicaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.R
         if not nuevo_id:
             return Response({'error': 'Debes indicar el nuevo bloque.'}, status=status.HTTP_400_BAD_REQUEST)
         with transaction.atomic():
-            cita = CitaMedica.objects.select_for_update().select_related('bloque').get(pk=pk)
+            try:
+                cita = CitaMedica.objects.select_for_update().select_related('bloque').get(pk=pk)
+            except CitaMedica.DoesNotExist:
+                return Response({'error': 'Cita no encontrada.'}, status=status.HTTP_404_NOT_FOUND)
             if request.user.role == 'CLIENTE' and cita.cliente_id != request.user.id:
                 return Response({'error': 'No puedes reagendar una cita que no es tuya.'}, status=status.HTTP_403_FORBIDDEN)
             if cita.estado not in ('AGENDADA', 'CONFIRMADA'):

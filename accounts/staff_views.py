@@ -2,10 +2,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .permissions import IsVendedorUser
+
 
 class StaffProfileView(APIView):
     """Datos del perfil del staff (vendedor/admin), autenticado por JWT."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVendedorUser]
 
     def get(self, request):
         u = request.user
